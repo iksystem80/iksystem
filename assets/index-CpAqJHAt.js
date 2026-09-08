@@ -1,1 +1,0 @@
-import{d as a,ai as o}from"./index-C5DjKAzy.js";const n=a({created(){const{params:e,query:t}=this.$route,{path:r}=e;this.$router.replace({path:"/"+r,query:t})},render(){return o("div")}});export{n as default};
