@@ -1,0 +1,69 @@
+
+name: IK System iPhone IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-iphone:
+    name: Build iPhone IPA
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vue application
+        run: npm run build:prod
+        env:
+          VITE_BASE_API: ${{ vars.VITE_BASE_API }}
+          VITE_BASE_SERVER: ${{ vars.VITE_BASE_SERVER }}
+
+      - name: Synchronize Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Display Xcode version
+        run: xcodebuild -version
+
+      - name: Build iPhone application
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/ios-device \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p ipa/Payload
+
+          cp -R \
+            build/ios-device/Build/Products/Debug-iphoneos/App.app \
+            ipa/Payload/
+
+          cd ipa
+          zip -qry IK-System-unsigned.ipa Payload
+
+      - name: Upload iPhone IPA
+        uses: actions/upload-artifact@v6
+        with:
+          name: IK-System-iPhone-IPA
+          path: ipa/IK-System-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7
