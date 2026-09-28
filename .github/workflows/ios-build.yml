@@ -1,0 +1,55 @@
+
+name: IK System iOS Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS Simulator
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vue application
+        run: npm run build
+        env:
+          VITE_BASE_API: ${{ vars.VITE_BASE_API }}
+          VITE_BASE_SERVER: ${{ vars.VITE_BASE_SERVER }}
+
+      - name: Synchronize Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Display Xcode version
+        run: xcodebuild -version
+
+      - name: Build iOS application
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Upload iOS application
+        uses: actions/upload-artifact@v4
+        with:
+          name: IK-System-iOS-Simulator
+          path: build/ios/Build/Products/Debug-iphonesimulator/*.app
+          if-no-files-found: error
+          retention-days: 7
