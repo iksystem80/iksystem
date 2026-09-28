@@ -50,7 +50,7 @@ jobs:
             build
 
       - name: Upload iOS application
-        uses: actions/upload-artifact@v4
+  	uses: actions/upload-artifact@v6
         with:
           name: IK-System-iOS-Simulator
           path: build/ios/Build/Products/Debug-iphonesimulator/*.app
