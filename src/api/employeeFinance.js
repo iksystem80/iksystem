@@ -1,0 +1,69 @@
+import request from '@/utils/request'
+
+const root = '/employeefinance'
+export const getEmployeeFinance = locationid => request({ url: `${root}/current`, method: 'get', params: { locationid } })
+export const setOpeningCash = data => request({ url: `${root}/opening`, method: 'post', data })
+export const addCashTransaction = data => request({ url: `${root}/transaction`, method: 'post', data })
+export const handoverAndClockOut = data => request({ url: `${root}/handover-and-clockout`, method: 'post', data })
+export const acceptCashHandover = (id, data) => request({ url: `${root}/handovers/${id}/accept`, method: 'post', data })
+export const createExpenseType = data => request({ url: `${root}/expense-types`, method: 'post', data })
+export const setExpenseTypeStatus = (id, data) => request({ url: `${root}/expense-types/${id}`, method: 'patch', data })
+export const getCashHistory = (locationid, range = 'today') => request({ url: `${root}/history`, method: 'get', params: { locationid, range } })
+
+export const getAdminFinanceOverview = (locationid, days = 30) =>
+    request({ url: `${root}/admin/overview`, method: 'get', params: { locationid, days } })
+
+export const createAdminFunding = data =>
+    request({ url: `${root}/admin/funding`, method: 'post', data })
+
+export const updateAdminFunding = (id, data) =>
+    request({ url: `${root}/admin/funding/${id}`, method: 'put', data })
+
+export const cancelAdminFunding = (id, data) =>
+    request({ url: `${root}/admin/funding/${id}/cancel`, method: 'post', data })
+
+export const acceptAdminFunding = (id, data) =>
+    request({ url: `${root}/admin/funding/${id}/accept`, method: 'post', data })
+
+
+export const getSessionCashHistoryReport = params =>
+    request({ url: `${root}/history/report`, method: 'get', params })
+
+export const getAdminMoneyTrail = (locationid, range = 'today') =>
+    request({ url: `${root}/admin/trail`, method: 'get', params: { locationid, range } })
+
+export const getAdminMoneyTrailReport = params =>
+    request({ url: `${root}/admin/trail/report`, method: 'get', params })
+
+
+export const createAdminWithdrawal = data =>
+    request({ url: `${root}/admin/withdrawal`, method: 'post', data })
+
+// Completed machine reading session profit posting (amount calculated on server).
+export const getReadingProfitPosting = (sessionId, locationid) =>
+    request({ url: `${root}/reading-profit/${sessionId}`, method: 'get', params: { locationid } })
+
+export const postReadingProfit = (sessionId, data) =>
+    request({ url: `${root}/reading-profit/${sessionId}`, method: 'post', data })
+
+export const getAdminFinanceActivity = params =>
+    request({ url: `${root}/admin/activity`, method: 'get', params })
+
+// Location-wide physical cash and bank custody ledger.
+const cashRoot = '/locationcash'
+export const getLocationCash = locationid => request({ url: `${cashRoot}/overview`, method: 'get', params: { locationid } })
+export const addInitialCapital = data => request({ url: `${cashRoot}/initial-capital`, method: 'post', data })
+export const setCustodyOpening = data => request({ url: `${cashRoot}/cutover-opening`, method: 'post', data })
+export const sendCustodyTransfer = data => request({ url: `${cashRoot}/transfer`, method: 'post', data })
+export const acceptCustodyTransfer = (id, data) => request({ url: `${cashRoot}/transfers/${id}/accept`, method: 'post', data })
+export const cancelCustodyTransfer = (id, data) => request({ url: `${cashRoot}/transfers/${id}/cancel`, method: 'post', data })
+export const depositBusinessBank = data => request({ url: `${cashRoot}/bank-deposit`, method: 'post', data })
+export const withdrawBusinessBank = data => request({ url: `${cashRoot}/bank-withdrawal`, method: 'post', data })
+export const distributeOwnerCash = data => request({ url: `${cashRoot}/owner-distribution`, method: 'post', data })
+export const sendCustodyEmployeeSupport = data => request({ url: `${cashRoot}/employee-support`, method: 'post', data })
+export const acceptInitialCapital = (id, data) => request({ url: `${cashRoot}/capital/${id}/accept`, method: 'post', data })
+export const cancelInitialCapital = (id, data) => request({ url: `${cashRoot}/capital/${id}/cancel`, method: 'post', data })
+export const addCustodyExpense = data => request({ url: `${cashRoot}/expense`, method: 'post', data })
+
+// Only confirmed, positive machine-reading collections credited to the signed-in Admin.
+export const getAdminMachineCollections = locationid => request({ url: `${cashRoot}/machine-collections`, method: 'get', params: { locationid } })

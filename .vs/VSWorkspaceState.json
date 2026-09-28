@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\icons\\svg",
+    "\\src\\layout\\components\\Sidebar",
+    "\\src\\store",
+    "\\src\\store\\modules",
+    "\\src\\views\\dashboard",
+    "\\src\\views\\dashboard\\admin",
+    "\\src\\views\\dashboard\\admin\\components\\TodoList",
+    "\\src\\views\\login"
+  ],
+  "SelectedNode": "\\src\\store\\modules\\permission.ts",
+  "PreviewInSolutionExplorer": false
+}
