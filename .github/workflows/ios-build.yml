@@ -49,8 +49,9 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
+
       - name: Upload iOS application
-  	uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v6
         with:
           name: IK-System-iOS-Simulator
           path: build/ios/Build/Products/Debug-iphonesimulator/*.app
