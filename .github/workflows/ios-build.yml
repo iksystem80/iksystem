@@ -4,6 +4,9 @@ name: IK System iOS Build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-ios:
     name: Build iOS Simulator
@@ -11,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: 'npm'
@@ -24,9 +27,9 @@ jobs:
 
       - name: Build Vue application
         run: npm run build:prod
-  	env:
-   	 VITE_BASE_API: ${{ vars.VITE_BASE_API }}
-    	VITE_BASE_SERVER: ${{ vars.VITE_BASE_SERVER }}
+        env:
+          VITE_BASE_API: ${{ vars.VITE_BASE_API }}
+          VITE_BASE_SERVER: ${{ vars.VITE_BASE_SERVER }}
 
       - name: Synchronize Capacitor iOS
         run: npx cap sync ios
