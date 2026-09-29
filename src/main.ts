@@ -35,4 +35,7 @@ if (Capacitor.isNativePlatform()) {
     document.documentElement.classList.add('capacitor-native');
 }
 
+const platform = Capacitor.getPlatform()
+document.documentElement.classList.add(`platform-${platform}`)
+
 app.mount('#app');

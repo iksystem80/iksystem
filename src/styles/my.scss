@@ -1,8 +1,25 @@
 /* IRFAN VUE PROJECT — SHARED SCSS DESIGN STANDARD. Import once: @/styles/my.scss.
    Reusable selectors are global; differing page-specific variants remain isolated. */
-:root {
+/*:root {
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}*/
+
+/* iOS only */
+.platform-ios {
+    .app-wrapper {
+        padding-top: 50px;
+        box-sizing: border-box;
+    }
+
+    .fixed-header {
+        top: 50px !important;
+    }
+
+    .sidebar-container {
+        top: 50px !important;
+        height: calc(100vh - 50px) !important;
+    }
 }
 
 /* Consistent form and filter labels; Reading Reports reference style. */
