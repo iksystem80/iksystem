@@ -1,5 +1,9 @@
 /* IRFAN VUE PROJECT — SHARED SCSS DESIGN STANDARD. Import once: @/styles/my.scss.
    Reusable selectors are global; differing page-specific variants remain isolated. */
+:root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
 
 /* Consistent form and filter labels; Reading Reports reference style. */
 .el-form-item__label,

@@ -286,65 +286,69 @@ async function selectedLocation(item: LocationItem) {
             background: var(--el-fill-color-light);
         }
 
-     .navbar {
-         height: 50px;
-         overflow: hidden;
-         position: relative;
-         background: rgba(255, 255, 255, 0.96);
-         box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-         backdrop-filter: blur(8px);
+    .navbar {
+        height: 50px;
+        overflow: hidden;
+        position: relative;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+        backdrop-filter: blur(8px);
+       
+        min-height: calc(50px + env(safe-area-inset-top, 0px));
+        padding-top: env(safe-area-inset-top, 0px);
+        box-sizing: border-box;
 
-         .hamburger-container {
-             line-height: 46px;
-             height: 100%;
-             float: left;
-             cursor: pointer;
-             transition: background 0.3s;
-             -webkit-tap-highlight-color: transparent;
+        .hamburger-container {
+            line-height: 46px;
+            height: 100%;
+            float: left;
+            cursor: pointer;
+            transition: background 0.3s;
+            -webkit-tap-highlight-color: transparent;
 
-             &:hover {
-                 background: rgba(0, 0, 0, 0.025);
-             }
-         }
+            &:hover {
+                background: rgba(0, 0, 0, 0.025);
+            }
+        }
 
-         .breadcrumb-container {
-             float: left;
-         }
+        .breadcrumb-container {
+            float: left;
+        }
 
-         .errLog-container {
-             display: inline-block;
-             vertical-align: top;
-         }
+        .errLog-container {
+            display: inline-block;
+            vertical-align: top;
+        }
 
-         .right-menu {
-             float: right;
-             height: 100%;
-             line-height: 50px;
+        .right-menu {
+            float: right;
+            height: 100%;
+            line-height: 50px;
 
-             &:focus {
-                 outline: none;
-             }
+            &:focus {
+                outline: none;
+            }
 
-             .right-menu-item {
-                 display: inline-block;
-                 padding: 0 8px;
-                 height: 100%;
-                 line-height: 50px;
-                 font-size: 18px;
-                 color: #5a5e66;
-                 vertical-align: text-bottom;
+            .right-menu-item {
+                display: inline-block;
+                padding: 0 8px;
+                height: 100%;
+                line-height: 50px;
+                font-size: 18px;
+                color: #5a5e66;
+                vertical-align: text-bottom;
 
-                 &.hover-effect {
-                     cursor: pointer;
-                     transition: background 0.3s;
+                &.hover-effect {
+                    cursor: pointer;
+                    transition: background 0.3s;
 
-                     &:hover {
-                         background: rgba(0, 0, 0, 0.025);
-                     }
-                 }
-             }
-         }
-     }
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.025);
+                    }
+                }
+            }
+        }
+    }
 
      /* ==========================================================
     LOCATION
