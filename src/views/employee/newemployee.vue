@@ -1,5 +1,5 @@
 <template>
-  <el-form class="irfan-employee-newemployee irfan-ui-page" ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
+  <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
     <el-row :gutter="16">
       <el-col :xs="24" :sm="12">
         <el-form-item label="Full Name" prop="name">

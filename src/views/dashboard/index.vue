@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard-container irfan-dashboard-index irfan-ui-page">
+    <div class="dashboard-container ">
         <component :is="currentDashboard" />
     </div>
 </template>

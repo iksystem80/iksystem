@@ -1,5 +1,5 @@
 <template>
-    <div ref="readingPageRef" class="reading-page irfan-reading-recordsession irfan-ui-page">
+    <div ref="readingPageRef" class="app-container irfan-reading-recordsession">
         <!-- ===================================================== -->
         <!-- STEPS -->
         <!-- ===================================================== -->

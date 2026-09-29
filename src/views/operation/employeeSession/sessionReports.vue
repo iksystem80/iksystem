@@ -1,5 +1,5 @@
 <template>
-    <div class="report-page irfan-operation-employeesession-sessionreports irfan-ui-page">
+    <div class="app-container">
         <div class="page-header"><div class="header-left"><el-button class="back-button" circle aria-label="Back" @click="router.back()"><el-icon><ArrowLeft /></el-icon></el-button><div><h1>Session # {{ session?.id || route.params.sessionId }}</h1><p v-if="session">{{ session.employeeName }}</p></div></div></div>
         <el-skeleton v-if="loading" :rows="7" animated />
         <template v-else-if="session">

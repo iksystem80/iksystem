@@ -1,5 +1,5 @@
 <template>
-  <div class="page irfan-promotion-index irfan-ui-page">
+  <div class="page-container">
     <div class="page-header">
       <div>
         <h2>Promotions</h2>

@@ -1,5 +1,5 @@
 <template>
-    <div class="report-page irfan-reading-report irfan-ui-page">
+    <div class="app-container">
         <div class="page-header">
             <h2>Reading Reports</h2>
             <p>Review completed machine-reading sessions and compare them with previous readings.</p>

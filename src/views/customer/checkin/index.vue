@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container checkin-page irfan-ui-page">
+    <div class="app-container">
         <div class="checkin-wrapper">
             <div class="page-header">
                 <div>

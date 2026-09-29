@@ -1,5 +1,5 @@
 <template>
-    <div class="irfan-operation-components-pointsbydate">
+    <div>
         <!-- FILTERS -->
         <el-card shadow="never" class="filter-card">
             <el-row :gutter="15">

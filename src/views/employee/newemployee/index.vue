@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container irfan-ui-page">
+    <div class="app-container">
         <div style="margin-top: 10px">
             <el-form ref="employeeFormRef" :model="employeeForm" :rules="formRules">
                 <!-- Username -->

@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container bonus-page irfan-settings-bonus-index irfan-ui-page">
+    <div class="app-container">
         <!-- ==================================================== -->
         <!-- HEADER -->
         <!-- ==================================================== -->

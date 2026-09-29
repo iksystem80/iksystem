@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container irfan-operation-pointwatching irfan-ui-page">
+    <div class="app-container">
         <el-card shadow="never">
             <div class="page-header">
                 <div>
@@ -11,7 +11,7 @@
                 <el-radio-group v-model="viewMode" class="view-mode-switch">
                     <el-radio-button label="date">
                         <el-icon><Calendar /></el-icon>
-                         By Date
+                        By Date
                     </el-radio-button>
                     <el-radio-button label="employee">
                         <el-icon><User /></el-icon>
@@ -20,7 +20,7 @@
                 </el-radio-group>
             </div>
         </el-card>
-        <div class="report-content">
+        <div class="space-top report-content">
             <PointsByDate v-if="viewMode === 'date'" :location-id="locationId" />
             <PointsByEmployee v-else :location-id="locationId" />
         </div>

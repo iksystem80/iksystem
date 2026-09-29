@@ -1,5 +1,5 @@
 <template>
-    <div class="report-page irfan-operation-employeesession-index irfan-ui-page">
+    <div class="app-container">
         <!-- HEADER -->
         <div class="page-header">
             <div>

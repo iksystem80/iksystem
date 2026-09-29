@@ -1,5 +1,5 @@
 <template>
-    <div class="company-detail-page irfan-company-detail irfan-ui-page">
+    <div class="app-container">
         <!-- Header -->
         <div class="page-header">
             <div>

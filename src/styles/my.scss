@@ -76,11 +76,43 @@
 }
 
 
-.page-header span {
+/*.page-header span {
     color: #909399;
     font-size: 12px;
 }
+*/
+.dashboard-editor-container {
+    position: relative;
+    padding: 20px;
+    background-color: rgb(240, 242, 245);
+}
 
+.dashboard-section {
+    padding: 16px 16px 0;
+    margin-bottom: 32px;
+    background: #fff;
+}
+
+.permission-alert {
+    margin-bottom: 32px;
+}
+
+.chart-wrapper {
+    min-height: 50px;
+    padding: 16px 16px 0;
+    margin-bottom: 32px;
+    background: #fff;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-editor-container {
+        padding: 12px;
+    }
+
+    .chart-wrapper {
+        padding: 8px;
+    }
+}
 
 
 /* ============================================================
@@ -4848,6 +4880,19 @@
     .audit-meta-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.back-button.el-button{
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 38px;
+    font-size: 18px;
 }
 
 
@@ -10472,7 +10517,7 @@
 }
 
 /* General content typography; preserve intentionally oversized metrics. */
-.irfan-ui-page {
+/*.irfan-ui-page {
     color: var(--el-text-color-primary);
     font-size: 13px;
 }
@@ -10500,10 +10545,10 @@
             font-size: 12px;
             line-height: 1.5;
             color: var(--el-text-color-secondary) !important;
-        }
+        }*/
 
     /* Uniform page section cards; preserve structural/card-specific grids. */
-    .irfan-ui-page .el-card {
+    /*.irfan-ui-page .el-card {
         border-radius: var(--irfan-card-radius);
         border-color: var(--el-border-color-lighter);
         color: var(--el-text-color-primary);
@@ -10534,11 +10579,11 @@
         line-height: 1.5;
         font-weight: 400;
         color: var(--el-text-color-secondary);
-    }
+    }*/
 
     /* Standard Element Plus buttons and button icons. Do not force button
    widths, variants, colors, disabled states or loading behaviors. */
-    .irfan-ui-page .el-button:not(.el-button--large):not(.el-button--small) {
+    /*.irfan-ui-page .el-button:not(.el-button--large):not(.el-button--small) {
         min-height: var(--irfan-control-height);
         border-radius: var(--irfan-control-radius);
         font-size: 12px;
@@ -10585,10 +10630,10 @@
         .irfan-ui-page .el-button.is-circle .el-icon {
             margin: 0;
             font-size: 15px;
-        }
+        }*/
 
     /* Reading Reports label system: all form/filter fields. */
-    .irfan-ui-page :is(.form-label,.field-label,.filter-field > label,.filter-card label,.form-field > label,.field-group > label,.filter-session label,.filter-search label),
+    /*.irfan-ui-page :is(.form-label,.field-label,.filter-field > label,.filter-card label,.form-field > label,.field-group > label,.filter-session label,.filter-search label),
     .irfan-ui-page .el-form-item__label {
         display: block;
         font-size: var(--irfan-label-size) !important;
@@ -10636,7 +10681,7 @@
     .irfan-ui-page .el-form-item {
         margin-bottom: 16px;
     }
-}
+}*/
 
 
 /* ===============================================================
@@ -10644,10 +10689,10 @@
    Shared responsive rules: no user-agent or device-specific checks.
    Keep after the existing per-page styles. No scripts or API changes.
    =============================================================== */
-html, body, #app { max-width: 100%; }
-.irfan-ui-page, .irfan-ui-page * { min-width: 0; }
+/*html, body, #app { max-width: 100%; }*/
+/*.irfan-ui-page, .irfan-ui-page * { min-width: 0; }*/
 /* Headers are content-aligned, not centered by surrounding grid/card rules. */
-.irfan-ui-page :is(.page-header,.page-heading,.header-left,.header-content,.title-wrap,.title-group,.page-title-wrap) {
+/*.irfan-ui-page :is(.page-header,.page-heading,.header-left,.header-content,.title-wrap,.title-group,.page-title-wrap) {
   text-align: left;
 }
 .irfan-ui-page :is(.page-header,.page-heading) :is(h1,h2,.page-title,.page-subtitle,.subtitle) {
@@ -10655,9 +10700,9 @@ html, body, #app { max-width: 100%; }
 }
 .irfan-ui-page :is(.page-header,.page-heading) :is(.header-left,.header-content,.title-wrap,.title-group,.page-title-wrap) {
   min-width: 0;
-}
+}*/
 /* Element Plus icons and text must not inherit a page-specific hidden span. */
-.irfan-ui-page :is(.page-header,.page-heading) .el-button > span,
+/*.irfan-ui-page :is(.page-header,.page-heading) .el-button > span,
 .irfan-ui-page :is(.page-header,.page-heading) .el-button > .el-icon,
 .irfan-ui-page :is(.page-header,.page-heading) .el-button .el-icon,
 .irfan-ui-page :is(.page-header,.page-heading) .el-button .el-icon > svg {
@@ -10685,9 +10730,9 @@ html, body, #app { max-width: 100%; }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
+}*/
 /* Same breakpoints and sizing in Chrome mobile and embedded WebView. */
-@media (max-width: 767px) {
+/*@media (max-width: 767px) {
   .irfan-ui-page :is(.page-header,.page-heading) {
     text-align: left !important;
     justify-content: flex-start;
@@ -10710,12 +10755,12 @@ html, body, #app { max-width: 100%; }
   .irfan-ui-page :is(.filter-layout,.filter-grid,.form-grid,.filters-grid,.filter-row,.form-row) {
     row-gap: 16px;
   }
-}
+}*/
 /* Customer list: preserve the existing full-width mobile action row. */
-@media (max-width: 767px) {
+/*@media (max-width: 767px) {
   .irfan-customer-index .page-header { align-items: stretch; flex-direction: column; }
   .irfan-customer-index .page-header .header-actions { display: flex; width: 100%; gap: 8px; }
   .irfan-customer-index .page-header .header-actions .el-button { flex: 1 1 0; min-width: 0; }
   .irfan-customer-index .page-header .header-actions .el-button > span { display: inline-flex !important; }
   .irfan-customer-index .page-header .header-actions .el-icon { display: inline-flex !important; }
-}
+}*/

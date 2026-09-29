@@ -5,7 +5,7 @@
         <h2>Roles & Permissions</h2>
         <p>Each user has one role. Permissions assigned here control pages and actions.</p>
       </div>
-      <el-button v-if="canCreate" type="primary" @click="newRole"><el-icon><Plus /></el-icon> New Role</el-button>
+      <el-button v-if="canCreate" type="primary" @click="newRole"><el-icon><Plus /></el-icon><span>New Role</span></el-button>
     </div>
     <div class="role-layout">
       <el-card shadow="never" class="role-list-card">

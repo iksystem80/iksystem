@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container users-page irfan-employee-index irfan-ui-page">
+  <div class="app-container">
     <div class="page-header">
       <div>
         <h2>User Management</h2>
@@ -56,7 +56,7 @@
 
         <el-table-column label="Actions" width="120" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button v-if="canUpdate" link type="primarylight" @click="openEdit(row)" class="action-icon-btn"><el-icon><Edit /></el-icon></el-button>
+            <el-button v-if="canUpdate" link @click="openEdit(row)" class="action-icon-btn"><el-icon><Edit /></el-icon></el-button>
             <el-button v-if="canDelete" link type="danger" @click="removeUser(row)" class="action-icon-btn"><el-icon><Delete /></el-icon></el-button>
           </template>
         </el-table-column>
@@ -79,7 +79,7 @@
           <div class="mobile-actions">
             <el-switch v-if="canUpdate" :model-value="row.isActive" @change="value => changeStatus(row, Boolean(value))" />
             <div>
-              <el-button v-if="canUpdate" link type="primarylight" @click="openEdit(row)" class="action-icon-btn"><el-icon><Edit /></el-icon></el-button>
+              <el-button v-if="canUpdate" link @click="openEdit(row)" class="action-icon-btn"><el-icon><Edit /></el-icon></el-button>
               <el-button v-if="canDelete" link type="danger" @click="removeUser(row)" class="action-icon-btn"><el-icon><Delete /></el-icon></el-button>
             </div>
           </div>

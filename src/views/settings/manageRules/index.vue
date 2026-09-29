@@ -7,7 +7,7 @@
             </div>
             <el-button type="primary" :loading="saving" :disabled="loading" @click="saveRules">
                 <el-icon v-if="!saving"><Check /></el-icon>
-                Save Rules
+                <span>Save Rules</span>
             </el-button>
         </div>
         <div v-loading="loading" element-loading-text="Loading rules..." class="rules-content">

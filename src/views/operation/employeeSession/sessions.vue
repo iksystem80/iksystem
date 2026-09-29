@@ -1,5 +1,5 @@
 <template>
-    <div class="report-page irfan-operation-employeesession-sessions irfan-ui-page">
+    <div class="app-container irfan-operation-employeesession-sessions">
         <div class="page-header">
             <div class="header-left">
                 <el-button class="back-button" circle aria-label="Back" @click="router.back()">

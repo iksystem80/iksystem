@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container irfan-ui-page">
+    <div class="app-container">
         <el-button type="primary" @click="dialogFormVisible = true" style="float: right;margin-bottom:5px;">
             <el-icon><Plus /></el-icon>
         </el-button>

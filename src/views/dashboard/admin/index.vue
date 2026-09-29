@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard-editor-container irfan-ui-page">
+    <div class="dashboard-editor-container">
         <!-- Dashboard Statistics -->
         <PanelGroup @handleSetLineChartData="handleSetLineChartData" />
         <!-- Current Customers -->
@@ -167,37 +167,3 @@ function handleSetLineChartData(
 }
 </script>
 
-<style lang="scss" scoped>
-    .dashboard-editor-container {
-        position: relative;
-        padding: 20px;
-        background-color: rgb(240, 242, 245);
-    }
-
-    .dashboard-section {
-        padding: 16px 16px 0;
-        margin-bottom: 32px;
-        background: #fff;
-    }
-
-    .permission-alert {
-        margin-bottom: 32px;
-    }
-
-    .chart-wrapper {
-        min-height: 50px;
-        padding: 16px 16px 0;
-        margin-bottom: 32px;
-        background: #fff;
-    }
-
-    @media (max-width: 1024px) {
-        .dashboard-editor-container {
-            padding: 12px;
-        }
-
-        .chart-wrapper {
-            padding: 8px;
-        }
-    }
-</style>

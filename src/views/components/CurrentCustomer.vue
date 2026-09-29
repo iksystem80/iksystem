@@ -1,5 +1,5 @@
 <template>
-    <div class="checkin-list irfan-components-currentcustomer" v-loading="loading" element-loading-text="Loading check-ins...">
+    <div v-loading="loading" element-loading-text="Loading check-ins...">
         <!-- FILTER -->
         <div class="filter-row">
             <el-segmented v-model="statusFilter" :options="filterOptions" class="status-filter" />

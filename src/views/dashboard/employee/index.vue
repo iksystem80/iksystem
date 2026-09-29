@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard-editor-container irfan-ui-page">
+    <div class="dashboard-editor-container">
         <!-- Basic Dashboard Statistics -->
         <PanelGroup />
         <!-- Current Customers -->

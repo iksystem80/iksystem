@@ -20,6 +20,7 @@ body {
   margin: 0;
 }
 
+
 label {
   font-weight: 700;
 }
@@ -141,106 +142,118 @@ aside {
 
 //main-container全局样式
 .app-container {
-  padding: 20px;
+    padding: 20px;
+    color: var(--el-text-color-primary);
+    /*font-size: 13px;*/
 }
 
-.components-container {
-  margin: 30px 50px;
-  position: relative;
+@media (max-width: 700px) 
+{
+    .app-container {
+        padding: 10px;
+    }
 }
+    .components-container {
+        margin: 30px 50px;
+        position: relative;
+    }
 
-.pagination-container {
-  margin-top: 30px;
-}
+    .pagination-container {
+        margin-top: 30px;
+    }
 
-.text-center {
-  text-align: center
-}
-.text-right {
-    text-align: right;
-}
-.text-right-bold {
-    text-align: right;
-    font-weight: 600;
-    padding: 0 20px 0 0;
-}
-.text-right-pad20 {
-    text-align: right;
-    padding: 0 20px 0 0;
-    font-weight:600
-}
-.text-right-pad40 {
-    text-align: right;
-    padding: 0 40px 0 0;
-    font-weight: 600
-}
+    .text-center {
+        text-align: center
+    }
 
-.sub-navbar {
-  height: 50px;
-  line-height: 50px;
-  position: relative;
-  width: 100%;
-  text-align: right;
-  padding-right: 20px;
-  transition: 600ms ease position;
-  background: linear-gradient(90deg, rgba(32, 182, 249, 1) 0%, rgba(32, 182, 249, 1) 0%, rgba(33, 120, 241, 1) 100%, rgba(33, 120, 241, 1) 100%);
+    .text-right {
+        text-align: right;
+    }
 
-  .subtitle {
-    font-size: 20px;
-    color: #fff;
-  }
+    .text-right-bold {
+        text-align: right;
+        font-weight: 600;
+        padding: 0 20px 0 0;
+    }
 
-  &.draft {
-    background: #d0d0d0;
-  }
+    .text-right-pad20 {
+        text-align: right;
+        padding: 0 20px 0 0;
+        font-weight: 600
+    }
 
-  &.deleted {
-    background: #d0d0d0;
-  }
-}
+    .text-right-pad40 {
+        text-align: right;
+        padding: 0 40px 0 0;
+        font-weight: 600
+    }
 
-.link-type,
-.link-type:focus {
-  color: #337ab7;
-  cursor: pointer;
+    .sub-navbar {
+        height: 50px;
+        line-height: 50px;
+        position: relative;
+        width: 100%;
+        text-align: right;
+        padding-right: 20px;
+        transition: 600ms ease position;
+        background: linear-gradient(90deg, rgba(32, 182, 249, 1) 0%, rgba(32, 182, 249, 1) 0%, rgba(33, 120, 241, 1) 100%, rgba(33, 120, 241, 1) 100%);
 
-  &:hover {
-    color: rgb(32, 160, 255);
-  }
-}
+        .subtitle {
+            font-size: 20px;
+            color: #fff;
+        }
 
-.filter-container {
-  padding-bottom: 10px;
+        &.draft {
+            background: #d0d0d0;
+        }
 
-  .filter-item {
-    display: inline-block;
-    vertical-align: middle;
-    margin-bottom: 10px;
-  }
-}
+        &.deleted {
+            background: #d0d0d0;
+        }
+    }
 
-//refine vue-multiselect plugin
-.multiselect {
-  line-height: 16px;
-}
+    .link-type,
+    .link-type:focus {
+        color: #337ab7;
+        cursor: pointer;
 
-.multiselect--active {
-  z-index: 1000 !important;
-}
+        &:hover {
+            color: rgb(32, 160, 255);
+        }
+    }
 
-/* fade-transform */
-.fade-transform-leave-active,
-.fade-transform-enter-active {
-    transition: all .5s;
-}
+    .filter-container {
+        padding-bottom: 10px;
 
-/* Vue 3 uses -enter-from instead of -enter */
-.fade-transform-enter-from {
-    opacity: 0;
-    transform: translateX(-30px);
-}
+        .filter-item {
+            display: inline-block;
+            vertical-align: middle;
+            margin-bottom: 10px;
+        }
+    }
 
-.fade-transform-leave-to {
-    opacity: 0;
-    transform: translateX(30px);
-}
+    //refine vue-multiselect plugin
+    .multiselect {
+        line-height: 16px;
+    }
+
+    .multiselect--active {
+        z-index: 1000 !important;
+    }
+
+    /* fade-transform */
+    .fade-transform-leave-active,
+    .fade-transform-enter-active {
+        transition: all .5s;
+    }
+
+    /* Vue 3 uses -enter-from instead of -enter */
+    .fade-transform-enter-from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    .fade-transform-leave-to {
+        opacity: 0;
+        transform: translateX(30px);
+    }

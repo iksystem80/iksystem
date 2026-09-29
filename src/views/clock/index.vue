@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container irfan-clock-index irfan-ui-page">
+    <div class="app-container">
         <el-row justify="center" :gutter="20">
             <el-col :xs="24" :sm="20" :md="14" :lg="10">
                 <!-- MAIN CLOCK CARD -->

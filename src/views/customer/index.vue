@@ -1,5 +1,5 @@
 <template>
-    <div class="customer-page irfan-customer-index irfan-ui-page">
+    <div class="app-container">
         <!-- ===================================================== -->
         <!-- HEADER -->
         <!-- ===================================================== -->
@@ -66,7 +66,7 @@
                       :data="filteredCustomers"
                       style="width: 100%">
                 <!-- Product Image -->
-                <el-table-column label="" width="100">
+                <el-table-column label="" width="105">
                     <template #default="{ row }">
                         <el-image class="img-circle"
                                   :src="row.avatar"
@@ -78,13 +78,17 @@
 
                 <!-- First Name -->
                 <el-table-column prop="firstname"
-                                 label="First Name"
-                                 width="120" />
+                                 label="Name"
+                                 width="160" >
+                    <template #default="{ row }">
+                        {{ row.firstname }} {{ row.lastname }}
+                    </template>
+                    </el-table-column>
 
                 <!-- Last Name -->
-                <el-table-column prop="lastname"
+                <!--<el-table-column prop="lastname"
                                  label="Last Name"
-                                 width="120" />
+                                 width="120" />-->
 
                 <!-- Phone -->
                 <el-table-column prop="phone"
@@ -146,7 +150,7 @@
 
                             <el-tooltip content="Edit" placement="top">
                                 <el-button link
-                                           type="primarylight" class="action-icon-btn"
+                                           class="action-icon-btn"
                                            @click="handleEdit(row)">
                                     <el-icon><Edit /></el-icon>
                                 </el-button>
@@ -255,7 +259,6 @@
 
                     <el-tooltip content="Edit" placement="top">
                         <el-button link
-                                   type="primarylight"
                                    class="mobile-action-button"
                                    @click="handleEdit(row)">
                             <el-icon><Edit /></el-icon>
@@ -336,250 +339,250 @@
 </template>
 
 <script setup>
-    import {
-        computed,
-        onMounted,
-        ref,
-        watch
-    } from 'vue'
+            import {
+                computed,
+                onMounted,
+                ref,
+                watch
+            } from 'vue'
 
-    import {
-        ElMessage,
-        ElMessageBox
-    } from 'element-plus'
+            import {
+                ElMessage,
+                ElMessageBox
+            } from 'element-plus'
 
-    import {
-        Plus,
-        Filter,
-        CircleCheck,
-        CircleClose,
-        Edit,
-        Delete,
-        User,
-        Coin,
-        Search,
-        Refresh
-    } from '@element-plus/icons-vue'
+            import {
+                Plus,
+                Filter,
+                CircleCheck,
+                CircleClose,
+                Edit,
+                Delete,
+                User,
+                Coin,
+                Search,
+                Refresh
+            } from '@element-plus/icons-vue'
 
-    import { useRouter } from 'vue-router'
-    import { useUserStore } from '@/store/modules/user'
-    import { useAppStore } from '@/store/modules/app'
+            import { useRouter } from 'vue-router'
+            import { useUserStore } from '@/store/modules/user'
+            import { useAppStore } from '@/store/modules/app'
 
-    import {
-        getcustomers,
-        deletecustomer,
-        updatestatus
-    } from '@/api/customer'
-    import { formatPhone } from '@/utils/phone'
+            import {
+                getcustomers,
+                deletecustomer,
+                updatestatus
+            } from '@/api/customer'
+            import { formatPhone } from '@/utils/phone'
 
-    // ============================================================
-    // STORES / ROUTER
-    // ============================================================
+            // ============================================================
+            // STORES / ROUTER
+            // ============================================================
 
-    const appStore = useAppStore()
-    const userStore = useUserStore()
-    const router = useRouter()
+            const appStore = useAppStore()
+            const userStore = useUserStore()
+            const router = useRouter()
 
-    const device = computed(() => appStore.device)
+            const device = computed(() => appStore.device)
 
-    // ============================================================
-    // STATE
-    // ============================================================
+            // ============================================================
+            // STATE
+            // ============================================================
 
-    const customersData = ref([])
-    const loading = ref(false)
+            const customersData = ref([])
+            const loading = ref(false)
 
-    const drawer2 = ref(false)
-    const searchText = ref('')
+            const drawer2 = ref(false)
+            const searchText = ref('')
 
-    const radiostatus = ref('all')
-    const appliedStatus = ref('all')
+            const radiostatus = ref('all')
+            const appliedStatus = ref('all')
 
-    // ============================================================
-    // FILTERED CUSTOMERS
-    // ============================================================
+            // ============================================================
+            // FILTERED CUSTOMERS
+            // ============================================================
 
-    const filteredCustomers = computed(() => {
-        let data = Array.isArray(customersData.value)
-            ? customersData.value
-            : []
-
-        // Status filter
-        if (appliedStatus.value === '1') {
-            data = data.filter(row => Boolean(row.isactive))
-        }
-
-        if (appliedStatus.value === '0') {
-            data = data.filter(row => !Boolean(row.isactive))
-        }
-
-        // Search filter
-        const search = searchText.value
-            .trim()
-            .toLowerCase()
-
-        if (!search) {
-            return data
-        }
-
-        return data.filter(row => {
-            const searchable = [
-                row.firstname,
-                row.lastname,
-                row.phone,
-                row.dob,
-                row.datecreated,
-                row.lastvisited,
-                row.points
-            ]
-                .filter(value => value != null)
-                .join(' ')
-                .toLowerCase()
-
-            return searchable.includes(search)
-        })
-    })
-
-    // ============================================================
-    // LOAD CUSTOMERS
-    // ============================================================
-
-    async function loadCustomers() {
-        const locationid = userStore.locationId
-
-        if (!locationid) {
-            customersData.value = []
-            return
-        }
-
-        loading.value = true
-
-        try {
-            const response = await getcustomers(locationid)
-
-            customersData.value =
-                Array.isArray(response.data)
-                    ? response.data
+            const filteredCustomers = computed(() => {
+                let data = Array.isArray(customersData.value)
+                    ? customersData.value
                     : []
-        } catch (error) {
-            console.error('Failed to load customers:', error)
 
-            ElMessage.error(
-                error?.message || 'Failed to load customers'
-            )
+                // Status filter
+                if (appliedStatus.value === '1') {
+                    data = data.filter(row => Boolean(row.isactive))
+                }
 
-            customersData.value = []
-        } finally {
-            loading.value = false
-        }
-    }
+                if (appliedStatus.value === '0') {
+                    data = data.filter(row => !Boolean(row.isactive))
+                }
 
-    // ============================================================
-    // NEW CUSTOMER
-    // ============================================================
+                // Search filter
+                const search = searchText.value
+                    .trim()
+                    .toLowerCase()
 
-    function handleNewCustomer() {
-        router.push({
-            path: '/newcustomer/index'
-        })
-    }
+                if (!search) {
+                    return data
+                }
 
-    // ============================================================
-    // EDIT CUSTOMER
-    // ============================================================
+                return data.filter(row => {
+                    const searchable = [
+                        row.firstname,
+                        row.lastname,
+                        row.phone,
+                        row.dob,
+                        row.datecreated,
+                        row.lastvisited,
+                        row.points
+                    ]
+                        .filter(value => value != null)
+                        .join(' ')
+                        .toLowerCase()
 
-    function handleEdit(row) {
-        router.push({
-            name: 'Profile',
-            params: {
-                id: row.id
+                    return searchable.includes(search)
+                })
+            })
+
+            // ============================================================
+            // LOAD CUSTOMERS
+            // ============================================================
+
+            async function loadCustomers() {
+                const locationid = userStore.locationId
+
+                if (!locationid) {
+                    customersData.value = []
+                    return
+                }
+
+                loading.value = true
+
+                try {
+                    const response = await getcustomers(locationid)
+
+                    customersData.value =
+                        Array.isArray(response.data)
+                            ? response.data
+                            : []
+                } catch (error) {
+                    console.error('Failed to load customers:', error)
+
+                    ElMessage.error(
+                        error?.message || 'Failed to load customers'
+                    )
+
+                    customersData.value = []
+                } finally {
+                    loading.value = false
+                }
             }
-        })
-    }
 
-    // ============================================================
-    // STATUS
-    // ============================================================
+            // ============================================================
+            // NEW CUSTOMER
+            // ============================================================
 
-    async function handleStatus(row) {
-        try {
-            await updatestatus(row.id)
+            function handleNewCustomer() {
+                router.push({
+                    path: '/newcustomer/index'
+                })
+            }
 
-            ElMessage.success(
-                'Customer status updated successfully'
-            )
+            // ============================================================
+            // EDIT CUSTOMER
+            // ============================================================
 
-            await loadCustomers()
-        } catch (error) {
-            console.error(error)
-        }
-    }
+            function handleEdit(row) {
+                router.push({
+                    name: 'Profile',
+                    params: {
+                        id: row.id
+                    }
+                })
+            }
 
-    // ============================================================
-    // DELETE
-    // ============================================================
+            // ============================================================
+            // STATUS
+            // ============================================================
 
-    async function handleDelete(row) {
-        try {
-            await ElMessageBox.confirm(
-                `Delete ${row.firstname} ${row.lastname}?`,
-                'Delete Customer',
-                {
-                    confirmButtonText: 'Delete',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
+            async function handleStatus(row) {
+                try {
+                    await updatestatus(row.id)
+
+                    ElMessage.success(
+                        'Customer status updated successfully'
+                    )
+
+                    await loadCustomers()
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+
+            // ============================================================
+            // DELETE
+            // ============================================================
+
+            async function handleDelete(row) {
+                try {
+                    await ElMessageBox.confirm(
+                        `Delete ${row.firstname} ${row.lastname}?`,
+                        'Delete Customer',
+                        {
+                            confirmButtonText: 'Delete',
+                            cancelButtonText: 'Cancel',
+                            type: 'warning'
+                        }
+                    )
+
+                    await deletecustomer(row.id)
+
+                    ElMessage.success(
+                        'Customer deleted successfully'
+                    )
+
+                    await loadCustomers()
+                } catch (error) {
+                    // User cancelled dialog
+                }
+            }
+
+            // ============================================================
+            // FILTER
+            // ============================================================
+
+            function confirmClick() {
+                appliedStatus.value = radiostatus.value
+                drawer2.value = false
+            }
+
+            function clearFilters() {
+                radiostatus.value = 'all'
+                appliedStatus.value = 'all'
+                drawer2.value = false
+            }
+
+            // ============================================================
+            // LOCATION CHANGE
+            // ============================================================
+
+            watch(
+                () => userStore.locationId,
+                newLocation => {
+                    if (newLocation) {
+                        loadCustomers()
+                    } else {
+                        customersData.value = []
+                    }
                 }
             )
 
-            await deletecustomer(row.id)
+            // ============================================================
+            // MOUNT
+            // ============================================================
 
-            ElMessage.success(
-                'Customer deleted successfully'
-            )
-
-            await loadCustomers()
-        } catch (error) {
-            // User cancelled dialog
-        }
-    }
-
-    // ============================================================
-    // FILTER
-    // ============================================================
-
-    function confirmClick() {
-        appliedStatus.value = radiostatus.value
-        drawer2.value = false
-    }
-
-    function clearFilters() {
-        radiostatus.value = 'all'
-        appliedStatus.value = 'all'
-        drawer2.value = false
-    }
-
-    // ============================================================
-    // LOCATION CHANGE
-    // ============================================================
-
-    watch(
-        () => userStore.locationId,
-        newLocation => {
-            if (newLocation) {
+            onMounted(() => {
                 loadCustomers()
-            } else {
-                customersData.value = []
-            }
-        }
-    )
-
-    // ============================================================
-    // MOUNT
-    // ============================================================
-
-    onMounted(() => {
-        loadCustomers()
-    })
+            })
 </script>
 
 
@@ -597,5 +600,67 @@
     .mobile-action-button :deep(.el-icon svg) {
         width: 20px;
         height: 20px;
+    }
+
+    /* Mobile / tablet: Active, Edit and Delete stay right aligned. */
+    .mobile-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .mobile-action-button {
+        margin-left: 0 !important;
+    }
+
+    @media (max-width: 1024px) {
+        .toolbar {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .customer-count {
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .search-input {
+            width: min(100%, 280px);
+        }
+
+        .mobile-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .mobile-actions {
+            justify-content: flex-end;
+            gap: 2px;
+            margin-top: 4px;
+            line-height: 1;
+            height: 25px;
+        }
+
+        .mobile-action-button {
+            padding: 3px !important;
+            min-height: 26px;
+            min-width: 26px;
+        }
     }
 </style>

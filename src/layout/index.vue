@@ -116,7 +116,7 @@
     }
     @media (max-width: 700px) {
         .app-main-scroll {
-            margin-bottom: 20px;
+            margin-bottom: 0px;
         }
     }
 

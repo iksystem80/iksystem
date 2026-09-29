@@ -1,12 +1,12 @@
 <template>
-    <div class="customer-page irfan-components-assignmachine">
+    <div class="app-container">
         <!-- =========================================
-             MAIN CONTENT
-        ========================================== -->
+         MAIN CONTENT
+    ========================================== -->
         <main class="content">
             <!-- =======================================
-         PROFILE HERO
-    ======================================== -->
+             PROFILE HERO
+        ======================================== -->
             <section class="profile-card">
                 <div class="profile-photo-area">
                     <div v-if="!cameraStart" class="photo-wrapper">
@@ -66,8 +66,8 @@
 
 
             <!-- =======================================
-     VIP STATUS  v-if="customer.isVip"
-    ======================================== -->
+         VIP STATUS  v-if="customer.isVip"
+        ======================================== -->
             <section class="vip-status"
                      :class="{ verified: photoTaken }">
 
@@ -108,8 +108,8 @@
             </section>
 
             <!-- =======================================
-         TWO COLUMN AREA
-    ======================================== -->
+             TWO COLUMN AREA
+        ======================================== -->
             <div class="dashboard-grid">
                 <!-- LEFT -->
                 <div class="left-column">
@@ -154,8 +154,8 @@
                             </span>
 
                             <!--<h3>
-                        Customer History
-                    </h3>-->
+                            Customer History
+                        </h3>-->
                         </div>
 
                         <el-icon class="history-icon">
@@ -239,8 +239,8 @@
 
 
         <!-- =========================================
-             MOBILE / BOTTOM ACTION BAR
-        ========================================== -->
+         MOBILE / BOTTOM ACTION BAR
+    ========================================== -->
         <footer class="action-bar">
 
             <div class="action-summary">

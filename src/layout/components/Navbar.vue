@@ -397,7 +397,7 @@ async function selectedLocation(item: LocationItem) {
     ========================================================== */
 
      .avatar-container {
-         margin-right: 30px;
+         margin-right: 10px;
      }
 
      .avatar-wrapper {

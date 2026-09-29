@@ -1,5 +1,5 @@
 <template>
-    <div class="report-page irfan-operation-employeesession-pointsreport irfan-ui-page">
+    <div class="app-container">
         <div class="page-header">
             <div class="header-left">
                 <el-button class="back-button" circle aria-label="Back" @click="router.back()">
@@ -13,9 +13,9 @@
                 </div>
             </div>
             <!--<el-button :loading="loading" @click="loadReport">
-                <el-icon><Refresh /></el-icon>
-                Refresh
-            </el-button>-->
+            <el-icon><Refresh /></el-icon>
+            Refresh
+        </el-button>-->
         </div>
         <el-skeleton v-if="loading" :rows="8" animated />
         <template v-else-if="report">
