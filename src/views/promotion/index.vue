@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>Promotions</h2>
+        <h2 class="page-title">Promotions</h2>
         <p>Create, send, and review promotion campaigns.</p>
       </div>
       <el-button type="primary" @click="createPromotionPage">
@@ -70,83 +70,83 @@ import {
   onActivated,
   onMounted,
   ref
-} from 'vue'
+} from 'vue';
 
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { getPromotions } from '@/api/promotion'
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { getPromotions } from '@/api/promotion';
 
-const router = useRouter()
+const router = useRouter();
 
-const loading = ref(false)
-const promotions = ref<any[]>([])
+const loading = ref(false);
+const promotions = ref<any[]>([]);
 
 function formatDateTime(value: string | null) {
-  if (!value) return '--'
+  if (!value) return '--';
 
   return new Date(value)
-    .toLocaleString()
+    .toLocaleString();
 }
 
 function statusType(status: string) {
   const value =
     String(status || '')
-      .toLowerCase()
+      .toLowerCase();
 
   if (value === 'completed') {
-    return 'success'
+    return 'success';
   }
 
   if (
     value === 'failed' ||
     value === 'completedwitherrors'
   ) {
-    return 'danger'
+    return 'danger';
   }
 
   if (
     value === 'processing' ||
     value === 'queued'
   ) {
-    return 'warning'
+    return 'warning';
   }
 
   if (value === 'draft') {
-    return 'info'
+    return 'info';
   }
 
-  return 'info'
+  return 'info';
 }
 
 function isDraft(row: any) {
   return (
     String(row?.status || '')
       .toLowerCase() === 'draft'
-  )
+  );
 }
 
 async function loadPromotions() {
   try {
-    loading.value = true
+    loading.value = true;
 
     const response =
-      await getPromotions()
+      await getPromotions();
 
     promotions.value =
-      response.data ?? []
+      response.data ?? [];
   } catch (error) {
-    console.error(error)
+    console.error(error);
 
     ElMessage.error(
       'Unable to load promotions.'
-    )
+    );
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function createPromotionPage() {
-  router.push('/promotion/create')
+  router.push('/promotion/create');
 }
 
 function continueDraft(row: any) {
@@ -155,22 +155,21 @@ function continueDraft(row: any) {
     query: {
       id: row.id
     }
-  })
+  });
 }
 
 function openPromotion(row: any) {
   router.push(
     `/promotion/${row.id}`
-  )
+  );
 }
 
-onMounted(loadPromotions)
+onMounted(loadPromotions);
 
 /*
  * Refresh when this page is kept alive and the user
  * returns from Create / Continue Draft / Detail.
  */
-onActivated(loadPromotions)
+onActivated(loadPromotions);
 </script>
-
 

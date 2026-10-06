@@ -8,12 +8,12 @@
           </el-icon>
         </el-button>
         <div>
-          <h2>
+          <h2 class="page-title">
             {{ promotion?.name || 'Promotion Details' }}
           </h2>
-          <p>
+          <div class="page-subtitle">
             Delivery status, recipients, and audit history.
-          </p>
+          </div>
         </div>
       </div>
       <el-button v-if="isDraft" type="primary" @click="continueDraft" >
@@ -116,63 +116,63 @@ import {
   computed,
   onMounted,
   ref
-} from 'vue'
+} from 'vue';
 
 import {
   useRoute,
   useRouter
-} from 'vue-router'
+} from 'vue-router';
 
 import {
   ArrowLeft
-} from '@element-plus/icons-vue'
+} from '@element-plus/icons-vue';
 
 import {
   getPromotion,
   getPromotionLogs,
   getPromotionRecipients
-} from '@/api/promotion'
+} from '@/api/promotion';
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const loading = ref(false)
-const promotion = ref<any>(null)
-const recipients = ref<any[]>([])
+const loading = ref(false);
+const promotion = ref<any>(null);
+const recipients = ref<any[]>([]);
 
 const logs = ref<any>({
   audit: [],
   delivery: []
-})
+});
 
 const isDraft = computed(() =>
   String(
     promotion.value?.status || ''
   ).toLowerCase() === 'draft'
-)
+);
 
 const deliveredCount = computed(() =>
   recipients.value.filter(item =>
     String(item.status || '')
       .toLowerCase() === 'delivered'
   ).length
-)
+);
 
 function formatDateTime(
   value: string | null
 ) {
-  if (!value) return '--'
+  if (!value) return '--';
 
   return new Date(value)
-    .toLocaleString()
+    .toLocaleString();
 }
 
 async function loadPage() {
   const id =
-    Number(route.params.id)
+    Number(route.params.id);
 
   try {
-    loading.value = true
+    loading.value = true;
 
     const [
       detailResponse,
@@ -183,27 +183,27 @@ async function loadPage() {
         getPromotion(id),
         getPromotionRecipients(id),
         getPromotionLogs(id)
-      ])
+      ]);
 
     promotion.value =
-      detailResponse.data
+      detailResponse.data;
 
     recipients.value =
-      recipientResponse.data ?? []
+      recipientResponse.data ?? [];
 
     logs.value =
       logResponse.data ?? {
         audit: [],
         delivery: []
-      }
+      };
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function continueDraft() {
   if (!promotion.value?.id) {
-    return
+    return;
   }
 
   router.push({
@@ -211,14 +211,13 @@ function continueDraft() {
     query: {
       id: promotion.value.id
     }
-  })
+  });
 }
 
 function goBack() {
-  router.push('/promotion')
+  router.push('/promotion');
 }
 
-onMounted(loadPage)
+onMounted(loadPage);
 </script>
-
 

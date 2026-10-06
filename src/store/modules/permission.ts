@@ -1,331 +1,116 @@
-import { defineStore, acceptHMRUpdate } from 'pinia'
-import { ref } from 'vue'
+import { defineStore, acceptHMRUpdate } from 'pinia';
+import { ref } from 'vue';
+import { asyncRoutes, constantRoutes } from '@/router';
+import type { RouteRecordRaw } from 'vue-router';
 
-import {
-    asyncRoutes,
-    constantRoutes
-} from '@/router'
-
-import type {
-    RouteRecordRaw
-} from 'vue-router'
-
-// ============================================================
-// NORMALIZE ROLE
-// ============================================================
-
-function normalizeRole(
-    roleName: string
-): string {
-    return String(
-        roleName || ''
-    )
-        .trim()
-        .toLowerCase()
+function normalizeRole(roleName: string): string {
+  return String(roleName || '').trim().toLowerCase();
 }
 
-// ============================================================
-// CHECK ROUTE ACCESS
-// ============================================================
+function hasPermission(permissions: string[], roleName: string, route: RouteRecordRaw): boolean {
+  const meta = route.meta as any;
 
-function hasPermission(
-    permissions: string[],
-    roleName: string,
-    route: RouteRecordRaw
-): boolean {
+  if (!meta) {
+    return true;
+  }
 
-    const meta =
-        route.meta as any
+  const role = normalizeRole(roleName);
 
-    if (!meta) {
-        return true
+  if (Array.isArray(meta.roles) && meta.roles.length > 0) {
+    const allowedRoles = meta.roles.map((allowedRole: string) => normalizeRole(allowedRole));
+    return allowedRoles.includes(role);
+  }
+
+  if (meta.permission) {
+    if (role === 'system admin' || role === 'owner') {
+      return true;
     }
 
-    const role =
-        normalizeRole(
-            roleName
-        )
+    return permissions.includes(meta.permission as string);
+  }
 
-    // ==========================================================
-    // 1. ROLE-RESTRICTED ROUTES
-    //
-    // IMPORTANT:
-    // This is checked BEFORE Owner/System Admin permission bypass.
-    //
-    // Example:
-    //
-    // meta: {
-    //   roles: ['system admin']
-    // }
-    //
-    // Only System Admin gets this route.
-    // Owner does NOT bypass this restriction.
-    // ==========================================================
-
-    if (
-        Array.isArray(meta.roles) &&
-        meta.roles.length > 0
-    ) {
-
-        const allowedRoles =
-            meta.roles.map(
-                (allowedRole: string) =>
-                    normalizeRole(
-                        allowedRole
-                    )
-            )
-
-        return allowedRoles.includes(
-            role
-        )
+  if (Array.isArray(meta.permissions) && meta.permissions.length > 0) {
+    if (role === 'system admin' || role === 'owner') {
+      return true;
     }
 
-    // ==========================================================
-    // 2. SINGLE PERMISSION
-    // ==========================================================
+    return meta.permissions.some((permission: string) => permissions.includes(permission));
+  }
 
-    if (
-        meta.permission
-    ) {
-
-        // System Admin receives all normal permission routes.
-        if (
-            role ===
-            'system admin'
-        ) {
-            return true
-        }
-
-        // Owner receives all normal company-level permission routes.
-        if (
-            role ===
-            'owner'
-        ) {
-            return true
-        }
-
-        return permissions.includes(
-            meta.permission as string
-        )
-    }
-
-    // ==========================================================
-    // 3. MULTIPLE PERMISSIONS
-    // ==========================================================
-
-    if (
-        Array.isArray(
-            meta.permissions
-        ) &&
-        meta.permissions.length > 0
-    ) {
-
-        // System Admin bypass
-        if (
-            role ===
-            'system admin'
-        ) {
-            return true
-        }
-
-        // Owner bypass
-        if (
-            role ===
-            'owner'
-        ) {
-            return true
-        }
-
-        return meta.permissions.some(
-            (permission: string) =>
-                permissions.includes(
-                    permission
-                )
-        )
-    }
-
-    // ==========================================================
-    // 4. ROUTE HAS NO RESTRICTIONS
-    // ==========================================================
-
-    return true
+  return true;
 }
 
-// ============================================================
-// FILTER ASYNC ROUTES
-// ============================================================
+export function filterAsyncRoutes(routes: RouteRecordRaw[], permissions: string[], roleName: string ): RouteRecordRaw[] {
+  const result: RouteRecordRaw[] = [];
 
-export function filterAsyncRoutes(
-    routes: RouteRecordRaw[],
-    permissions: string[],
-    roleName: string
-): RouteRecordRaw[] {
+  routes.forEach(route => {
+    const current: RouteRecordRaw = {
+      ...route
+    };
 
-    const result:
-        RouteRecordRaw[] = []
+    if (!hasPermission(permissions, roleName, current)) {
+      return;
+    }
 
-    routes.forEach(
-        route => {
+    if (current.children) {
+      current.children = filterAsyncRoutes(current.children, permissions, roleName.toLowerCase());
 
-            const current:
-                RouteRecordRaw =
-            {
-                ...route
-            }
+      const meta = current.meta as any;
+  
+      if (current.children.length === 0 && !meta?.permission && !meta?.permissions && !meta?.roles) {
+        return;
+      }
+    }
 
-            // ========================================================
-            // CHECK CURRENT ROUTE
-            // ========================================================
+    result.push(current);
+  });
 
-            if (
-                !hasPermission(
-                    permissions,
-                    roleName,
-                    current
-                )
-            ) {
-                return
-            }
-
-            // ========================================================
-            // FILTER CHILDREN
-            // ========================================================
-
-            if (
-                current.children
-            ) {
-
-                current.children =
-                    filterAsyncRoutes(
-                        current.children,
-                        permissions,
-                        roleName
-                    )
-
-                const meta =
-                    current.meta as any
-
-                // Parent menus that exist only to contain child pages
-                // should disappear when all children are removed.
-                //
-                // If the parent itself has explicit permission/role
-                // restrictions, we allow it to remain.
-                if (
-                    current.children.length ===
-                    0 &&
-
-                    !meta?.permission &&
-
-                    !meta?.permissions &&
-
-                    !meta?.roles
-                ) {
-                    return
-                }
-            }
-
-            result.push(
-                current
-            )
-        }
-    )
-
-    return result
+  return result;
 }
-
-// ============================================================
-// PERMISSION STORE
-// ============================================================
 
 export const usePermissionStore =
-    defineStore(
-        'permission',
-        () => {
+  defineStore('permission', () => {
+    const routes = ref<RouteRecordRaw[]>([]);
 
-            const routes =
-                ref<RouteRecordRaw[]>(
-                    []
-                )
+    const addRoutes = ref<RouteRecordRaw[]>([]);
 
-            const addRoutes =
-                ref<RouteRecordRaw[]>(
-                    []
-                )
+    function setRoutes(newRoutes: RouteRecordRaw[]) {
+      addRoutes.value = newRoutes;
+      routes.value = constantRoutes.concat(newRoutes);
 
-            // ========================================================
-            // SET ROUTES
-            // ========================================================
+      //console.log(routes.value)
+    }
+    function generateRoutes(permissions: string[], roleName: string): RouteRecordRaw[] {
+      const accessedRoutes = filterAsyncRoutes(asyncRoutes || [], permissions || [], roleName.trim().toLowerCase() || '');
+      // console.log('role name: ' + roleName.trim().toLowerCase())
+      // console.log(accessedRoutes)
+      setRoutes(accessedRoutes);
 
-            function setRoutes(
-                newRoutes:
-                    RouteRecordRaw[]
-            ) {
+      return accessedRoutes;
+    }
 
-                addRoutes.value =
-                    newRoutes
+    // this is new
+    const routesLoaded = ref(false);
+    // this is new
+    function setRoutesLoaded(value: boolean) {
+      routesLoaded.value = Boolean(value);
+    }
+    // this is new
+    function resetRoutes() {
+      addRoutes.value = [];
+      routes.value = [];
+      routesLoaded.value = false;
+    }
 
-                routes.value =
-                    constantRoutes.concat(
-                        newRoutes
-                    )
-            }
+    return { routes, addRoutes, routesLoaded, setRoutes, setRoutesLoaded, resetRoutes, generateRoutes };
+  }
+  );
 
-            // ========================================================
-            // GENERATE ROUTES
-            //
-            // IMPORTANT:
-            //
-            // We ALWAYS filter routes now.
-            //
-            // Previously:
-            //
-            // Owner -> ALL asyncRoutes
-            //
-            // That caused System Admin-only routes such as Companies
-            // to appear for Owner.
-            //
-            // Now role restrictions are always respected.
-            // ========================================================
-
-            function generateRoutes(
-                permissions: string[],
-                roleName: string
-            ): RouteRecordRaw[] {
-
-                const accessedRoutes =
-                    filterAsyncRoutes(
-                        asyncRoutes || [],
-                        permissions || [],
-                        roleName || ''
-                    )
-
-                setRoutes(
-                    accessedRoutes
-                )
-
-                return accessedRoutes
-            }
-
-            return {
-                routes,
-                addRoutes,
-                setRoutes,
-                generateRoutes
-            }
-        }
+if (import.meta.hot) {
+  import.meta.hot.accept(
+    acceptHMRUpdate(
+      usePermissionStore,
+      import.meta.hot
     )
-
-// ============================================================
-// HMR
-// ============================================================
-
-if (
-    import.meta.hot
-) {
-    import.meta.hot.accept(
-        acceptHMRUpdate(
-            usePermissionStore,
-            import.meta.hot
-        )
-    )
+  );
 }

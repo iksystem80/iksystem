@@ -4,12 +4,12 @@
   <el-alert v-else type="error" title="Owner/Admin access required" show-icon :closable="false" />
 </template>
 <script setup>
-import { computed } from 'vue'
-import { useUserStore } from '@/store/modules/user'
-import OwnerTransactions from './OwnerTransactions.vue'
-import AdminTransactions from './AdminTransactions.vue'
-const store=useUserStore()
-const role=computed(()=>String(store.roleName||'').trim().toLowerCase())
-const isOwner=computed(()=>['owner','system admin'].includes(role.value))
-const isAdmin=computed(()=>role.value==='admin')
+import { computed } from 'vue';
+import { useUserStore } from '@/store/modules/user';
+import OwnerTransactions from './OwnerTransactions.vue';
+import AdminTransactions from './AdminTransactions.vue';
+const store = useUserStore();
+const role = computed(() => String(store.roleName || '').trim().toLowerCase());
+const isOwner = computed(() => ['owner', 'system admin'].includes(role.value));
+const isAdmin = computed(() => role.value === 'admin');
 </script>

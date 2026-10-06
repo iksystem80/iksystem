@@ -9,7 +9,8 @@ import { checkEnableLogs } from './utils/error-log';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import '@/styles/index.scss';
-import '@/styles/my.scss';
+// import '@/styles/ik.scss';
+// import '@/styles/my.scss';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { Capacitor } from '@capacitor/core';
 
@@ -21,7 +22,7 @@ app.component('svg-icon', SvgIcon);
 app.directive('permission', vPermission);
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-    app.component(key, component);
+  app.component(key, component);
 }
 
 app.use(router);
@@ -32,10 +33,10 @@ checkEnableLogs(app);
 // Apply native-only safe-area styles for Capacitor iOS / Android.
 // Normal desktop and mobile browsers are not affected.
 if (Capacitor.isNativePlatform()) {
-    document.documentElement.classList.add('capacitor-native');
+  document.documentElement.classList.add('capacitor-native');
 }
 
-const platform = Capacitor.getPlatform()
-document.documentElement.classList.add(`platform-${platform}`)
+const platform = Capacitor.getPlatform();
+document.documentElement.classList.add(`platform-${platform}`);
 
 app.mount('#app');

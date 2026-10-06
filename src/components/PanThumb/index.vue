@@ -1,30 +1,29 @@
 <template>
   <div :style="{ zIndex: zIndex, height: height, width: width }" class="pan-item">
-      <div class="pan-info">
-         <!--<div class="pan-info-roles-container1">-->
-            <slot />
-         <!--</div>-->
-      </div>
-          <!-- eslint-disable-next-line -->
+    <div class="pan-info">
+      <!--<div class="pan-info-roles-container1">-->
+      <slot />
+      <!--</div>-->
+    </div>
+    <!-- eslint-disable-next-line -->
           <div :style="{ backgroundImage: `url(${image})` }" class="pan-thumb"></div>
-      </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-    withDefaults(
-        defineProps<{
+withDefaults(
+  defineProps<{
             image: string
             zIndex?: number
             width?: string
             height?: string
         }>(),
-        {
-            zIndex: 1,
-            width: '150px',
-            height: '150px'
-        }
-    )
-
+  {
+    zIndex: 1,
+    width: '150px',
+    height: '150px'
+  }
+);
 
 </script>
 
@@ -42,7 +41,7 @@
     .pan-info-roles-container {
         /*padding: 0px;*/
         /*text-align: center;*/
-       
+
     }
 
 .img-circle {
@@ -64,7 +63,6 @@
         transform-origin: 0% 100%;
         transition: all 0.3s ease-in-out;
     }
-
 
 .pan-info {
   position: absolute;

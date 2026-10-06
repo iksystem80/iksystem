@@ -1,11 +1,11 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 export function getPromotionTemplates(params = {}) {
   return request({
     url: '/promotion-template/list',
     method: 'get',
     params
-  })
+  });
 }
 
 export function getPromotionTemplate(id) {
@@ -13,7 +13,7 @@ export function getPromotionTemplate(id) {
     url: '/promotion-template/detail',
     method: 'get',
     params: { id }
-  })
+  });
 }
 
 export function createPromotionTemplate(data) {
@@ -21,7 +21,7 @@ export function createPromotionTemplate(data) {
     url: '/promotion-template/create',
     method: 'post',
     data
-  })
+  });
 }
 
 export function updatePromotionTemplate(data) {
@@ -29,7 +29,7 @@ export function updatePromotionTemplate(data) {
     url: '/promotion-template/update',
     method: 'put',
     data
-  })
+  });
 }
 
 export function duplicatePromotionTemplate(data) {
@@ -37,7 +37,7 @@ export function duplicatePromotionTemplate(data) {
     url: '/promotion-template/duplicate',
     method: 'post',
     data
-  })
+  });
 }
 
 export function deletePromotionTemplate(id) {
@@ -45,7 +45,7 @@ export function deletePromotionTemplate(id) {
     url: '/promotion-template/delete',
     method: 'delete',
     params: { id }
-  })
+  });
 }
 
 export function generatePromotionTemplateImage(data) {
@@ -53,7 +53,7 @@ export function generatePromotionTemplateImage(data) {
     url: '/promotion-template/generate',
     method: 'post',
     data
-  })
+  });
 }
 
 export function uploadPromotionAsset(data) {
@@ -61,5 +61,5 @@ export function uploadPromotionAsset(data) {
     url: '/promotion-template/upload-asset',
     method: 'post',
     data
-  })
+  });
 }

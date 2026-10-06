@@ -1,342 +1,340 @@
 <template>
-    <div class="activity-tab" v-loading="loading" element-loading-text="Loading customer activity...">
-        <el-empty v-if="!loading && activities.length === 0 && recentMatchImages.length === 0" description="No customer activity found." class="small-empty" />
-        <template v-else>
-            <!-- ACTIVITY HISTORY -->
-            <div v-if="activities.length" class="activity-section">
-                <div class="section-heading">
-                    <div>
-                        <h3>Activity History</h3>
-                        <p>
-                            Check-ins, check-outs and match points for this customer.
-                        </p>
-                    </div>
-                    <el-button text :loading="loading" @click="loadActivity">
-                        <el-icon>
-                            <Refresh />
-                        </el-icon>
-                        Refresh
-                    </el-button>
+  <div class="activity-tab" v-loading="loading" element-loading-text="Loading customer activity...">
+    <el-empty v-if="!loading && activities.length === 0 && recentMatchImages.length === 0" description="No customer activity found." class="small-empty" />
+    <template v-else>
+      <!-- ACTIVITY HISTORY -->
+      <div v-if="activities.length" class="activity-section">
+        <div class="section-heading">
+          <div>
+            <h3>Activity History</h3>
+            <p>
+              Check-ins, check-outs and match points for this customer.
+            </p>
+          </div>
+          <el-button text :loading="loading" @click="loadActivity">
+            <el-icon>
+              <Refresh />
+            </el-icon>
+            Refresh
+          </el-button>
+        </div>
+        <el-timeline class="activity-timeline">
+          <el-timeline-item v-for="item in activities" :key="item.id" :timestamp="formatDateTime(item.date)" placement="top" :type="timelineType(item.type)">
+            <div class="activity-entry">
+              <div class="activity-row">
+                <div class="activity-icon" :class="activityIconClass(item.type)">
+                  <el-icon>
+                    <component :is="activityIcon(item.type)" />
+                  </el-icon>
                 </div>
-                <el-timeline class="activity-timeline">
-                    <el-timeline-item v-for="item in activities" :key="item.id" :timestamp="formatDateTime(item.date)" placement="top" :type="timelineType(item.type)">
-                        <div class="activity-entry">
-                            <div class="activity-row">
-                                <div class="activity-icon" :class="activityIconClass(item.type)">
-                                    <el-icon>
-                                        <component :is="activityIcon(item.type)" />
-                                    </el-icon>
-                                </div>
-                                <div class="activity-main">
-                                    <div class="activity-heading">
-                                        <div class="activity-title">
-                                            <h4>
-                                                {{ item.title }}
-                                            </h4>
-                                            <el-tag :type="tagType(item.type)" size="small" effect="light" round>
-                                                {{ tagLabel(item.type) }}
-                                            </el-tag>
-                                        </div>
-                                    </div>
-                                    <p class="activity-description">
-                                        {{ item.description }}
-                                    </p>
-                                    <div v-if="item.type === 'MATCH_POINTS'" class="match-meta">
-                                        <div class="meta-item">
-                                            <el-icon>
-                                                <Coin />
-                                            </el-icon>
-                                            <span>
-                                                <strong>
-                                                    {{ Number(item.points || 0).toLocaleString() }}
-                                                </strong>
-                                                points
-                                            </span>
-                                        </div>
-                                        <div v-if="item.machineNumber" class="meta-item">
-                                            <el-icon>
-                                                <Monitor />
-                                            </el-icon>
-                                            <span>
-                                                Machine {{ item.machineNumber }}
-                                            </span>
-                                        </div>
-                                        <div v-if="item.assignedBy" class="meta-item">
-                                            <el-icon>
-                                                <User />
-                                            </el-icon>
-                                            <span>
-                                                {{ item.assignedBy }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </el-timeline-item>
-                </el-timeline>
-            </div>
-            <!-- LAST 7 MATCH IMAGES -->
-            <div v-if="recentMatchImages.length" class="recent-matches">
-                <el-divider />
-                <div class="section-heading match-section-heading">
-                    <div>
-                        <h3>Recent Match Images</h3>
-                        <p>
-                            Last {{ recentMatchImages.length }} match point
-                            {{ recentMatchImages.length === 1 ? 'image' : 'images' }}.
-                        </p>
+                <div class="activity-main">
+                  <div class="activity-heading">
+                    <div class="activity-title">
+                      <h4>
+                        {{ item.title }}
+                      </h4>
+                      <el-tag :type="tagType(item.type)" size="small" effect="light" round>
+                        {{ tagLabel(item.type) }}
+                      </el-tag>
                     </div>
-                    <el-tag type="primary" effect="light" round>
-                        Last 7
-                    </el-tag>
+                  </div>
+                  <p class="activity-description">
+                    {{ item.description }}
+                  </p>
+                  <div v-if="item.type === 'MATCH_POINTS'" class="match-meta">
+                    <div class="meta-item">
+                      <el-icon>
+                        <Coin />
+                      </el-icon>
+                      <span>
+                        <strong>
+                          {{ Number(item.points || 0).toLocaleString() }}
+                        </strong>
+                        points
+                      </span>
+                    </div>
+                    <div v-if="item.machineNumber" class="meta-item">
+                      <el-icon>
+                        <Monitor />
+                      </el-icon>
+                      <span>
+                        Machine {{ item.machineNumber }}
+                      </span>
+                    </div>
+                    <div v-if="item.assignedBy" class="meta-item">
+                      <el-icon>
+                        <User />
+                      </el-icon>
+                      <span>
+                        {{ item.assignedBy }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <el-carousel :interval="5000" :type="carouselType" :height="carouselHeight" indicator-position="outside" arrow="always" class="match-carousel">
-                    <el-carousel-item v-for="(item, index) in recentMatchImages" :key="item.id">
-                        <div class="match-slide">
-                            <el-image :src="item.imageUrl" fit="cover" class="match-image" :preview-src-list="previewImages" :initial-index="index" preview-teleported>
-                                <template #error>
-                                    <div class="image-error">
-                                        <el-icon>
-                                            <Picture />
-                                        </el-icon>
-                                        <span>
-                                            Image unavailable
-                                        </span>
-                                    </div>
-                                </template>
-                            </el-image>
-
-                            <div class="match-info">
-
-                                <div class="match-points">
-                                    <strong>
-                                        {{ Number(item.points || 0).toLocaleString() }}
-                                    </strong>
-
-                                    <span>
-                                        points
-                                    </span>
-                                </div>
-
-                                <div class="match-details">
-
-                                    <span>
-                                        {{ formatDateTime(item.date) }}
-                                    </span>
-
-                                    <span v-if="item.machineNumber">
-                                        Machine {{ item.machineNumber }}
-                                    </span>
-
-                                    <span v-if="item.assignedBy">
-                                        Assigned by {{ item.assignedBy }}
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-                    </el-carousel-item>
-                </el-carousel>
+              </div>
             </div>
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+      <!-- LAST 7 MATCH IMAGES -->
+      <div v-if="recentMatchImages.length" class="recent-matches">
+        <el-divider />
+        <div class="section-heading match-section-heading">
+          <div>
+            <h3>Recent Match Images</h3>
+            <p>
+              Last {{ recentMatchImages.length }} match point
+              {{ recentMatchImages.length === 1 ? 'image' : 'images' }}.
+            </p>
+          </div>
+          <el-tag type="primary" effect="light" round>
+            Last 7
+          </el-tag>
+        </div>
+        <el-carousel :interval="5000" :type="carouselType" :height="carouselHeight" indicator-position="outside" arrow="always" class="match-carousel">
+          <el-carousel-item v-for="(item, index) in recentMatchImages" :key="item.id">
+            <div class="match-slide">
+              <el-image :src="item.imageUrl" fit="cover" class="match-image" :preview-src-list="previewImages" :initial-index="index" preview-teleported>
+                <template #error>
+                  <div class="image-error">
+                    <el-icon>
+                      <Picture />
+                    </el-icon>
+                    <span>
+                      Image unavailable
+                    </span>
+                  </div>
+                </template>
+              </el-image>
 
-        </template>
-    </div>
+              <div class="match-info">
+
+                <div class="match-points">
+                  <strong>
+                    {{ Number(item.points || 0).toLocaleString() }}
+                  </strong>
+
+                  <span>
+                    points
+                  </span>
+                </div>
+
+                <div class="match-details">
+
+                  <span>
+                    {{ formatDateTime(item.date) }}
+                  </span>
+
+                  <span v-if="item.machineNumber">
+                    Machine {{ item.machineNumber }}
+                  </span>
+
+                  <span v-if="item.assignedBy">
+                    Assigned by {{ item.assignedBy }}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+          </el-carousel-item>
+        </el-carousel>
+      </div>
+
+    </template>
+  </div>
 </template>
 
 <script setup>
 import {
-        computed,
-        onMounted,
-        ref,
-        watch
-} from 'vue'
+  computed,
+  onMounted,
+  ref,
+  watch
+} from 'vue';
 
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus';
 
 import {
-        Clock,
-        Coin,
-        Monitor,
-        Picture,
-        Refresh,
-        SwitchButton,
-        User
-} from '@element-plus/icons-vue'
+  Clock,
+  Coin,
+  Monitor,
+  Picture,
+  Refresh,
+  SwitchButton,
+  User
+} from '@element-plus/icons-vue';
 
-import { getcustomeractivity } from '@/api/customer'
-import { useUserStore } from '@/store/modules/user'
-import { useAppStore } from '@/store/modules/app'
+import { getcustomeractivity } from '@/api/customer';
+import { useUserStore } from '@/store/modules/user';
+import { useAppStore } from '@/store/modules/app';
 
 const props = defineProps({
-        customer: {
-            type: Object,
-            required: true
-        }
-})
+  customer: {
+    type: Object,
+    required: true
+  }
+});
 
-const userStore = useUserStore()
-const appStore = useAppStore()
+const userStore = useUserStore();
+const appStore = useAppStore();
 
-const loading = ref(false)
-const activities = ref([])
-const recentMatchImages = ref([])
+const loading = ref(false);
+const activities = ref([]);
+const recentMatchImages = ref([]);
 
 const isMobile = computed(
-        () => appStore.device === 'mobile'
-)
+  () => appStore.device === 'mobile'
+);
 
 const carouselType = computed(
-        () => isMobile.value
-            ? ''
-            : 'card'
-)
+  () => isMobile.value
+    ? ''
+    : 'card'
+);
 
 const carouselHeight = computed(
-        () => isMobile.value
-            ? '330px'
-            : '360px'
-)
+  () => isMobile.value
+    ? '330px'
+    : '360px'
+);
 
 const previewImages = computed(
-        () =>
-            recentMatchImages.value
-                .map(item => item.imageUrl)
-                .filter(Boolean)
-)
+  () =>
+    recentMatchImages.value
+      .map(item => item.imageUrl)
+      .filter(Boolean)
+);
 
 const activityIcon = type => {
-        if (type === 'MATCH_POINTS') {
-            return Coin
-        }
+  if (type === 'MATCH_POINTS') {
+    return Coin;
+  }
 
-        if (type === 'CHECK_OUT') {
-            return SwitchButton
-        }
+  if (type === 'CHECK_OUT') {
+    return SwitchButton;
+  }
 
-        return Clock
-}
+  return Clock;
+};
 
 const activityIconClass = type => {
-        if (type === 'CHECK_IN') {
-            return 'checkin'
-        }
+  if (type === 'CHECK_IN') {
+    return 'checkin';
+  }
 
-        if (type === 'CHECK_OUT') {
-            return 'checkout'
-        }
+  if (type === 'CHECK_OUT') {
+    return 'checkout';
+  }
 
-        return 'points'
-}
+  return 'points';
+};
 
 const timelineType = type => {
-        if (type === 'CHECK_IN') {
-            return 'success'
-        }
+  if (type === 'CHECK_IN') {
+    return 'success';
+  }
 
-        if (type === 'CHECK_OUT') {
-            return 'danger'
-        }
+  if (type === 'CHECK_OUT') {
+    return 'danger';
+  }
 
-        return 'primary'
-}
+  return 'primary';
+};
 
 const tagType = type => {
-        if (type === 'CHECK_IN') {
-            return 'success'
-        }
+  if (type === 'CHECK_IN') {
+    return 'success';
+  }
 
-        if (type === 'CHECK_OUT') {
-            return 'danger'
-        }
+  if (type === 'CHECK_OUT') {
+    return 'danger';
+  }
 
-        return 'primary'
-}
+  return 'primary';
+};
 
 const tagLabel = type => {
-        if (type === 'CHECK_IN') {
-            return 'Check In'
-        }
+  if (type === 'CHECK_IN') {
+    return 'Check In';
+  }
 
-        if (type === 'CHECK_OUT') {
-            return 'Check Out'
-        }
+  if (type === 'CHECK_OUT') {
+    return 'Check Out';
+  }
 
-        return 'Points'
-}
+  return 'Points';
+};
 
 const formatDateTime = value => {
-        if (!value) {
-            return '—'
-        }
+  if (!value) {
+    return '—';
+  }
 
-        return new Date(value)
-            .toLocaleString(
-                [],
-                {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit'
-                }
-            )
-}
+  return new Date(value)
+    .toLocaleString(
+      [],
+      {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      }
+    );
+};
 
 const loadActivity = async () => {
-        if (
-            !props.customer?.id ||
+  if (
+    !props.customer?.id ||
             !userStore.locationId
-        ) {
-            return
-        }
+  ) {
+    return;
+  }
 
-        try {
-            loading.value = true
+  try {
+    loading.value = true;
 
-            const response =
+    const response =
                 await getcustomeractivity(
-                    props.customer.id,
-                    userStore.locationId
-                )
+                  props.customer.id,
+                  userStore.locationId
+                );
 
-            activities.value =
-                response?.data?.activities || []
+    activities.value =
+                response?.data?.activities || [];
 
-            recentMatchImages.value =
-                response?.data?.recentMatchImages || []
+    recentMatchImages.value =
+                response?.data?.recentMatchImages || [];
+  } catch (error) {
+    console.error(error);
 
-        } catch (error) {
-            console.error(error)
-
-            ElMessage.error(
-                error?.response?.data?.message ||
+    ElMessage.error(
+      error?.response?.data?.message ||
                 error?.message ||
                 'Unable to load customer activity.'
-            )
-
-        } finally {
-            loading.value = false
-        }
-}
-
-watch(
-        () => props.customer?.id,
-        () => {
-            loadActivity()
-        }
-)
+    );
+  } finally {
+    loading.value = false;
+  }
+};
 
 watch(
-        () => userStore.locationId,
-        () => {
-            loadActivity()
-        }
-)
+  () => props.customer?.id,
+  () => {
+    loadActivity();
+  }
+);
 
-onMounted(loadActivity)
+watch(
+  () => userStore.locationId,
+  () => {
+    loadActivity();
+  }
+);
+
+onMounted(loadActivity);
 </script>
 
 <style scoped lang="scss">

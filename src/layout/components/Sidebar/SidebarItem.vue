@@ -1,244 +1,244 @@
 <template>
-    <div v-if="!isItemHidden" class="root-sidebar-item">
-        <template v-if="
-                hasOneShowingChild(item.children, item) &&
-                (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
-                !(item.meta && item.meta.alwaysShow)
-            ">
-            <app-link class="link"
-                      :to="resolvePath(onlyOneChild.path)">
-                <el-menu-item v-if="onlyOneChild.meta"
-                              class="left-menu-item"
-                              :index="resolvePath(onlyOneChild.path)"
-                              :class="{
+  <div v-if="!isItemHidden" class="root-sidebar-item">
+    <template v-if="
+      hasOneShowingChild(item.children, item) &&
+        (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
+        !(item.meta && item.meta.alwaysShow)
+    ">
+      <app-link class="link"
+                :to="resolvePath(onlyOneChild.path)">
+        <el-menu-item v-if="onlyOneChild.meta"
+                      class="left-menu-item"
+                      :index="resolvePath(onlyOneChild.path)"
+                      :class="{
                         'submenu-title-noDropdown': !isNest
-                    }">
-                    <template v-if="
-                            get2MetaIconPath(
-                                onlyOneChild,
-                                item
-                            )
-                        ">
-                        <template v-if="
-                                typeof get2MetaIconPath(
-                                    onlyOneChild,
-                                    item
-                                ) === 'string'
-                            ">
-                            <svg-icon :icon-class="
-                                    get2MetaIconPath(
-                                        onlyOneChild,
-                                        item
-                                    )
-                                " />
+                      }">
+          <template v-if="
+            get2MetaIconPath(
+              onlyOneChild,
+              item
+            )
+          ">
+            <template v-if="
+              typeof get2MetaIconPath(
+                onlyOneChild,
+                item
+              ) === 'string'
+            ">
+              <svg-icon :icon-class="
+                get2MetaIconPath(
+                  onlyOneChild,
+                  item
+                )
+              " />
 
-                            <span v-if="
-                                    secondMenuPopup &&
-                                    isTopRoute
-                                "
-                                  class="text text-one text-one-added">
-                                {{ onlyOneChild.meta.title }}
-                            </span>
-                        </template>
-
-                        <el-icon v-else
-                                 class="svg-icon el-svg-icon">
-                            <component :is="
-                                    get2MetaIconPath(
-                                        onlyOneChild,
-                                        item
-                                    )
-                                " />
-                        </el-icon>
-                    </template>
-
-                    <template #title>
-                        <span class="text text-one">
-                            {{ onlyOneChild.meta.title }}
-                        </span>
-                    </template>
-                </el-menu-item>
-            </app-link>
-        </template>
-
-        <el-sub-menu v-else
-                     ref="subMenu"
-                     class="left-sub-menu"
-                     :index="resolvePath(item.path)"
-                     teleported>
-            <template v-if="item.meta"
-                      #title>
-                <template v-if="getMetaIconPath(item)">
-                    <svg-icon v-if="
-                            typeof getMetaIconPath(item) ===
-                            'string'
-                        "
-                              :icon-class="getMetaIconPath(item)" />
-
-                    <el-icon v-else
-                             class="svg-icon el-svg-icon">
-                        <component :is="getMetaIconPath(item)" />
-                    </el-icon>
-                </template>
-
-                <span class="text text-two">
-                    {{ item.meta.title }}
-                </span>
+              <span v-if="
+                      secondMenuPopup &&
+                        isTopRoute
+                    "
+                    class="text text-one text-one-added">
+                {{ onlyOneChild.meta.title }}
+              </span>
             </template>
 
-            <sidebar-item v-for="child in item.children"
-                          :key="child.path"
-                          :is-nest="true"
-                          :item="child"
-                          :base-path="resolvePath(child.path)"
-                          class="nest-menu" />
-        </el-sub-menu>
-    </div>
+            <el-icon v-else
+                     class="svg-icon el-svg-icon">
+              <component :is="
+                get2MetaIconPath(
+                  onlyOneChild,
+                  item
+                )
+              " />
+            </el-icon>
+          </template>
+
+          <template #title>
+            <span class="text text-one">
+              {{ onlyOneChild.meta.title }}
+            </span>
+          </template>
+        </el-menu-item>
+      </app-link>
+    </template>
+
+    <el-sub-menu v-else
+                 ref="subMenu"
+                 class="left-sub-menu"
+                 :index="resolvePath(item.path)"
+                 teleported>
+      <template v-if="item.meta"
+                #title>
+        <template v-if="getMetaIconPath(item)">
+          <svg-icon v-if="
+                      typeof getMetaIconPath(item) ===
+                        'string'
+                    "
+                    :icon-class="getMetaIconPath(item)" />
+
+          <el-icon v-else
+                   class="svg-icon el-svg-icon">
+            <component :is="getMetaIconPath(item)" />
+          </el-icon>
+        </template>
+
+        <span class="text text-two">
+          {{ item.meta.title }}
+        </span>
+      </template>
+
+      <sidebar-item v-for="child in item.children"
+                    :key="child.path"
+                    :is-nest="true"
+                    :item="child"
+                    :base-path="resolvePath(child.path)"
+                    class="nest-menu" />
+    </el-sub-menu>
+  </div>
 </template>
 
 <script>
-    import { defineComponent } from 'vue'
-    import path from 'path-browserify'
-    import { isExternal } from '@/utils/validate'
-    import AppLink from './Link'
-    import FixiOSBug from './FixiOSBug'
-    import { useSettingsStore } from '@/store/modules/settings'
-    import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { defineComponent } from 'vue';
+import path from 'path-browserify';
+import { isExternal } from '@/utils/validate';
+import AppLink from './Link';
+import FixiOSBug from './FixiOSBug';
+import { useSettingsStore } from '@/store/modules/settings';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
-    const elementIcons = ElementPlusIconsVue
+const elementIcons = ElementPlusIconsVue;
 
-    export default defineComponent({
-        name: 'SidebarItem',
+export default defineComponent({
+  name: 'SidebarItem',
 
-        components: {
-            AppLink
-        },
+  components: {
+    AppLink
+  },
 
-        mixins: [FixiOSBug],
+  mixins: [FixiOSBug],
 
-        props: {
-            item: {
-                type: Object,
-                required: true
-            },
+  props: {
+    item: {
+      type: Object,
+      required: true
+    },
 
-            isNest: {
-                type: Boolean,
-                default: false
-            },
+    isNest: {
+      type: Boolean,
+      default: false
+    },
 
-            basePath: {
-                type: String,
-                default: ''
-            },
+    basePath: {
+      type: String,
+      default: ''
+    },
 
-            isTopRoute: {
-                type: Boolean,
-                default: false
-            }
-        },
+    isTopRoute: {
+      type: Boolean,
+      default: false
+    }
+  },
 
-        data() {
-            this.onlyOneChild = null
+  data() {
+    this.onlyOneChild = null;
 
-            return {}
-        },
+    return {};
+  },
 
-        computed: {
-            secondMenuPopup() {
-                const settingsStore = useSettingsStore()
+  computed: {
+    secondMenuPopup() {
+      const settingsStore = useSettingsStore();
 
-                return settingsStore.secondMenuPopup
-            },
+      return settingsStore.secondMenuPopup;
+    },
 
-            isItemHidden() {
-                return this.item.meta?.hidden === true
-            }
-        },
+    isItemHidden() {
+      return this.item.meta?.hidden === true;
+    }
+  },
 
-        methods: {
-            getMetaIconPath(item) {
-                const icon = item?.meta?.icon
+  methods: {
+    getMetaIconPath(item) {
+      const icon = item?.meta?.icon;
 
-                if (!icon) {
-                    return null
-                }
+      if (!icon) {
+        return null;
+      }
 
-                // Element Plus icon
-                if (elementIcons[icon]) {
-                    return elementIcons[icon]
-                }
+      // Element Plus icon
+      if (elementIcons[icon]) {
+        return elementIcons[icon];
+      }
 
-                // Custom SVG icon
-                return icon
-            },
+      // Custom SVG icon
+      return icon;
+    },
 
-            get2MetaIconPath(onlyOneChild, item) {
-                const icon =
+    get2MetaIconPath(onlyOneChild, item) {
+      const icon =
                     onlyOneChild?.meta?.icon ||
-                    item?.meta?.icon
+                    item?.meta?.icon;
 
-                if (!icon) {
-                    return null
-                }
+      if (!icon) {
+        return null;
+      }
 
-                // Element Plus icon
-                if (elementIcons[icon]) {
-                    return elementIcons[icon]
-                }
+      // Element Plus icon
+      if (elementIcons[icon]) {
+        return elementIcons[icon];
+      }
 
-                // Custom SVG icon
-                return icon
-            },
+      // Custom SVG icon
+      return icon;
+    },
 
-            hasOneShowingChild(
-                children = [],
-                parent
-            ) {
-                const showingChildren =
+    hasOneShowingChild(
+      children = [],
+      parent
+    ) {
+      const showingChildren =
                     children.filter(child => {
-                        if (child.meta?.hidden) {
-                            return false
-                        }
+                      if (child.meta?.hidden) {
+                        return false;
+                      }
 
-                        this.onlyOneChild = child
+                      this.onlyOneChild = child;
 
-                        return true
-                    })
+                      return true;
+                    });
 
-                if (showingChildren.length === 1) {
-                    return true
-                }
+      if (showingChildren.length === 1) {
+        return true;
+      }
 
-                if (showingChildren.length === 0) {
-                    this.onlyOneChild = {
-                        ...parent,
-                        path: '',
-                        noShowingChildren: true
-                    }
+      if (showingChildren.length === 0) {
+        this.onlyOneChild = {
+          ...parent,
+          path: '',
+          noShowingChildren: true
+        };
 
-                    return true
-                }
+        return true;
+      }
 
-                return false
-            },
+      return false;
+    },
 
-            resolvePath(routePath) {
-                if (isExternal(routePath)) {
-                    return routePath
-                }
+    resolvePath(routePath) {
+      if (isExternal(routePath)) {
+        return routePath;
+      }
 
-                if (isExternal(this.basePath)) {
-                    return this.basePath
-                }
+      if (isExternal(this.basePath)) {
+        return this.basePath;
+      }
 
-                return path.resolve(
-                    this.basePath,
-                    routePath
-                )
-            }
-        }
-    })
+      return path.resolve(
+        this.basePath,
+        routePath
+      );
+    }
+  }
+});
 </script>
 
 <style lang="scss" scoped>

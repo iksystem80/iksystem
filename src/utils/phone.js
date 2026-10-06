@@ -1,17 +1,17 @@
 export function formatPhone(value) {
-    if (!value) return ''
+  if (!value) return '';
 
-    const digits = value.toString().replace(/\D/g, '')
+  const digits = value.toString().replace(/\D/g, '');
 
-    if (digits.length === 10) {
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-    }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
 
-    return value
+  return value;
 }
 
 export function unformatPhone(value) {
-    if (!value) return ''
+  if (!value) return '';
 
-    return value.toString().replace(/\D/g, '')
+  return value.toString().replace(/\D/g, '');
 }

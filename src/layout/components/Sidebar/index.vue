@@ -1,155 +1,115 @@
 <template>
-    <div :class="{ 'has-logo': showLogo }">
+  <div :class="{ 'has-logo': showLogo }">
+    <Logo v-if="showLogo" :collapse="isCollapse" />
 
-        <Logo v-if="showLogo"
-              :collapse="isCollapse" />
-
-        <el-scrollbar wrap-class="scrollbar-wrapper">
-
-            <el-menu class="left-menu"
-                     :default-active="activeMenu"
-                     :collapse="isCollapse"
-                     :background-color="variables.menuBg"
-                     :text-color="variables.menuText"
-                     :unique-opened="false"
-                     :active-text-color="variables.menuActiveText"
-                     :collapse-transition="false"
-                     mode="vertical">
-
-                <SidebarItem v-for="route in sidebarRoutes"
-                             :key="route.path"
-                             :item="route"
-                             :base-path="route.path"
-                             :is-top-route="true" />
-
-            </el-menu>
-
-        </el-scrollbar>
-
-    </div>
+    <el-scrollbar wrap-class="scrollbar-wrapper">
+      <el-menu class="left-menu"
+               :default-active="activeMenu"
+               :collapse="isCollapse"
+               :background-color="variables.menuBg"
+               :text-color="variables.menuText"
+               :unique-opened="false"
+               :active-text-color="variables.menuActiveText"
+               :collapse-transition="false"
+               mode="vertical">
+        <SidebarItem v-for="route in sidebarRoutes"
+                     :key="route.path"
+                     :item="route"
+                     :base-path="route.path"
+                     :is-top-route="true" />
+      </el-menu>
+    </el-scrollbar>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import router, { resetRouter } from '@/router';
 
-import Logo from './Logo.vue'
-import SidebarItem from './SidebarItem.vue'
+import Logo from './Logo.vue';
+import SidebarItem from './SidebarItem.vue';
 
-import { useAppStore } from '@/store/modules/app'
-import { usePermissionStore } from '@/store/modules/permission'
-import { useSettingsStore } from '@/store/modules/settings'
-import { useUserStore } from '@/store/modules/user'
+import { useAppStore } from '@/store/modules/app';
+import { usePermissionStore } from '@/store/modules/permission';
+import { useSettingsStore } from '@/store/modules/settings';
+import { useUserStore } from '@/store/modules/user';
 
 defineOptions({
-        name: 'Sidebar'
-})
+  name: 'Sidebar'
+});
 
-const route =
-        useRoute()
+const route = useRoute();
+const appStore = useAppStore();
+const permissionStore = usePermissionStore();
+const settingsStore = useSettingsStore();
+const userStore = useUserStore();
 
-const appStore =
-        useAppStore()
-
-const permissionStore =
-        usePermissionStore()
-
-const settingsStore =
-        useSettingsStore()
-
-const userStore =
-        useUserStore()
-
-const {
-        sidebar
-} = storeToRefs(
-        appStore
-)
-
-const {
-        routes: permissionRoutes
-} = storeToRefs(
-        permissionStore
-)
-
-const {
-        secondMenuPopup,
-        sidebarLogo
-} = storeToRefs(
-        settingsStore
-)
+const { sidebar } = storeToRefs(appStore);
+const { routes: permissionRoutes } = storeToRefs(permissionStore);
+const { secondMenuPopup, sidebarLogo } = storeToRefs(settingsStore);
 
 const variables = {
-        menuBg: '#304156',
-        menuText: '#fff',
-        menuActiveText: '#409EFF'
-}
+  menuBg: '#304156',
+  menuText: '#fff',
+  menuActiveText: '#409EFF'
+};
 
 // ============================================================
 // SIDEBAR ROUTES
-//
-// SYSTEM ADMIN:
-// Only show /system
-//
-// EVERYONE ELSE:
-// Use normal permission-filtered routes
 // ============================================================
 
 const sidebarRoutes = computed(() => {
+  userStore.loadClockStatus()
 
-        if (
-            userStore.isSystemAdmin
-        ) {
-            return permissionRoutes.value.filter(
-                route =>
-                    route.path === '/system'
-            )
-        }
+  //console.log('employee Clock in? ' + userStore.isClockedIn)
+  // Clocked-out employees cannot access the normal application menu.
 
-        return permissionRoutes.value
-})
+   if (userStore.isEmployee && !userStore.isClockedIn) {
+      return [];
+    }
+
+  // System Admin only sees the System section.
+  if (userStore.isSystemAdmin) {
+    return permissionRoutes.value.filter(route => route.path === '/system'
+    );
+  }
+
+  return permissionRoutes.value;
+});
 
 // ============================================================
 // ACTIVE MENU
 // ============================================================
 
 const activeMenu = computed(() => {
+  const { meta, path } = route;
 
-        const {
-            meta,
-            path
-        } = route
+  if (meta?.activeMenu) {
+    return meta.activeMenu as string;
+  }
 
-        if (
-            meta?.activeMenu
-        ) {
-            return meta.activeMenu as string
-        }
-
-        return path
-})
+  return path;
+});
 
 // ============================================================
 // SHOW LOGO
 // ============================================================
 
 const showLogo = computed(() => {
-        return sidebarLogo.value
-})
+  return sidebarLogo.value;
+});
 
 // ============================================================
 // SIDEBAR COLLAPSE
 // ============================================================
 
 const isCollapse = computed(() => {
+  if (secondMenuPopup.value) {
+    return true;
+  }
 
-        if (
-            secondMenuPopup.value
-        ) {
-            return true
-        }
-
-        return !sidebar.value.opened
-})
+  return !sidebar.value.opened;
+});
 </script>

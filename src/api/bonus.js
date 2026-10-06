@@ -1,17 +1,17 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 // ============================================================
 // GET ALL BONUSES
 // ============================================================
 
 export function getBonuses(locationId) {
-    return request({
-        url: '/bonus',
-        method: 'get',
-        params: {
-            locationid: locationId
-        }
-    })
+  return request({
+    url: '/bonus',
+    method: 'get',
+    params: {
+      locationid: locationId
+    }
+  });
 }
 
 // ============================================================
@@ -19,10 +19,10 @@ export function getBonuses(locationId) {
 // ============================================================
 
 export function getBonus(id) {
-    return request({
-        url: `/bonus/${id}`,
-        method: 'get'
-    })
+  return request({
+    url: `/bonus/${id}`,
+    method: 'get'
+  });
 }
 
 // ============================================================
@@ -30,11 +30,11 @@ export function getBonus(id) {
 // ============================================================
 
 export function createBonus(data) {
-    return request({
-        url: '/bonus',
-        method: 'post',
-        data
-    })
+  return request({
+    url: '/bonus',
+    method: 'post',
+    data
+  });
 }
 
 // ============================================================
@@ -42,11 +42,11 @@ export function createBonus(data) {
 // ============================================================
 
 export function updateBonus(id, data) {
-    return request({
-        url: `/bonus/${id}`,
-        method: 'put',
-        data
-    })
+  return request({
+    url: `/bonus/${id}`,
+    method: 'put',
+    data
+  });
 }
 
 // ============================================================
@@ -54,13 +54,13 @@ export function updateBonus(id, data) {
 // ============================================================
 
 export function updateBonusStatus(id, isActive) {
-    return request({
-        url: `/bonus/${id}/status`,
-        method: 'patch',
-        data: {
-            isActive
-        }
-    })
+  return request({
+    url: `/bonus/${id}/status`,
+    method: 'patch',
+    data: {
+      isActive
+    }
+  });
 }
 
 // ============================================================
@@ -68,10 +68,10 @@ export function updateBonusStatus(id, isActive) {
 // ============================================================
 
 export function deleteBonus(id) {
-    return request({
-        url: `/bonus/${id}`,
-        method: 'delete'
-    })
+  return request({
+    url: `/bonus/${id}`,
+    method: 'delete'
+  });
 }
 
 // ============================================================
@@ -79,11 +79,11 @@ export function deleteBonus(id) {
 // ============================================================
 
 export function getCurrentActiveBonuses(locationId) {
-    return request({
-        url: '/bonus/active/current/list',
-        method: 'get',
-        params: {
-            locationid: locationId
-        }
-    })
+  return request({
+    url: '/bonus/active/current/list',
+    method: 'get',
+    params: {
+      locationid: locationId
+    }
+  });
 }

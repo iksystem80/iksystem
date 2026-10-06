@@ -1,8 +1,8 @@
 <template>
-  <div class="app-container roles-page irfan-settings-roles-index irfan-ui-page">
+  <div class="app-container">
     <div class="page-header">
       <div>
-        <h2>Roles & Permissions</h2>
+        <h2 class="page-title">Roles & Permissions</h2>
         <p>Each user has one role. Permissions assigned here control pages and actions.</p>
       </div>
       <el-button v-if="canCreate" type="primary" @click="newRole"><el-icon><Plus /></el-icon><span>New Role</span></el-button>
@@ -54,132 +54,131 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
-import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole } from '@/api/role'
-import checkPermission from '@/utils/permission'
+import { computed, onMounted, reactive, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus } from '@element-plus/icons-vue';
+import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole } from '@/api/role';
+import checkPermission from '@/utils/permission';
 
-const roles = ref<any[]>([])
-const allPermissions = ref<any[]>([])
-const selectedRoleId = ref<number | null>(null)
-const loadingRoles = ref(false)
-const loadingPermissions = ref(false)
-const saving = ref(false)
-const creating = ref(false)
-const actions = ['read', 'create', 'update', 'delete']
+const roles = ref<any[]>([]);
+const allPermissions = ref<any[]>([]);
+const selectedRoleId = ref<number | null>(null);
+const loadingRoles = ref(false);
+const loadingPermissions = ref(false);
+const saving = ref(false);
+const creating = ref(false);
+const actions = ['read', 'create', 'update', 'delete'];
 
-const form = reactive<any>({ id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] })
+const form = reactive<any>({ id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] });
 
-const canCreate = computed(() => checkPermission('roles.create'))
-const canUpdate = computed(() => checkPermission('roles.update'))
-const canDelete = computed(() => checkPermission('roles.delete'))
-const isOwner = computed(() => form.name === 'Owner')
-const canUpdateSelected = computed(() => creating.value ? canCreate.value : canUpdate.value)
-const canSave = computed(() => !isOwner.value && (creating.value ? canCreate.value : canUpdate.value))
+const canCreate = computed(() => checkPermission('roles.create'));
+const canUpdate = computed(() => checkPermission('roles.update'));
+const canDelete = computed(() => checkPermission('roles.delete'));
+const isOwner = computed(() => form.name === 'Owner');
+const canUpdateSelected = computed(() => creating.value ? canCreate.value : canUpdate.value);
+const canSave = computed(() => !isOwner.value && (creating.value ? canCreate.value : canUpdate.value));
 
 const permissionRows = computed(() => {
-  const map: Record<string, any> = {}
+  const map: Record<string, any> = {};
   for (const permission of allPermissions.value) {
-    if (!map[permission.module]) map[permission.module] = { module: permission.module }
-    map[permission.module][permission.action] = permission
+    if (!map[permission.module]) map[permission.module] = { module: permission.module };
+    map[permission.module][permission.action] = permission;
   }
-  return Object.values(map)
-})
+  return Object.values(map);
+});
 
 function actionLabel(action: string) {
-  return action.charAt(0).toUpperCase() + action.slice(1)
+  return action.charAt(0).toUpperCase() + action.slice(1);
 }
 
 async function loadRoles() {
-  loadingRoles.value = true
+  loadingRoles.value = true;
   try {
-    const response = await getRoles()
-    roles.value = response.data || []
-    if (!selectedRoleId.value && roles.value.length) await selectRole(roles.value[0].id)
+    const response = await getRoles();
+    roles.value = response.data || [];
+    if (!selectedRoleId.value && roles.value.length) await selectRole(roles.value[0].id);
   } finally {
-    loadingRoles.value = false
+    loadingRoles.value = false;
   }
 }
 
 async function loadPermissions() {
-  loadingPermissions.value = true
+  loadingPermissions.value = true;
   try {
-    const response = await getPermissions()
-    allPermissions.value = response.data || []
+    const response = await getPermissions();
+    allPermissions.value = response.data || [];
   } finally {
-    loadingPermissions.value = false
+    loadingPermissions.value = false;
   }
 }
 
 async function selectRole(id: number) {
-  creating.value = false
-  selectedRoleId.value = id
-  const response = await getRole(id)
-  Object.assign(form, response.data)
+  creating.value = false;
+  selectedRoleId.value = id;
+  const response = await getRole(id);
+  Object.assign(form, response.data);
 }
 
 function newRole() {
-  creating.value = true
-  selectedRoleId.value = null
-  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] })
+  creating.value = true;
+  selectedRoleId.value = null;
+  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] });
 }
 
 function cancelCreate() {
-  creating.value = false
-  if (roles.value.length) selectRole(roles.value[0].id)
+  creating.value = false;
+  if (roles.value.length) selectRole(roles.value[0].id);
 }
 
 function togglePermission(id: number, checked: boolean) {
-  const index = form.permissionIds.indexOf(id)
-  if (checked && index === -1) form.permissionIds.push(id)
-  if (!checked && index !== -1) form.permissionIds.splice(index, 1)
+  const index = form.permissionIds.indexOf(id);
+  if (checked && index === -1) form.permissionIds.push(id);
+  if (!checked && index !== -1) form.permissionIds.splice(index, 1);
 }
 
 async function saveRole() {
   if (!form.name?.trim()) {
-    ElMessage.warning('Role name is required')
-    return
+    ElMessage.warning('Role name is required');
+    return;
   }
 
   try {
-    saving.value = true
+    saving.value = true;
     const payload = {
       name: form.name.trim(),
       description: form.description,
       isActive: form.isActive,
-      permissionIds: form.permissionIds,
-    }
+      permissionIds: form.permissionIds
+    };
 
     if (creating.value) {
-      const response = await createRole(payload)
-      ElMessage.success('Role created successfully')
-      creating.value = false
-      await loadRoles()
-      if (response.data?.id) await selectRole(response.data.id)
+      const response = await createRole(payload);
+      ElMessage.success('Role created successfully');
+      creating.value = false;
+      await loadRoles();
+      if (response.data?.id) await selectRole(response.data.id);
     } else {
-      await updateRole(form.id, payload)
-      ElMessage.success('Role updated successfully')
-      await loadRoles()
-      await selectRole(form.id)
+      await updateRole(form.id, payload);
+      ElMessage.success('Role updated successfully');
+      await loadRoles();
+      await selectRole(form.id);
     }
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function removeRole() {
-  await ElMessageBox.confirm(`Delete role ${form.name}?`, 'Delete Role', { type: 'warning', confirmButtonText: 'Delete' })
-  await deleteRole(form.id)
-  ElMessage.success('Role deleted successfully')
-  selectedRoleId.value = null
-  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] })
-  await loadRoles()
+  await ElMessageBox.confirm(`Delete role ${form.name}?`, 'Delete Role', { type: 'warning', confirmButtonText: 'Delete' });
+  await deleteRole(form.id);
+  ElMessage.success('Role deleted successfully');
+  selectedRoleId.value = null;
+  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] });
+  await loadRoles();
 }
 
 onMounted(async () => {
-  await Promise.all([loadPermissions(), loadRoles()])
-})
+  await Promise.all([loadPermissions(), loadRoles()]);
+});
 </script>
-
 

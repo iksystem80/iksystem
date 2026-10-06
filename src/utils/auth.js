@@ -5,67 +5,66 @@ const UserIdKey = 'UserId';
 
 // TOKEN
 export function getToken() {
-    // Primary storage
-    const token = localStorage.getItem(TokenKey);
+  // Primary storage
+  const token = localStorage.getItem(TokenKey);
 
-    if (token) {
-        return token;
-    }
+  if (token) {
+    return token;
+  }
 
-    // Migrate an existing browser cookie if present
-    const cookieToken = Cookies.get(TokenKey);
+  // Migrate an existing browser cookie if present
+  const cookieToken = Cookies.get(TokenKey);
 
-    if (cookieToken) {
-        localStorage.setItem(TokenKey, cookieToken);
-        return cookieToken;
-    }
+  if (cookieToken) {
+    localStorage.setItem(TokenKey, cookieToken);
+    return cookieToken;
+  }
 
-    return undefined;
+  return undefined;
 }
 
 export function setToken(token) {
-    if (!token) {
-        localStorage.removeItem(TokenKey);
-        return;
-    }
+  if (!token) {
+    localStorage.removeItem(TokenKey);
+    return;
+  }
 
-    localStorage.setItem(TokenKey, token);
+  localStorage.setItem(TokenKey, token);
 }
 
 export function removeToken() {
-    localStorage.removeItem(TokenKey);
-    Cookies.remove(TokenKey);
+  localStorage.removeItem(TokenKey);
+  Cookies.remove(TokenKey);
 }
-
 
 // USER ID
 export function getUserId() {
-    const userId = localStorage.getItem(UserIdKey);
+  const userId = localStorage.getItem(UserIdKey);
 
-    if (userId) {
-        return userId;
-    }
+  if (userId) {
+    return userId;
+  }
 
-    const cookieUserId = Cookies.get(UserIdKey);
+  const cookieUserId = Cookies.get(UserIdKey);
 
-    if (cookieUserId) {
-        localStorage.setItem(UserIdKey, cookieUserId);
-        return cookieUserId;
-    }
+  if (cookieUserId) {
+    localStorage.setItem(UserIdKey, cookieUserId);
+    return cookieUserId;
+  }
 
-    return '';
+  return '';
 }
 
 export function setUserId(userid) {
-    if (userid == null || userid === '') {
-        localStorage.removeItem(UserIdKey);
-        return;
-    }
+  if (userid == null || userid === '') {
+    localStorage.removeItem(UserIdKey);
+    return;
+  }
 
-    localStorage.setItem(UserIdKey, String(userid));
+  localStorage.setItem(UserIdKey, String(userid));
 }
 
 export function removeUserId() {
-    localStorage.removeItem(UserIdKey);
-    Cookies.remove(UserIdKey);
+  localStorage.removeItem(UserIdKey);
+  Cookies.remove(UserIdKey);
 }

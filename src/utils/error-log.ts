@@ -1,43 +1,43 @@
-import { isString, isArray } from '@/utils/validate'
-import settings from '@/settings'
-import { nextTick } from 'vue'
-import type { App } from 'vue'
-import { useErrorLogStore } from '@/store/modules/errorLog'
+import { isString, isArray } from '@/utils/validate';
+import settings from '@/settings';
+import { nextTick } from 'vue';
+import type { App } from 'vue';
+import { useErrorLogStore } from '@/store/modules/errorLog';
 
 // you can set in settings.js
 // errorLog: 'production' | ['production', 'development']
-const { errorLog: needErrorLog } = settings
+const { errorLog: needErrorLog } = settings;
 
 function checkNeed() {
-    const env = import.meta.env.VITE_ENV || ''
+  const env = import.meta.env.VITE_ENV || '';
 
-    if (isString(needErrorLog)) {
-        return env === needErrorLog
-    }
+  if (isString(needErrorLog)) {
+    return env === needErrorLog;
+  }
 
-    if (isArray(needErrorLog)) {
-        return needErrorLog.includes(env)
-    }
+  if (isArray(needErrorLog)) {
+    return needErrorLog.includes(env);
+  }
 
-    return false
+  return false;
 }
 
 export function checkEnableLogs(app: App) {
-    if (!checkNeed()) {
-        return
-    }
+  if (!checkNeed()) {
+    return;
+  }
 
-    app.config.errorHandler = function (err, instance, info) {
-        // Don't ask me why I use Vue.nextTick, it just a hack.
-        // Detail:
-        // https://forum.vuejs.org/t/dispatch-in-vue-config-errorhandler-has-some-problem/23500
+  app.config.errorHandler = function (err, instance, info) {
+    // Don't ask me why I use Vue.nextTick, it just a hack.
+    // Detail:
+    // https://forum.vuejs.org/t/dispatch-in-vue-config-errorhandler-has-some-problem/23500
 
-        nextTick(() => {
-            const errorLogStore = useErrorLogStore()
+    nextTick(() => {
+      const errorLogStore = useErrorLogStore();
 
-            errorLogStore.addErrorLog({ err, instance, info, url: window.location.href})
+      errorLogStore.addErrorLog({ err, instance, info, url: window.location.href });
 
-            console.error(err, info)
-        })
-    }
+      console.error(err, info);
+    });
+  };
 }

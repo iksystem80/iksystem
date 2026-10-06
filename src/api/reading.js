@@ -1,55 +1,55 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 // ============================================================
 // READING SESSIONS
 // ============================================================
 
 export function getactivesession(locationid) {
-    return request({
-        url: '/reading/getactivesession',
-        method: 'get',
-        params: {
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/getactivesession',
+    method: 'get',
+    params: {
+      locationid
+    }
+  });
 }
 
 export function startnewsession(locationid) {
-    return request({
-        url: '/reading/startnewsession',
-        method: 'post',
-        params: {
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/startnewsession',
+    method: 'post',
+    params: {
+      locationid
+    }
+  });
 }
 
 export function endsession(
-    sessionid,
-    locationid
+  sessionid,
+  locationid
 ) {
-    return request({
-        url: '/reading/endsession',
-        method: 'put',
-        data: {
-            sessionid,
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/endsession',
+    method: 'put',
+    data: {
+      sessionid,
+      locationid
+    }
+  });
 }
 
 export function deletesession(
-    id,
-    locationid
+  id,
+  locationid
 ) {
-    return request({
-        url: '/reading/deletesession',
-        method: 'delete',
-        params: {
-            id,
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/deletesession',
+    method: 'delete',
+    params: {
+      id,
+      locationid
+    }
+  });
 }
 
 // ============================================================
@@ -57,77 +57,77 @@ export function deletesession(
 // ============================================================
 
 export function savereading(data) {
-    return request({
-        url: '/reading/savereading',
-        method: 'post',
-        data
-    })
+  return request({
+    url: '/reading/savereading',
+    method: 'post',
+    data
+  });
 }
 
 export function getreadings(
-    sessionid,
-    locationid
+  sessionid,
+  locationid
 ) {
-    return request({
-        url: '/reading/getreadings',
-        method: 'get',
-        params: {
-            sessionid,
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/getreadings',
+    method: 'get',
+    params: {
+      sessionid,
+      locationid
+    }
+  });
 }
 
 export function getpreviousreading(
-    machineid,
-    locationid,
-    sessionid = null
+  machineid,
+  locationid,
+  sessionid = null
 ) {
-    return request({
-        url: '/reading/previousreading',
-        method: 'get',
-        params: {
-            machineid,
-            locationid,
-            sessionid
-        }
-    })
+  return request({
+    url: '/reading/previousreading',
+    method: 'get',
+    params: {
+      machineid,
+      locationid,
+      sessionid
+    }
+  });
 }
 
 export function deletereading(
-    id,
-    locationid
+  id,
+  locationid
 ) {
-    return request({
-        url: '/reading/deletereading',
-        method: 'delete',
-        params: {
-            id,
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/deletereading',
+    method: 'delete',
+    params: {
+      id,
+      locationid
+    }
+  });
 }
 
 export function getCompletedSessions(locationid) {
-    return request({
-        url: '/reading/completedsessions',
-        method: 'get',
-        params: {
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/completedsessions',
+    method: 'get',
+    params: {
+      locationid
+    }
+  });
 }
 
 export function getSessionReport(
-    sessionid,
-    locationid
+  sessionid,
+  locationid
 ) {
-    return request({
-        url: '/reading/sessionreport',
-        method: 'get',
-        params: {
-            sessionid,
-            locationid
-        }
-    })
+  return request({
+    url: '/reading/sessionreport',
+    method: 'get',
+    params: {
+      sessionid,
+      locationid
+    }
+  });
 }

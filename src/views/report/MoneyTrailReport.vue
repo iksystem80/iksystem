@@ -3,7 +3,7 @@
     <div class="page-header">
       <div class="header-left">
         <el-button circle class="back-button" @click="router.back()"><el-icon><ArrowLeft /></el-icon></el-button>
-        <div><h2>Complete Money Trail Report</h2><p>Owner/Admin audit trail across funding, sessions, expenses, points, handovers, and closings.</p></div>
+        <div><h2 class="page-title">Complete Money Trail Report</h2><div class="page-subtitle">Owner/Admin audit trail across funding, sessions, expenses, points, handovers, and closings.</div></div>
       </div>
       <el-button :loading="loading" @click="loadReport"><el-icon><Refresh /></el-icon>Refresh</el-button>
     </div>
@@ -60,32 +60,32 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ArrowLeft, Refresh } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/modules/user'
-import { useAppStore } from '@/store/modules/app'
-import { getAdminMoneyTrailReport } from '@/api/employeeFinance'
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { ArrowLeft, Refresh } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { useUserStore } from '@/store/modules/user';
+import { useAppStore } from '@/store/modules/app';
+import { getAdminMoneyTrailReport } from '@/api/employeeFinance';
 
-const router = useRouter()
-const userStore = useUserStore()
-const appStore = useAppStore()
-const device = computed(() => appStore.device)
-const locationId = computed(() => userStore.locationId)
+const router = useRouter();
+const userStore = useUserStore();
+const appStore = useAppStore();
+const device = computed(() => appStore.device);
+const locationId = computed(() => userStore.locationId);
 
-const loading = ref(false)
-const dateRange = ref([])
-const employeeId = ref(null)
-const employees = ref([])
-const rows = ref([])
-const summary = ref({})
+const loading = ref(false);
+const dateRange = ref([]);
+const employeeId = ref(null);
+const employees = ref([]);
+const rows = ref([]);
+const summary = ref({});
 
-const money = value => Number(value || 0).toLocaleString('en-US',{ style:'currency',currency:'USD' })
-const dateTime = value => value ? new Date(value).toLocaleString() : '—'
-const varianceClass = value => Number(value) < 0 ? 'short-text' : Number(value) > 0 ? 'over-text' : ''
-const signedMoney = value => `${Number(value) > 0 ? '+' : ''}${money(value)}`
-const rangeLabel = computed(() => dateRange.value?.length === 2 ? `${dateRange.value[0]} → ${dateRange.value[1]}` : 'All time')
+const money = value => Number(value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const dateTime = value => value ? new Date(value).toLocaleString() : '—';
+const varianceClass = value => Number(value) < 0 ? 'short-text' : Number(value) > 0 ? 'over-text' : '';
+const signedMoney = value => `${Number(value) > 0 ? '+' : ''}${money(value)}`;
+const rangeLabel = computed(() => dateRange.value?.length === 2 ? `${dateRange.value[0]} → ${dateRange.value[1]}` : 'All time');
 const typeLabel = type => ({
   CUSTODY_INITIAL_CAPITAL: 'Owner Initial Capital',
   CUSTODY_OWNER_TO_ADMIN: 'Owner → Admin Cash Transfer',
@@ -95,39 +95,38 @@ const typeLabel = type => ({
   CUSTODY_BANK_WITHDRAWAL: 'Business Bank → Owner Cash',
   CUSTODY_OWNER_DISTRIBUTION: 'Owner Distribution',
   CUSTODY_DIRECT_EXPENSE: 'Direct Business Expense',
-  ADMIN_FUNDING:'Owner/Admin Funding', OPENING:'Opening Balance', OPENING_TRANSFER:'Opening Handover',
-  TRANSFER_IN:'Employee Handover Received', CASH_RECEIVED:'Additional Cash', EXPENSE:'Cash Expense',
-  POINTS_EXPENSE:'Cash Points Expense', OWNER_WITHDRAWAL:'Owner/Admin Cash Taken', EMPLOYEE_HANDOVER:'Employee Handover', SESSION_CLOSING:'Session Closing'
-}[type] || type)
+  ADMIN_FUNDING: 'Owner/Admin Funding', OPENING: 'Opening Balance', OPENING_TRANSFER: 'Opening Handover',
+  TRANSFER_IN: 'Employee Handover Received', CASH_RECEIVED: 'Additional Cash', EXPENSE: 'Cash Expense',
+  POINTS_EXPENSE: 'Cash Points Expense', OWNER_WITHDRAWAL: 'Owner/Admin Cash Taken', EMPLOYEE_HANDOVER: 'Employee Handover', SESSION_CLOSING: 'Session Closing'
+}[type] || type);
 
 async function loadReport() {
-  if (!locationId.value) return
+  if (!locationId.value) return;
   try {
-    loading.value = true
-    const params = { locationid: locationId.value }
+    loading.value = true;
+    const params = { locationid: locationId.value };
     if (dateRange.value?.length === 2) {
-      params.startdate = dateRange.value[0]
-      params.enddate = dateRange.value[1]
+      params.startdate = dateRange.value[0];
+      params.enddate = dateRange.value[1];
     }
-    if (employeeId.value) params.employeeid = employeeId.value
-    const data = (await getAdminMoneyTrailReport(params)).data || {}
-    rows.value = data.rows || []
-    summary.value = data.summary || {}
-    employees.value = data.employees || []
-  } catch(e) {
-    ElMessage.error(e?.response?.data?.message || e?.message || 'Unable to load money trail report.')
+    if (employeeId.value) params.employeeid = employeeId.value;
+    const data = (await getAdminMoneyTrailReport(params)).data || {};
+    rows.value = data.rows || [];
+    summary.value = data.summary || {};
+    employees.value = data.employees || [];
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || e?.message || 'Unable to load money trail report.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function clearFilters() {
-  dateRange.value = []
-  employeeId.value = null
-  await loadReport()
+  dateRange.value = [];
+  employeeId.value = null;
+  await loadReport();
 }
 
-onMounted(loadReport)
+onMounted(loadReport);
 </script>
-
 

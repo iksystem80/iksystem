@@ -1,595 +1,558 @@
 <template>
-    <div class="app-container bonus-editor irfan-settings-bonus-edit irfan-ui-page">
-        <!-- ==================================================== -->
-        <!-- PAGE HEADER -->
-        <!-- ==================================================== -->
-        <div class="page-header">
-            <div class="header-left">
-                <el-button circle size="large" :icon="ArrowLeft" class="back-button" @click="router.back()" />
-                <div>
-                    <h2>
-                        {{ isEdit ? 'Edit Bonus' : 'Create Bonus' }}
-                    </h2>
-                    <span>
-                        Configure payouts and bonus availability.
-                    </span>
-                </div>
-            </div>
+  <div class="app-container bonus-editor irfan-ui-page">
+    <!-- ==================================================== -->
+    <!-- PAGE HEADER -->
+    <!-- ==================================================== -->
+    <div class="page-header">
+      <div class="header-left">
+        <el-button circle size="large" :icon="ArrowLeft" class="back-button" @click="router.back()" />
+        <div>
+          <h2>
+            {{ isEdit ? 'Edit Bonus' : 'Create Bonus' }}
+          </h2>
+          <span>
+            Configure payouts and bonus availability.
+          </span>
         </div>
-        <!-- ==================================================== -->
-        <!-- LOADING -->
-        <!-- ==================================================== -->
-        <el-skeleton v-if="loading" :rows="10" animated />
-        <!-- ==================================================== -->
-        <!-- FORM -->
-        <!-- ==================================================== -->
-        <el-form v-else ref="formRef" :model="form" :rules="rules" label-position="top">
-            <!-- ================================================== -->
-            <!-- BONUS INFORMATION -->
-            <!-- ================================================== -->
-            <el-card shadow="never" class="section-card bonus-info-card">
-                <div class="bonus-info-grid">
-                    <!-- BONUS NAME -->
-                    <div class="bonus-name-field">
-                        <el-form-item label="Bonus Name" prop="name">
-                            <el-input v-model="form.name" size="large" maxlength="200" show-word-limit placeholder="Enter bonus name" />
-                        </el-form-item>
-                    </div>
-                    <!-- STATUS -->
-                    <div class="bonus-status-field">
-                        <div class="status-label">
-                            Status
-                        </div>
-                        <div class="status-control">
-                            <div>
-                                <div class="status-value">
-                                    {{ form.isActive ? 'Active' : 'Inactive' }}
-                                </div>
-                                <div class="small-text">
-                                    Enable or disable this bonus.
-                                </div>
-                            </div>
-                            <el-switch v-model="form.isActive" size="large" />
-                        </div>
-                    </div>
-                </div>
-            </el-card>
-            <!-- ================================================== -->
-            <!-- PAYOUTS + SCHEDULE -->
-            <!-- ================================================== -->
-            <el-row :gutter="20">
-                <!-- ================================================= -->
-                <!-- PAYOUTS -->
-                <!-- ================================================= -->
-                <el-col :xs="24" :lg="11">
-                    <el-card shadow="never" class="section-card">
-                        <template #header>
-                            <div class="section-header">
-                                <div class="section-title-wrap">
-                                    <div class="section-title-icon payout-title-icon">
-                                        <el-icon>
-                                            <Money />
-                                        </el-icon>
-                                    </div>
-                                    <div>
-                                        <strong>
-                                            Payouts
-                                        </strong>
-                                        <div class="small-text">
-                                            Define each winning condition and customer payout.
-                                        </div>
-                                    </div>
-                                </div>
-                                <el-button type="primary" plain size="small" :icon="Plus" @click="addPayout">
-                                    Add Payout
-                                </el-button>
-                            </div>
-
-                        </template>
-
-
-                        <el-empty v-if="form.payouts.length === 0"
-                                  description="No payouts added." />
-
-
-                        <!-- MOBILE TABLE LABELS -->
-
-                        <div v-if="form.payouts.length > 0"
-                             class="mobile-payout-header">
-
-                            <span>
-                                DESCRIPTION
-                            </span>
-
-                            <span>
-                                PAY TO CUSTOMER
-                            </span>
-
-                        </div>
-
-
-                        <!-- PAYOUT ROW -->
-
-                        <div v-for="(payout, index) in form.payouts"
-                             :key="index"
-                             class="payout-row">
-
-                            <el-input v-model="payout.description"
-                                      maxlength="300"
-                                      placeholder="Description"
-                                      class="payout-description" />
-
-
-                            <el-input-number v-model="payout.amount"
-                                             :min="0"
-                                             :precision="2"
-                                             :controls="false"
-                                             class="amount-input" />
-
-
-                            <el-button text
-                                       circle
-                                       type="danger"
-                                       :icon="Delete"
-                                       class="payout-delete"
-                                       @click="removePayout(index)" />
-
-                        </div>
-
-
-                        <el-button type="primary"
-                                   plain
-                                   :icon="Plus"
-                                   class="full-button"
-                                   @click="addPayout">
-                            Add Payout
-                        </el-button>
-
-                    </el-card>
-
-                </el-col>
-
-
-                <!-- ================================================= -->
-                <!-- SCHEDULE -->
-                <!-- ================================================= -->
-
-                <el-col :xs="24"
-                        :lg="13">
-
-                    <el-card shadow="never"
-                             class="section-card">
-
-                        <template #header>
-
-                            <div class="section-header">
-
-                                <div class="section-title-wrap">
-
-                                    <div class="section-title-icon schedule-title-icon">
-                                        <el-icon>
-                                            <Calendar />
-                                        </el-icon>
-                                    </div>
-
-                                    <div>
-
-                                        <strong>
-                                            Schedule
-                                        </strong>
-
-                                        <div class="small-text">
-                                            Configure when this bonus is available.
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-
-                                <el-button type="primary"
-                                           plain
-                                           size="small"
-                                           :icon="Plus"
-                                           @click="addBlock">
-                                    Add Block
-                                </el-button>
-
-                            </div>
-
-                        </template>
-
-
-                        <el-empty v-if="form.scheduleBlocks.length === 0"
-                                  description="No schedule blocks added." />
-
-
-                        <!-- ================================================= -->
-                        <!-- EACH SCHEDULE BLOCK -->
-                        <!-- ================================================= -->
-
-                        <el-card v-for="(block, blockIndex) in form.scheduleBlocks"
-                                 :key="blockIndex"
-                                 shadow="never"
-                                 class="schedule-block">
-
-                            <!-- BLOCK HEADER -->
-
-                            <div class="block-header">
-
-                                <div>
-
-                                    <strong>
-                                        Block {{ blockIndex + 1 }}
-                                    </strong>
-
-                                    <div class="small-text">
-                                        {{ getBlockSummary(block) }}
-                                    </div>
-
-                                </div>
-
-
-                                <el-button text
-                                           circle
-                                           type="danger"
-                                           :icon="Delete"
-                                           @click="removeBlock(blockIndex)" />
-
-                            </div>
-
-
-                            <el-divider />
-
-
-                            <!-- DAYS -->
-
-                            <div class="field-label">
-                                Runs on
-                            </div>
-
-
-                            <el-checkbox-group v-model="block.days"
-                                               class="day-group">
-
-                                <el-checkbox-button v-for="day in days"
-                                                    :key="day.value"
-                                                    :value="day.value">
-                                    {{ day.short }}
-                                </el-checkbox-button>
-
-                            </el-checkbox-group>
-
-
-                            <div class="selected-days">
-                                {{ selectedDayNames(block) }}
-                            </div>
-
-
-                            <!-- ALL DAY -->
-
-                            <div class="setting-row">
-
-                                <div>
-
-                                    <strong>
-                                        All day
-                                    </strong>
-
-                                    <div class="small-text">
-                                        Bonus remains active for the entire selected day.
-                                    </div>
-
-                                </div>
-
-
-                                <el-switch v-model="block.isAllDay"
-                                           @change="handleAllDayChange(block)" />
-
-                            </div>
-
-
-                            <!-- TIMED SCHEDULE -->
-
-                            <template v-if="!block.isAllDay">
-
-                                <el-divider />
-
-
-                                <el-row :gutter="10">
-
-                                    <el-col :xs="24"
-                                            :sm="12">
-
-                                        <el-form-item label="Start Time">
-
-                                            <el-time-picker v-model="block.startTime"
-                                                            value-format="HH:mm:ss"
-                                                            format="hh:mm A"
-                                                            placeholder="Start time"
-                                                            style="width: 100%" />
-
-                                        </el-form-item>
-
-                                    </el-col>
-
-
-                                    <el-col :xs="24"
-                                            :sm="12">
-
-                                        <el-form-item label="End Time">
-
-                                            <el-time-picker v-model="block.endTime"
-                                                            value-format="HH:mm:ss"
-                                                            format="hh:mm A"
-                                                            placeholder="End time"
-                                                            style="width: 100%" />
-
-                                        </el-form-item>
-
-                                    </el-col>
-
-                                </el-row>
-
-
-                                <!-- ENDS NEXT DAY -->
-
-                                <div class="setting-row next-day-row">
-
-                                    <div>
-
-                                        <strong>
-                                            Ends next day
-                                        </strong>
-
-                                        <div class="small-text">
-                                            Enable for schedules that continue past midnight.
-                                        </div>
-
-                                    </div>
-
-
-                                    <el-switch v-model="block.endDayOffset"
-                                               :active-value="1"
-                                               :inactive-value="0" />
-
-                                </div>
-
-
-                                <el-alert v-if="block.endDayOffset === 1"
-                                          title="This block continues into the following day."
-                                          type="warning"
-                                          :closable="false"
-                                          show-icon
-                                          class="next-day-alert" />
-
-                            </template>
-
-
-                            <!-- BLOCK SUMMARY -->
-
-                            <el-alert v-if="block.days.length > 0"
-                                      :title="getBlockSummary(block)"
-                                      type="info"
-                                      :closable="false"
-                                      show-icon
-                                      class="block-summary" />
-
-                        </el-card>
-
-
-                        <el-button type="primary"
-                                   plain
-                                   :icon="Plus"
-                                   class="full-button"
-                                   @click="addBlock">
-                            Add Time Block
-                        </el-button>
-
-                    </el-card>
-
-                </el-col>
-
-            </el-row>
-
-
-            <!-- ================================================== -->
-            <!-- FIXED ACTION BAR -->
-            <!-- ================================================== -->
-
-            <Transition name="action-bar-fade">
-                <div v-if="showActionBar"
-                     class="fixed-actions"
-                     :style="actionBarStyle">
-
-                    <div class="fixed-actions-inner">
-
-                        <div class="action-left">
-
-                            <el-button v-if="isEdit"
-                                       type="danger"
-                                       plain
-                                       size="large"
-                                       :icon="Delete"
-                                       :loading="deleting"
-                                       @click="handleDelete">
-                                Delete Bonus
-                            </el-button>
-
-                        </div>
-
-
-                        <div class="right-actions">
-
-                            <el-button size="large"
-                                       @click="router.back()">
-                                Cancel
-                            </el-button>
-
-
-                            <el-button type="primary"
-                                       size="large"
-                                       :loading="saving"
-                                       :disabled="deleting"
-                                       @click="saveBonus">
-                                {{ isEdit ? 'Save Bonus' : 'Create Bonus' }}
-                            </el-button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-            </Transition>
-
-        </el-form>
-
+      </div>
     </div>
-</template>
+    <!-- ==================================================== -->
+    <!-- LOADING -->
+    <!-- ==================================================== -->
+    <el-skeleton v-if="loading" :rows="10" animated />
+    <!-- ==================================================== -->
+    <!-- FORM -->
+    <!-- ==================================================== -->
+    <el-form v-else ref="formRef" :model="form" :rules="rules" label-position="top">
+      <!-- ================================================== -->
+      <!-- BONUS INFORMATION -->
+      <!-- ================================================== -->
+      <el-card shadow="never" class="section-card bonus-info-card">
+        <div class="bonus-info-grid">
+          <!-- BONUS NAME -->
+          <div class="bonus-name-field">
+            <el-form-item label="Bonus Name" prop="name">
+              <el-input v-model="form.name" size="large" maxlength="200" show-word-limit placeholder="Enter bonus name" />
+            </el-form-item>
+          </div>
+          <!-- STATUS -->
+          <div class="bonus-status-field">
+            <div class="status-label">
+              Status
+            </div>
+            <div class="status-control">
+              <div>
+                <div class="status-value">
+                  {{ form.isActive ? 'Active' : 'Inactive' }}
+                </div>
+                <div class="small-text">
+                  Enable or disable this bonus.
+                </div>
+              </div>
+              <el-switch v-model="form.isActive" size="large" />
+            </div>
+          </div>
+        </div>
+      </el-card>
+      <!-- ================================================== -->
+      <!-- PAYOUTS + SCHEDULE -->
+      <!-- ================================================== -->
+      <el-row :gutter="20">
+        <!-- ================================================= -->
+        <!-- PAYOUTS -->
+        <!-- ================================================= -->
+        <el-col :xs="24" :lg="11">
+          <el-card shadow="never" class="section-card">
+            <template #header>
+              <div class="section-header">
+                <div class="section-title-wrap">
+                  <div class="section-title-icon payout-title-icon">
+                    <el-icon>
+                      <Money />
+                    </el-icon>
+                  </div>
+                  <div>
+                    <strong>
+                      Payouts
+                    </strong>
+                    <div class="small-text">
+                      Define each winning condition and customer payout.
+                    </div>
+                  </div>
+                </div>
+                <el-button type="primary" plain size="small" :icon="Plus" @click="addPayout">
+                  Add Payout
+                </el-button>
+              </div>
 
+            </template>
+
+            <el-empty v-if="form.payouts.length === 0"
+                      description="No payouts added." />
+
+            <!-- MOBILE TABLE LABELS -->
+
+            <div v-if="form.payouts.length > 0"
+                 class="mobile-payout-header">
+
+              <span>
+                DESCRIPTION
+              </span>
+
+              <span>
+                PAY TO CUSTOMER
+              </span>
+
+            </div>
+
+            <!-- PAYOUT ROW -->
+
+            <div v-for="(payout, index) in form.payouts"
+                 :key="index"
+                 class="payout-row">
+
+              <el-input v-model="payout.description"
+                        maxlength="300"
+                        placeholder="Description"
+                        class="payout-description" />
+
+              <el-input-number v-model="payout.amount"
+                               :min="0"
+                               :precision="2"
+                               :controls="false"
+                               class="amount-input" />
+
+              <el-button text
+                         circle
+                         type="danger"
+                         :icon="Delete"
+                         class="payout-delete"
+                         @click="removePayout(index)" />
+
+            </div>
+
+            <el-button type="primary"
+                       plain
+                       :icon="Plus"
+                       class="full-button"
+                       @click="addPayout">
+              Add Payout
+            </el-button>
+
+          </el-card>
+
+        </el-col>
+
+        <!-- ================================================= -->
+        <!-- SCHEDULE -->
+        <!-- ================================================= -->
+
+        <el-col :xs="24"
+                :lg="13">
+
+          <el-card shadow="never"
+                   class="section-card">
+
+            <template #header>
+
+              <div class="section-header">
+
+                <div class="section-title-wrap">
+
+                  <div class="section-title-icon schedule-title-icon">
+                    <el-icon>
+                      <Calendar />
+                    </el-icon>
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      Schedule
+                    </strong>
+
+                    <div class="small-text">
+                      Configure when this bonus is available.
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <el-button type="primary"
+                           plain
+                           size="small"
+                           :icon="Plus"
+                           @click="addBlock">
+                  Add Block
+                </el-button>
+
+              </div>
+
+            </template>
+
+            <el-empty v-if="form.scheduleBlocks.length === 0"
+                      description="No schedule blocks added." />
+
+            <!-- ================================================= -->
+            <!-- EACH SCHEDULE BLOCK -->
+            <!-- ================================================= -->
+
+            <el-card v-for="(block, blockIndex) in form.scheduleBlocks"
+                     :key="blockIndex"
+                     shadow="never"
+                     class="schedule-block">
+
+              <!-- BLOCK HEADER -->
+
+              <div class="block-header">
+
+                <div>
+
+                  <strong>
+                    Block {{ blockIndex + 1 }}
+                  </strong>
+
+                  <div class="small-text">
+                    {{ getBlockSummary(block) }}
+                  </div>
+
+                </div>
+
+                <el-button text
+                           circle
+                           type="danger"
+                           :icon="Delete"
+                           @click="removeBlock(blockIndex)" />
+
+              </div>
+
+              <el-divider />
+
+              <!-- DAYS -->
+
+              <div class="field-label">
+                Runs on
+              </div>
+
+              <el-checkbox-group v-model="block.days"
+                                 class="day-group">
+
+                <el-checkbox-button v-for="day in days"
+                                    :key="day.value"
+                                    :value="day.value">
+                  {{ day.short }}
+                </el-checkbox-button>
+
+              </el-checkbox-group>
+
+              <div class="selected-days">
+                {{ selectedDayNames(block) }}
+              </div>
+
+              <!-- ALL DAY -->
+
+              <div class="setting-row">
+
+                <div>
+
+                  <strong>
+                    All day
+                  </strong>
+
+                  <div class="small-text">
+                    Bonus remains active for the entire selected day.
+                  </div>
+
+                </div>
+
+                <el-switch v-model="block.isAllDay"
+                           @change="handleAllDayChange(block)" />
+
+              </div>
+
+              <!-- TIMED SCHEDULE -->
+
+              <template v-if="!block.isAllDay">
+
+                <el-divider />
+
+                <el-row :gutter="10">
+
+                  <el-col :xs="24"
+                          :sm="12">
+
+                    <el-form-item label="Start Time">
+
+                      <el-time-picker v-model="block.startTime"
+                                      value-format="HH:mm:ss"
+                                      format="hh:mm A"
+                                      placeholder="Start time"
+                                      style="width: 100%" />
+
+                    </el-form-item>
+
+                  </el-col>
+
+                  <el-col :xs="24"
+                          :sm="12">
+
+                    <el-form-item label="End Time">
+
+                      <el-time-picker v-model="block.endTime"
+                                      value-format="HH:mm:ss"
+                                      format="hh:mm A"
+                                      placeholder="End time"
+                                      style="width: 100%" />
+
+                    </el-form-item>
+
+                  </el-col>
+
+                </el-row>
+
+                <!-- ENDS NEXT DAY -->
+
+                <div class="setting-row next-day-row">
+
+                  <div>
+
+                    <strong>
+                      Ends next day
+                    </strong>
+
+                    <div class="small-text">
+                      Enable for schedules that continue past midnight.
+                    </div>
+
+                  </div>
+
+                  <el-switch v-model="block.endDayOffset"
+                             :active-value="1"
+                             :inactive-value="0" />
+
+                </div>
+
+                <el-alert v-if="block.endDayOffset === 1"
+                          title="This block continues into the following day."
+                          type="warning"
+                          :closable="false"
+                          show-icon
+                          class="next-day-alert" />
+
+              </template>
+
+              <!-- BLOCK SUMMARY -->
+
+              <el-alert v-if="block.days.length > 0"
+                        :title="getBlockSummary(block)"
+                        type="info"
+                        :closable="false"
+                        show-icon
+                        class="block-summary" />
+
+            </el-card>
+
+            <el-button type="primary"
+                       plain
+                       :icon="Plus"
+                       class="full-button"
+                       @click="addBlock">
+              Add Time Block
+            </el-button>
+
+          </el-card>
+
+        </el-col>
+
+      </el-row>
+
+      <!-- ================================================== -->
+      <!-- FIXED ACTION BAR -->
+      <!-- ================================================== -->
+
+      <Transition name="action-bar-fade">
+        <div v-if="showActionBar"
+             class="fixed-actions"
+             :style="actionBarStyle">
+
+          <div class="fixed-actions-inner">
+
+            <div class="action-left">
+
+              <el-button v-if="isEdit"
+                         type="danger"
+                         plain
+                         size="large"
+                         :icon="Delete"
+                         :loading="deleting"
+                         @click="handleDelete">
+                Delete Bonus
+              </el-button>
+
+            </div>
+
+            <div class="right-actions">
+
+              <el-button size="large"
+                         @click="router.back()">
+                Cancel
+              </el-button>
+
+              <el-button type="primary"
+                         size="large"
+                         :loading="saving"
+                         :disabled="deleting"
+                         @click="saveBonus">
+                {{ isEdit ? 'Save Bonus' : 'Create Bonus' }}
+              </el-button>
+
+            </div>
+
+          </div>
+
+        </div>
+      </Transition>
+
+    </el-form>
+
+  </div>
+</template>
 
 <script setup>
 import {
-        reactive,
-        ref,
-        computed,
-        nextTick,
-        onMounted,
-        onBeforeUnmount
-} from 'vue'
+  reactive,
+  ref,
+  computed,
+  nextTick,
+  onMounted,
+  onBeforeUnmount
+} from 'vue';
 
 import {
-        ArrowLeft,
-        Plus,
-        Delete,
-        Money,
-        Calendar
-} from '@element-plus/icons-vue'
+  ArrowLeft,
+  Plus,
+  Delete,
+  Money,
+  Calendar
+} from '@element-plus/icons-vue';
 
 import {
-        ElMessage,
-        ElMessageBox
-} from 'element-plus'
+  ElMessage,
+  ElMessageBox
+} from 'element-plus';
 
 import {
-        useRoute,
-        useRouter,
-        onBeforeRouteLeave
-} from 'vue-router'
+  useRoute,
+  useRouter,
+  onBeforeRouteLeave
+} from 'vue-router';
 
 import {
-        useUserStore
-} from '@/store/modules/user'
+  useUserStore
+} from '@/store/modules/user';
 
 import {
-        getBonus,
-        createBonus,
-        updateBonus,
-        deleteBonus
-} from '@/api/bonus'
-
+  getBonus,
+  createBonus,
+  updateBonus,
+  deleteBonus
+} from '@/api/bonus';
 
 // ============================================================
 // ROUTER / STORE
 // ============================================================
 
-const route = useRoute()
+const route = useRoute();
 
-const router = useRouter()
+const router = useRouter();
 
-const userStore = useUserStore()
-
+const userStore = useUserStore();
 
 // ============================================================
 // STATE
 // ============================================================
 
-const formRef = ref(null)
+const formRef = ref(null);
 
-const loading = ref(false)
+const loading = ref(false);
 
-const saving = ref(false)
+const saving = ref(false);
 
-const deleting = ref(false)
+const deleting = ref(false);
 
-const showActionBar = ref(false)
+const showActionBar = ref(false);
 
 const actionBarStyle = ref({
-        left: '0px',
-        width: '100%'
-})
+  left: '0px',
+  width: '100%'
+});
 
-let actionBarTimer = null
-
+let actionBarTimer = null;
 
 // ============================================================
 // BONUS ID
 // ============================================================
 
 const bonusId = computed(() => {
-
-        return Number(
-            route.params.id
-        )
-})
-
+  return Number(
+    route.params.id
+  );
+});
 
 const isEdit = computed(() => {
-
-        return Boolean(
-            bonusId.value
-        )
-})
-
+  return Boolean(
+    bonusId.value
+  );
+});
 
 // ============================================================
 // DAYS
 // ============================================================
 
 const days = [
-        {
-            value: 1,
-            short: 'M',
-            name: 'Monday'
-        },
+  {
+    value: 1,
+    short: 'M',
+    name: 'Monday'
+  },
 
-        {
-            value: 2,
-            short: 'T',
-            name: 'Tuesday'
-        },
+  {
+    value: 2,
+    short: 'T',
+    name: 'Tuesday'
+  },
 
-        {
-            value: 3,
-            short: 'W',
-            name: 'Wednesday'
-        },
+  {
+    value: 3,
+    short: 'W',
+    name: 'Wednesday'
+  },
 
-        {
-            value: 4,
-            short: 'T',
-            name: 'Thursday'
-        },
+  {
+    value: 4,
+    short: 'T',
+    name: 'Thursday'
+  },
 
-        {
-            value: 5,
-            short: 'F',
-            name: 'Friday'
-        },
+  {
+    value: 5,
+    short: 'F',
+    name: 'Friday'
+  },
 
-        {
-            value: 6,
-            short: 'S',
-            name: 'Saturday'
-        },
+  {
+    value: 6,
+    short: 'S',
+    name: 'Saturday'
+  },
 
-        {
-            value: 7,
-            short: 'S',
-            name: 'Sunday'
-        }
-]
-
+  {
+    value: 7,
+    short: 'S',
+    name: 'Sunday'
+  }
+];
 
 // ============================================================
 // FORM
@@ -597,846 +560,706 @@ const days = [
 
 const form = reactive({
 
-        name: '',
+  name: '',
 
-        isActive: true,
+  isActive: true,
 
-        payouts: [],
+  payouts: [],
 
-        scheduleBlocks: []
-})
-
+  scheduleBlocks: []
+});
 
 const rules = {
 
-        name: [
-            {
-                required: true,
+  name: [
+    {
+      required: true,
 
-                message:
+      message:
                     'Bonus name is required.',
 
-                trigger:
+      trigger:
                     'blur'
-            }
-        ]
-}
-
+    }
+  ]
+};
 
 // ============================================================
 // PAYOUTS
 // ============================================================
 
 const addPayout = () => {
+  form.payouts.push({
 
-        form.payouts.push({
+    description: '',
 
-            description: '',
-
-            amount: 0
-        })
-}
-
+    amount: 0
+  });
+};
 
 const removePayout = index => {
-
-        form.payouts.splice(
-            index,
-            1
-        )
-}
-
+  form.payouts.splice(
+    index,
+    1
+  );
+};
 
 // ============================================================
 // SCHEDULE BLOCKS
 // ============================================================
 
 const addBlock = () => {
+  form.scheduleBlocks.push({
 
-        form.scheduleBlocks.push({
+    isAllDay: true,
 
-            isAllDay: true,
+    startTime: null,
 
-            startTime: null,
+    endTime: null,
 
-            endTime: null,
+    endDayOffset: 0,
 
-            endDayOffset: 0,
-
-            days: [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7
-            ]
-        })
-}
-
+    days: [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  });
+};
 
 const removeBlock = index => {
-
-        form.scheduleBlocks.splice(
-            index,
-            1
-        )
-}
-
+  form.scheduleBlocks.splice(
+    index,
+    1
+  );
+};
 
 // ============================================================
 // ALL DAY CHANGE
 // ============================================================
 
 const handleAllDayChange = block => {
+  if (block.isAllDay) {
+    block.startTime = null;
 
-        if (block.isAllDay) {
+    block.endTime = null;
 
-            block.startTime = null
-
-            block.endTime = null
-
-            block.endDayOffset = 0
-        }
-}
-
+    block.endDayOffset = 0;
+  }
+};
 
 // ============================================================
 // SELECTED DAY NAMES
 // ============================================================
 
 const selectedDayNames = block => {
+  if (!block.days?.length) {
+    return 'No days selected';
+  }
 
-        if (!block.days?.length) {
+  if (block.days.length === 7) {
+    return 'Every day';
+  }
 
-            return 'No days selected'
-        }
-
-
-        if (block.days.length === 7) {
-
-            return 'Every day'
-        }
-
-
-        return days
-            .filter(
-                day =>
-                    block.days.includes(
-                        day.value
-                    )
-            )
-            .map(
-                day =>
-                    day.name
-            )
-            .join(', ')
-}
-
+  return days
+    .filter(
+      day =>
+        block.days.includes(
+          day.value
+        )
+    )
+    .map(
+      day =>
+        day.name
+    )
+    .join(', ');
+};
 
 // ============================================================
 // FORMAT TIME
 // ============================================================
 
 const formatTime = value => {
+  if (!value) {
+    return '';
+  }
 
-        if (!value) {
-            return ''
-        }
+  const parts =
+            value.split(':');
 
+  let hour =
+            Number(parts[0]);
 
-        const parts =
-            value.split(':')
+  const minute =
+            parts[1];
 
-
-        let hour =
-            Number(parts[0])
-
-
-        const minute =
-            parts[1]
-
-
-        const period =
+  const period =
             hour >= 12
-                ? 'PM'
-                : 'AM'
+              ? 'PM'
+              : 'AM';
 
-
-        hour =
+  hour =
             hour % 12 ||
-            12
+            12;
 
-
-        return `${hour}:${minute} ${period}`
-}
-
+  return `${hour}:${minute} ${period}`;
+};
 
 // ============================================================
 // BLOCK SUMMARY
 // ============================================================
 
 const getBlockSummary = block => {
+  const dayText =
+            selectedDayNames(block);
 
-        const dayText =
-            selectedDayNames(block)
+  if (block.isAllDay) {
+    return `${dayText} · All day`;
+  }
 
-
-        if (block.isAllDay) {
-
-            return `${dayText} · All day`
-        }
-
-
-        if (
-            !block.startTime ||
+  if (
+    !block.startTime ||
             !block.endTime
-        ) {
+  ) {
+    return `${dayText} · Select start and end time`;
+  }
 
-            return `${dayText} · Select start and end time`
-        }
-
-
-        let text =
+  let text =
             `${dayText} · ` +
             `${formatTime(block.startTime)} - ` +
-            `${formatTime(block.endTime)}`
+            `${formatTime(block.endTime)}`;
 
+  if (block.endDayOffset === 1) {
+    text +=
+                ' (next day)';
+  }
 
-        if (block.endDayOffset === 1) {
-
-            text +=
-                ' (next day)'
-        }
-
-
-        return text
-}
-
+  return text;
+};
 
 // ============================================================
 // LOAD BONUS
 // ============================================================
 
 const loadBonus = async () => {
+  if (!isEdit.value) {
+    return;
+  }
 
-        if (!isEdit.value) {
-            return
-        }
+  try {
+    loading.value = true;
 
-
-        try {
-
-            loading.value = true
-
-
-            const response =
+    const response =
                 await getBonus(
-                    bonusId.value
-                )
+                  bonusId.value
+                );
 
+    const data =
+                response.data;
 
-            const data =
-                response.data
+    form.name =
+                data.name ?? '';
 
+    form.isActive =
+                data.isActive ?? true;
 
-            form.name =
-                data.name ?? ''
-
-
-            form.isActive =
-                data.isActive ?? true
-
-
-            form.payouts =
+    form.payouts =
                 (
-                    data.payouts ??
+                  data.payouts ??
                     []
                 )
-                    .map(
-                        item => ({
+                  .map(
+                    item => ({
 
-                            description:
+                      description:
                                 item.description ?? '',
 
-                            amount:
+                      amount:
                                 Number(
-                                    item.amount ??
+                                  item.amount ??
                                     0
                                 )
-                        })
-                    )
+                    })
+                  );
 
-
-            form.scheduleBlocks =
+    form.scheduleBlocks =
                 (
-                    data.scheduleBlocks ??
+                  data.scheduleBlocks ??
                     []
                 )
-                    .map(
-                        item => ({
+                  .map(
+                    item => ({
 
-                            isAllDay:
+                      isAllDay:
                                 Boolean(
-                                    item.isAllDay
+                                  item.isAllDay
                                 ),
 
-                            startTime:
+                      startTime:
                                 item.startTime ??
                                 null,
 
-                            endTime:
+                      endTime:
                                 item.endTime ??
                                 null,
 
-                            endDayOffset:
+                      endDayOffset:
                                 Number(
-                                    item.endDayOffset ??
+                                  item.endDayOffset ??
                                     0
                                 ),
 
-                            days:
+                      days:
                                 (
-                                    item.days ??
+                                  item.days ??
                                     []
                                 )
-                                    .map(
-                                        Number
-                                    )
-                        })
-                    )
-
-        } catch (error) {
-
-            ElMessage.error(
-                error.response?.data?.message ||
+                                  .map(
+                                    Number
+                                  )
+                    })
+                  );
+  } catch (error) {
+    ElMessage.error(
+      error.response?.data?.message ||
                 'Unable to load bonus.'
-            )
-
-        } finally {
-
-            loading.value = false
-        }
-}
-
+    );
+  } finally {
+    loading.value = false;
+  }
+};
 
 // ============================================================
 // CUSTOM VALIDATION
 // ============================================================
 
 const validateBonus = () => {
+  if (
+    form.payouts.length === 0
+  ) {
+    ElMessage.warning(
+      'Please add at least one payout.'
+    );
 
-        if (
-            form.payouts.length === 0
-        ) {
+    return false;
+  }
 
-            ElMessage.warning(
-                'Please add at least one payout.'
-            )
+  for (
+    const payout of
+    form.payouts
+  ) {
+    if (
+      !payout.description
+        ?.trim()
+    ) {
+      ElMessage.warning(
+        'Each payout needs a description.'
+      );
 
-            return false
-        }
+      return false;
+    }
 
-
-        for (
-            const payout of
-            form.payouts
-        ) {
-
-            if (
-                !payout.description
-                    ?.trim()
-            ) {
-
-                ElMessage.warning(
-                    'Each payout needs a description.'
-                )
-
-                return false
-            }
-
-
-            if (
-                payout.amount === null ||
+    if (
+      payout.amount === null ||
                 payout.amount === undefined ||
                 Number(payout.amount) < 0
-            ) {
+    ) {
+      ElMessage.warning(
+        'Enter a valid payout amount.'
+      );
 
-                ElMessage.warning(
-                    'Enter a valid payout amount.'
-                )
+      return false;
+    }
+  }
 
-                return false
-            }
-        }
+  if (
+    form.scheduleBlocks
+      .length === 0
+  ) {
+    ElMessage.warning(
+      'Please add at least one schedule block.'
+    );
 
+    return false;
+  }
 
-        if (
-            form.scheduleBlocks
-                .length === 0
-        ) {
-
-            ElMessage.warning(
-                'Please add at least one schedule block.'
-            )
-
-            return false
-        }
-
-
-        for (
-            let index = 0;
-            index <
+  for (
+    let index = 0;
+    index <
             form.scheduleBlocks.length;
-            index++
-        ) {
+    index++
+  ) {
+    const block =
+                form.scheduleBlocks[index];
 
-            const block =
-                form.scheduleBlocks[index]
-
-
-            if (
-                !block.days ||
+    if (
+      !block.days ||
                 block.days.length === 0
-            ) {
+    ) {
+      ElMessage.warning(
+        `Block ${index + 1} needs at least one day.`
+      );
 
-                ElMessage.warning(
-                    `Block ${index + 1} needs at least one day.`
-                )
+      return false;
+    }
 
-                return false
-            }
-
-
-            if (
-                !block.isAllDay
-            ) {
-
-                if (
-                    !block.startTime ||
+    if (
+      !block.isAllDay
+    ) {
+      if (
+        !block.startTime ||
                     !block.endTime
-                ) {
+      ) {
+        ElMessage.warning(
+          `Block ${index + 1} needs a start and end time.`
+        );
 
-                    ElMessage.warning(
-                        `Block ${index + 1} needs a start and end time.`
-                    )
+        return false;
+      }
 
-                    return false
-                }
-
-
-                if (
-                    Number(
-                        block.endDayOffset
-                    ) === 0
-                    &&
+      if (
+        Number(
+          block.endDayOffset
+        ) === 0 &&
                     block.endTime <=
                     block.startTime
-                ) {
+      ) {
+        ElMessage.warning(
+          `Block ${index + 1}: End time must be after start time, or enable "Ends next day".`
+        );
 
-                    ElMessage.warning(
-                        `Block ${index + 1}: End time must be after start time, or enable "Ends next day".`
-                    )
+        return false;
+      }
+    }
+  }
 
-                    return false
-                }
-            }
-        }
-
-
-        return true
-}
-
+  return true;
+};
 
 // ============================================================
 // BUILD PAYLOAD
 // ============================================================
 
 const buildPayload = () => {
+  return {
 
-        return {
-
-            name:
+    name:
                 form.name.trim(),
 
-            isActive:
+    isActive:
                 Boolean(
-                    form.isActive
+                  form.isActive
                 ),
 
-            locationId:
+    locationId:
                 Number(
-                    userStore.locationId
+                  userStore.locationId
                 ),
 
-
-            payouts:
+    payouts:
                 form.payouts.map(
-                    item => ({
+                  item => ({
 
-                        description:
+                    description:
                             item.description
-                                .trim(),
+                              .trim(),
 
-                        amount:
+                    amount:
                             Number(
-                                item.amount
+                              item.amount
                             )
-                    })
+                  })
                 ),
 
-
-            scheduleBlocks:
+    scheduleBlocks:
                 form.scheduleBlocks.map(
-                    block => ({
+                  block => ({
 
-                        isAllDay:
+                    isAllDay:
                             Boolean(
-                                block.isAllDay
+                              block.isAllDay
                             ),
 
-                        startTime:
+                    startTime:
                             block.isAllDay
-                                ? null
-                                : block.startTime,
+                              ? null
+                              : block.startTime,
 
-                        endTime:
+                    endTime:
                             block.isAllDay
-                                ? null
-                                : block.endTime,
+                              ? null
+                              : block.endTime,
 
-                        endDayOffset:
+                    endDayOffset:
                             block.isAllDay
-                                ? 0
-                                : Number(
-                                    block.endDayOffset ??
+                              ? 0
+                              : Number(
+                                block.endDayOffset ??
                                     0
-                                ),
+                              ),
 
-                        days:
+                    days:
                             [
-                                ...block.days
+                              ...block.days
                             ]
-                                .map(
-                                    Number
-                                )
-                                .sort(
-                                    (a, b) =>
-                                        a - b
-                                )
-                    })
+                              .map(
+                                Number
+                              )
+                              .sort(
+                                (a, b) =>
+                                  a - b
+                              )
+                  })
                 )
-        }
-}
-
+  };
+};
 
 // ============================================================
 // SAVE BONUS
 // ============================================================
 
 const saveBonus = async () => {
-
-        try {
-
-            const valid =
+  try {
+    const valid =
                 await formRef.value
-                    .validate()
-                    .catch(
-                        () => false
-                    )
+                  .validate()
+                  .catch(
+                    () => false
+                  );
 
+    if (!valid) {
+      return;
+    }
 
-            if (!valid) {
-                return
-            }
+    if (
+      !validateBonus()
+    ) {
+      return;
+    }
 
+    saving.value = true;
 
-            if (
-                !validateBonus()
-            ) {
-                return
-            }
+    const payload =
+                buildPayload();
 
+    let response;
 
-            saving.value = true
-
-
-            const payload =
-                buildPayload()
-
-
-            let response
-
-
-            if (
-                isEdit.value
-            ) {
-
-                response =
+    if (
+      isEdit.value
+    ) {
+      response =
                     await updateBonus(
-                        bonusId.value,
-                        payload
-                    )
-
-            } else {
-
-                response =
+                      bonusId.value,
+                      payload
+                    );
+    } else {
+      response =
                     await createBonus(
-                        payload
-                    )
-            }
+                      payload
+                    );
+    }
 
+    ElMessage.success(
+      response.message
+    );
 
-            ElMessage.success(
-                response.message
-            )
-
-
-            router.push({
-                name:
+    router.push({
+      name:
                     'BonusManagement'
-            })
-
-        } catch (error) {
-
-            ElMessage.error(
-                error.response?.data?.message ||
+    });
+  } catch (error) {
+    ElMessage.error(
+      error.response?.data?.message ||
                 'Unable to save bonus.'
-            )
-
-        } finally {
-
-            saving.value = false
-        }
-}
-
+    );
+  } finally {
+    saving.value = false;
+  }
+};
 
 // ============================================================
 // DELETE BONUS
 // ============================================================
 
 const handleDelete = async () => {
-
-        try {
-
-            await ElMessageBox.confirm(
-                'Are you sure you want to delete this bonus? Its payouts and schedules will also be deleted.',
-                'Delete Bonus',
-                {
-                    confirmButtonText:
+  try {
+    await ElMessageBox.confirm(
+      'Are you sure you want to delete this bonus? Its payouts and schedules will also be deleted.',
+      'Delete Bonus',
+      {
+        confirmButtonText:
                         'Delete',
 
-                    cancelButtonText:
+        cancelButtonText:
                         'Cancel',
 
-                    type:
+        type:
                         'warning'
-                }
-            )
+      }
+    );
 
+    deleting.value = true;
 
-            deleting.value = true
-
-
-            const response =
+    const response =
                 await deleteBonus(
-                    bonusId.value
-                )
+                  bonusId.value
+                );
 
+    ElMessage.success(
+      response.message
+    );
 
-            ElMessage.success(
-                response.message
-            )
-
-
-            router.push({
-                name:
+    router.push({
+      name:
                     'BonusManagement'
-            })
-
-        } catch (error) {
-
-            if (
-                error === 'cancel' ||
+    });
+  } catch (error) {
+    if (
+      error === 'cancel' ||
                 error === 'close'
-            ) {
+    ) {
+      return;
+    }
 
-                return
-            }
-
-
-            ElMessage.error(
-                error.response?.data?.message ||
+    ElMessage.error(
+      error.response?.data?.message ||
                 'Unable to delete bonus.'
-            )
-
-        } finally {
-
-            deleting.value = false
-        }
-}
-
+    );
+  } finally {
+    deleting.value = false;
+  }
+};
 
 // ============================================================
 // FIXED ACTION BAR
 // ============================================================
 
 const updateActionBarPosition = () => {
-
-        const main =
+  const main =
             document.querySelector('.app-main') ||
-            document.querySelector('main.el-main')
+            document.querySelector('main.el-main');
 
+  if (!main) {
+    actionBarStyle.value = {
+      left: '0px',
+      width: '100%'
+    };
 
-        if (!main) {
+    return;
+  }
 
-            actionBarStyle.value = {
-                left: '0px',
-                width: '100%'
-            }
+  const rect =
+            main.getBoundingClientRect();
 
-            return
-        }
-
-
-        const rect =
-            main.getBoundingClientRect()
-
-
-        actionBarStyle.value = {
-            left: `${Math.max(0, rect.left)}px`,
-            width: `${Math.max(0, rect.width)}px`
-        }
-}
-
+  actionBarStyle.value = {
+    left: `${Math.max(0, rect.left)}px`,
+    width: `${Math.max(0, rect.width)}px`
+  };
+};
 
 const showSettledActionBar = () => {
+  updateActionBarPosition();
 
-        updateActionBarPosition()
+  if (actionBarTimer !== null) {
+    window.clearTimeout(
+      actionBarTimer
+    );
+  }
 
-
-        if (actionBarTimer !== null) {
-
-            window.clearTimeout(
-                actionBarTimer
-            )
-        }
-
-
-        actionBarTimer =
+  actionBarTimer =
             window.setTimeout(
-                () => {
+              () => {
+                updateActionBarPosition();
 
-                    updateActionBarPosition()
+                showActionBar.value =
+                        true;
 
-                    showActionBar.value =
-                        true
-
-                    actionBarTimer =
-                        null
-                },
-                550
-            )
-}
-
+                actionBarTimer =
+                        null;
+              },
+              550
+            );
+};
 
 const wait = milliseconds => {
-
-        return new Promise(
-            resolve => {
-
-                window.setTimeout(
-                    resolve,
-                    milliseconds
-                )
-            }
-        )
-}
-
+  return new Promise(
+    resolve => {
+      window.setTimeout(
+        resolve,
+        milliseconds
+      );
+    }
+  );
+};
 
 // ============================================================
 // INITIALIZE
 // ============================================================
 
 onMounted(
-        async () => {
+  async () => {
+    if (
+      isEdit.value
+    ) {
+      await loadBonus();
+    } else {
+      addPayout();
 
-            if (
-                isEdit.value
-            ) {
+      addBlock();
+    }
 
-                await loadBonus()
+    await nextTick();
 
-            } else {
+    window.addEventListener(
+      'resize',
+      updateActionBarPosition
+    );
 
-                addPayout()
-
-                addBlock()
-            }
-
-
-            await nextTick()
-
-
-            window.addEventListener(
-                'resize',
-                updateActionBarPosition
-            )
-
-
-            showSettledActionBar()
-        }
-)
-
+    showSettledActionBar();
+  }
+);
 
 onBeforeRouteLeave(
-        async () => {
+  async () => {
+    if (
+      !showActionBar.value
+    ) {
+      return true;
+    }
 
-            if (
-                !showActionBar.value
-            ) {
+    showActionBar.value =
+                false;
 
-                return true
-            }
+    await nextTick();
 
+    await wait(320);
 
-            showActionBar.value =
-                false
-
-
-            await nextTick()
-
-            await wait(320)
-
-
-            return true
-        }
-)
-
+    return true;
+  }
+);
 
 onBeforeUnmount(
-        () => {
+  () => {
+    if (
+      actionBarTimer !== null
+    ) {
+      window.clearTimeout(
+        actionBarTimer
+      );
 
-            if (
-                actionBarTimer !== null
-            ) {
+      actionBarTimer =
+                    null;
+    }
 
-                window.clearTimeout(
-                    actionBarTimer
-                )
-
-                actionBarTimer =
-                    null
-            }
-
-
-            window.removeEventListener(
-                'resize',
-                updateActionBarPosition
-            )
-        }
-)
+    window.removeEventListener(
+      'resize',
+      updateActionBarPosition
+    );
+  }
+);
 </script>
-
 

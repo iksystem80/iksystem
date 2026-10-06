@@ -1,11 +1,11 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 export function getPromotions(params = {}) {
   return request({
     url: '/promotion/list',
     method: 'get',
     params
-  })
+  });
 }
 
 export function getPromotion(id) {
@@ -13,7 +13,7 @@ export function getPromotion(id) {
     url: '/promotion/detail',
     method: 'get',
     params: { id }
-  })
+  });
 }
 
 export function createPromotion(data) {
@@ -21,7 +21,7 @@ export function createPromotion(data) {
     url: '/promotion/create',
     method: 'post',
     data
-  })
+  });
 }
 
 export function updatePromotion(data) {
@@ -29,7 +29,7 @@ export function updatePromotion(data) {
     url: '/promotion/update',
     method: 'put',
     data
-  })
+  });
 }
 
 export function savePromotionRecipients(data) {
@@ -37,7 +37,7 @@ export function savePromotionRecipients(data) {
     url: '/promotion/recipients',
     method: 'post',
     data
-  })
+  });
 }
 
 export function sendPromotion(id) {
@@ -45,7 +45,7 @@ export function sendPromotion(id) {
     url: '/promotion/send',
     method: 'post',
     data: { id }
-  })
+  });
 }
 
 export function getPromotionRecipients(id) {
@@ -53,7 +53,7 @@ export function getPromotionRecipients(id) {
     url: '/promotion/recipients',
     method: 'get',
     params: { id }
-  })
+  });
 }
 
 export function getPromotionLogs(id) {
@@ -61,5 +61,5 @@ export function getPromotionLogs(id) {
     url: '/promotion/logs',
     method: 'get',
     params: { id }
-  })
+  });
 }

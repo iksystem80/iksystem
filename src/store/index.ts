@@ -1,13 +1,13 @@
-import { createPinia, acceptHMRUpdate } from 'pinia'
-import type { App } from 'vue'
+import { createPinia } from 'pinia';
+import type { App } from 'vue';
 
-const pinia = createPinia()
+const pinia = createPinia();
 
 /**
  * Setup Pinia
  */
 export function setupStore(app: App) {
-    app.use(pinia)
+  app.use(pinia);
 }
 
 /**
@@ -16,6 +16,6 @@ export function setupStore(app: App) {
  * Stores can also define their own HMR handling
  * when imported directly.
  */
-export { pinia }
+export { pinia };
 
-export default pinia
+export default pinia;

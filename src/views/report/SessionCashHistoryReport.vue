@@ -3,7 +3,7 @@
     <div class="page-header">
       <div class="header-left">
         <el-button circle class="back-button" @click="router.back()"><el-icon><ArrowLeft /></el-icon></el-button>
-        <div><h2>Session Cash History Report</h2><p>Full session reconciliation report for the selected location.</p></div>
+        <div><h2 class="page-title">Session Cash History Report</h2><div class="page-subtitle">Full session reconciliation report for the selected location.</div></div>
       </div>
       <el-button :loading="loading" @click="loadReport"><el-icon><Refresh /></el-icon>Refresh</el-button>
     </div>
@@ -72,63 +72,62 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ArrowLeft, Refresh } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/modules/user'
-import { useAppStore } from '@/store/modules/app'
-import { getSessionCashHistoryReport } from '@/api/employeeFinance'
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { ArrowLeft, Refresh } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { useUserStore } from '@/store/modules/user';
+import { useAppStore } from '@/store/modules/app';
+import { getSessionCashHistoryReport } from '@/api/employeeFinance';
 
-const router = useRouter()
-const userStore = useUserStore()
-const appStore = useAppStore()
-const device = computed(() => appStore.device)
-const locationId = computed(() => userStore.locationId)
-const isAdmin = computed(() => ['owner','admin','system admin'].includes(String(userStore.roleName || '').toLowerCase()))
+const router = useRouter();
+const userStore = useUserStore();
+const appStore = useAppStore();
+const device = computed(() => appStore.device);
+const locationId = computed(() => userStore.locationId);
+const isAdmin = computed(() => ['owner', 'admin', 'system admin'].includes(String(userStore.roleName || '').toLowerCase()));
 
-const loading = ref(false)
-const dateRange = ref([])
-const employeeId = ref(null)
-const employees = ref([])
-const rows = ref([])
-const summary = ref({})
+const loading = ref(false);
+const dateRange = ref([]);
+const employeeId = ref(null);
+const employees = ref([]);
+const rows = ref([]);
+const summary = ref({});
 
-const money = value => Number(value || 0).toLocaleString('en-US',{ style:'currency',currency:'USD' })
-const number = value => Number(value || 0).toLocaleString()
-const dateTime = value => value ? new Date(value).toLocaleString() : '—'
-const varianceClass = value => Number(value) < 0 ? 'short-text' : Number(value) > 0 ? 'over-text' : ''
-const signedMoney = value => `${Number(value) > 0 ? '+' : ''}${money(value)}`
-const rangeLabel = computed(() => dateRange.value?.length === 2 ? `${dateRange.value[0]} → ${dateRange.value[1]}` : 'All time')
+const money = value => Number(value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const number = value => Number(value || 0).toLocaleString();
+const dateTime = value => value ? new Date(value).toLocaleString() : '—';
+const varianceClass = value => Number(value) < 0 ? 'short-text' : Number(value) > 0 ? 'over-text' : '';
+const signedMoney = value => `${Number(value) > 0 ? '+' : ''}${money(value)}`;
+const rangeLabel = computed(() => dateRange.value?.length === 2 ? `${dateRange.value[0]} → ${dateRange.value[1]}` : 'All time');
 
 async function loadReport() {
-  if (!locationId.value) return
+  if (!locationId.value) return;
   try {
-    loading.value = true
-    const params = { locationid: locationId.value }
+    loading.value = true;
+    const params = { locationid: locationId.value };
     if (dateRange.value?.length === 2) {
-      params.startdate = dateRange.value[0]
-      params.enddate = dateRange.value[1]
+      params.startdate = dateRange.value[0];
+      params.enddate = dateRange.value[1];
     }
-    if (isAdmin.value && employeeId.value) params.employeeid = employeeId.value
-    const data = (await getSessionCashHistoryReport(params)).data || {}
-    rows.value = data.rows || []
-    summary.value = data.summary || {}
-    employees.value = data.employees || []
-  } catch(e) {
-    ElMessage.error(e?.response?.data?.message || e?.message || 'Unable to load session cash report.')
+    if (isAdmin.value && employeeId.value) params.employeeid = employeeId.value;
+    const data = (await getSessionCashHistoryReport(params)).data || {};
+    rows.value = data.rows || [];
+    summary.value = data.summary || {};
+    employees.value = data.employees || [];
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.message || e?.message || 'Unable to load session cash report.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function clearFilters() {
-  dateRange.value = []
-  employeeId.value = null
-  await loadReport()
+  dateRange.value = [];
+  employeeId.value = null;
+  await loadReport();
 }
 
-onMounted(loadReport)
+onMounted(loadReport);
 </script>
-
 

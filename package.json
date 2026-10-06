@@ -1,10 +1,10 @@
 {
-  "name": "vue3-element-admin",
+  "name": "IK System",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev:test": "vite --mode dev_test",
+    "dev:test": "vite --mode dev_test --open",
     "dev:prod": "vite --mode dev_prod",
     "build:test": "vite build --mode build_test",
     "build:prod": "vite build --mode build_prod",
@@ -15,6 +15,7 @@
     "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
+    "@capgo/capacitor-nfc": "^8.2.10",
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.11.0",
     "clipboard": "^2.0.11",
@@ -26,6 +27,8 @@
     "file-saver": "^2.0.5",
     "fuse.js": "^6.6.2",
     "js-cookie": "^3.0.5",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "jszip": "^3.10.1",
     "nprogress": "^0.2.0",
     "path-browserify": "^1.0.1",
@@ -58,14 +61,13 @@
     "unplugin-vue-components": "^28.8.0",
     "vite": "^6.3.5",
     "vite-plugin-inspect": "^11.3.2",
-    "vite-plugin-mock": "^2.9.8",
     "vue-tsc": "^3.0.4"
   },
   "allowScripts": {
-    "@parcel/watcher@2.5.1": true,
-    "esbuild@0.25.8": true,
-    "esbuild@0.14.54": true,
     "vue-demi@0.14.10": true,
-    "canvas@3.2.3": true
+    "canvas@3.2.3": true,
+    "@parcel/watcher@2.6.0": true,
+    "core-js@3.50.0": true,
+    "esbuild@0.25.12": true
   }
 }

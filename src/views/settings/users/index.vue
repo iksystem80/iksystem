@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="page-header">
       <div>
-        <h2>User Management</h2>
+        <h2 class="page-title">User Management</h2>
         <p>Manage user information, role assignment and account status.</p>
       </div>
       <el-button v-if="canCreate" type="primary" @click="openCreate">
@@ -96,92 +96,91 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue'
-import NewEmployee from './newemployee.vue'
-import { getemployees, deleteemployee, updateemployeestatus } from '@/api/employee'
-import { useUserStore } from '@/store/modules/user'
-import { useAppStore } from '@/store/modules/app'
-import checkPermission from '@/utils/permission'
+import { computed, onMounted, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue';
+import NewEmployee from './newemployee.vue';
+import { getemployees, deleteemployee, updateemployeestatus } from '@/api/employee';
+import { useUserStore } from '@/store/modules/user';
+import { useAppStore } from '@/store/modules/app';
+import checkPermission from '@/utils/permission';
 
-const userStore = useUserStore()
-const appStore = useAppStore()
-const device = computed(() => appStore.device)
-const employees = ref<any[]>([])
-const loading = ref(false)
-const dialogVisible = ref(false)
-const selectedEmployee = ref<any | null>(null)
-const search = ref('')
-const statusFilter = ref('')
+const userStore = useUserStore();
+const appStore = useAppStore();
+const device = computed(() => appStore.device);
+const employees = ref<any[]>([]);
+const loading = ref(false);
+const dialogVisible = ref(false);
+const selectedEmployee = ref<any | null>(null);
+const search = ref('');
+const statusFilter = ref('');
 
-const canCreate = computed(() => checkPermission('users.create'))
-const canUpdate = computed(() => checkPermission('users.update'))
-const canDelete = computed(() => checkPermission('users.delete'))
+const canCreate = computed(() => checkPermission('users.create'));
+const canUpdate = computed(() => checkPermission('users.update'));
+const canDelete = computed(() => checkPermission('users.delete'));
 
 const filteredEmployees = computed(() => {
-  const text = search.value.trim().toLowerCase()
+  const text = search.value.trim().toLowerCase();
   return employees.value.filter(row => {
     const matchesText = !text || [row.name, row.username, row.roleName, row.jobTitle, row.email]
-      .some(value => String(value || '').toLowerCase().includes(text))
-    const matchesStatus = !statusFilter.value || (statusFilter.value === 'active' ? row.isActive : !row.isActive)
-    return matchesText && matchesStatus
-  })
-})
+      .some(value => String(value || '').toLowerCase().includes(text));
+    const matchesStatus = !statusFilter.value || (statusFilter.value === 'active' ? row.isActive : !row.isActive);
+    return matchesText && matchesStatus;
+  });
+});
 
 async function loadEmployees() {
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await getemployees(userStore.locationId)
-    employees.value = response.data || []
+    const response = await getemployees(userStore.locationId);
+    employees.value = response.data || [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function openCreate() {
-  selectedEmployee.value = null
-  dialogVisible.value = true
+  selectedEmployee.value = null;
+  dialogVisible.value = true;
 }
 
 function openEdit(row: any) {
-  selectedEmployee.value = { ...row, locationId: userStore.locationId }
-  dialogVisible.value = true
+  selectedEmployee.value = { ...row, locationId: userStore.locationId };
+  dialogVisible.value = true;
 }
 
 async function handleSaved() {
-  dialogVisible.value = false
-  await loadEmployees()
+  dialogVisible.value = false;
+  await loadEmployees();
 }
 
 async function changeStatus(row: any, value: boolean) {
   try {
-    await updateemployeestatus(row.id, value)
-    row.isActive = value
-    ElMessage.success('User status updated')
+    await updateemployeestatus(row.id, value);
+    row.isActive = value;
+    ElMessage.success('User status updated');
   } catch {
-    await loadEmployees()
+    await loadEmployees();
   }
 }
 
 async function removeUser(row: any) {
   try {
-    await ElMessageBox.confirm(`Delete ${row.name}?`, 'Delete User', { type: 'warning', confirmButtonText: 'Delete' })
-    await deleteemployee(row.id)
-    ElMessage.success('User deleted successfully')
-    await loadEmployees()
+    await ElMessageBox.confirm(`Delete ${row.name}?`, 'Delete User', { type: 'warning', confirmButtonText: 'Delete' });
+    await deleteemployee(row.id);
+    ElMessage.success('User deleted successfully');
+    await loadEmployees();
   } catch (error: any) {
     if (error !== 'cancel' && error !== 'close' && error?.response?.status === 409) {
-      ElMessage.error(error?.response?.data?.message || 'This user cannot be deleted')
+      ElMessage.error(error?.response?.data?.message || 'This user cannot be deleted');
     }
   }
 }
 
 function initials(name: string) {
-  return String(name || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()
+  return String(name || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
 }
 
-onMounted(loadEmployees)
+onMounted(loadEmployees);
 </script>
-
 

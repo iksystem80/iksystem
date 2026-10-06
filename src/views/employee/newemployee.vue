@@ -54,25 +54,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
-import { ElMessage } from 'element-plus'
-import { saveemployee, updateemployee } from '@/api/employee'
-import { getRoles } from '@/api/role'
-import { useUserStore } from '@/store/modules/user'
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import type { FormInstance, FormRules } from 'element-plus';
+import { ElMessage } from 'element-plus';
+import { saveemployee, updateemployee } from '@/api/employee';
+import { getRoles } from '@/api/role';
+import { useUserStore } from '@/store/modules/user';
 
-const props = defineProps<{ employee?: any | null }>()
-const emit = defineEmits(['close', 'saved'])
-const userStore = useUserStore()
-const formRef = ref<FormInstance>()
-const saving = ref(false)
-const roles = ref<any[]>([])
-const isEdit = computed(() => !!props.employee?.id)
+const props = defineProps<{ employee?: any | null }>();
+const emit = defineEmits(['close', 'saved']);
+const userStore = useUserStore();
+const formRef = ref<FormInstance>();
+const saving = ref(false);
+const roles = ref<any[]>([]);
+const isEdit = computed(() => !!props.employee?.id);
 
 const form = reactive({
   username: '', password: '', name: '', email: '', phone: '', jobTitle: '',
-  roleId: null as number | null, locationid: '', avatar: '/upload/profile.png', isActive: true,
-})
+  roleId: null as number | null, locationid: '', avatar: '/upload/profile.png', isActive: true
+});
 
 const rules: FormRules = {
   name: [{ required: true, message: 'Name is required', trigger: 'blur' }],
@@ -80,61 +80,60 @@ const rules: FormRules = {
   roleId: [{ required: true, message: 'Role is required', trigger: 'change' }],
   password: [{
     validator: (_rule, value, callback) => {
-      if (!isEdit.value && !value) return callback(new Error('Password is required'))
-      if (value && value.length < 3) return callback(new Error('Password must be at least 3 characters'))
-      callback()
+      if (!isEdit.value && !value) return callback(new Error('Password is required'));
+      if (value && value.length < 3) return callback(new Error('Password must be at least 3 characters'));
+      callback();
     },
-    trigger: 'blur',
-  }],
-}
+    trigger: 'blur'
+  }]
+};
 
 function fillForm() {
-  const row = props.employee
-  form.username = row?.username || ''
-  form.password = ''
-  form.name = row?.name || ''
-  form.email = row?.email || ''
-  form.phone = row?.phone || ''
-  form.jobTitle = row?.jobTitle || ''
-  form.roleId = row?.roleId ?? null
-  form.locationid = String(row?.locationId || userStore.locationId)
-  form.avatar = row?.avatar || '/upload/profile.png'
-  form.isActive = row?.isActive ?? true
+  const row = props.employee;
+  form.username = row?.username || '';
+  form.password = '';
+  form.name = row?.name || '';
+  form.email = row?.email || '';
+  form.phone = row?.phone || '';
+  form.jobTitle = row?.jobTitle || '';
+  form.roleId = row?.roleId ?? null;
+  form.locationid = String(row?.locationId || userStore.locationId);
+  form.avatar = row?.avatar || '/upload/profile.png';
+  form.isActive = row?.isActive ?? true;
 }
 
 async function loadRoles() {
-  const response = await getRoles()
-  roles.value = response.data || []
+  const response = await getRoles();
+  roles.value = response.data || [];
 }
 
 async function submitForm() {
-  if (!formRef.value) return
-  await formRef.value.validate()
+  if (!formRef.value) return;
+  await formRef.value.validate();
 
   try {
-    saving.value = true
-    const payload = { ...form, locationid: userStore.locationId }
+    saving.value = true;
+    const payload = { ...form, locationid: userStore.locationId };
 
     if (isEdit.value) {
-      await updateemployee(props.employee.id, payload)
-      ElMessage.success('User updated successfully')
+      await updateemployee(props.employee.id, payload);
+      ElMessage.success('User updated successfully');
     } else {
-      await saveemployee(payload)
-      ElMessage.success('User created successfully')
+      await saveemployee(payload);
+      ElMessage.success('User created successfully');
     }
 
-    emit('saved')
+    emit('saved');
   } catch (error: any) {
     if (error?.response?.status === 400 || error?.response?.status === 409) {
-      ElMessage.error(error?.response?.data?.message || error?.message || 'Unable to save user')
+      ElMessage.error(error?.response?.data?.message || error?.message || 'Unable to save user');
     }
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
-watch(() => props.employee, fillForm, { immediate: true })
-onMounted(loadRoles)
+watch(() => props.employee, fillForm, { immediate: true });
+onMounted(loadRoles);
 </script>
-
 

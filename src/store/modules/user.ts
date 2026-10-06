@@ -1,441 +1,382 @@
-import { defineStore, acceptHMRUpdate } from 'pinia'
-import { ref, computed } from 'vue'
-import { login as apiLogin, getInfo as apiGetInfo } from '@/api/user'
+import { defineStore, acceptHMRUpdate } from 'pinia';
+import { ref, computed } from 'vue';
+import { login as apiLogin, getInfo as apiGetInfo } from '@/api/user';
 import {
-    getToken,
-    setToken,
-    removeToken,
-    getUserId,
-    setUserId,
-    removeUserId
-} from '@/utils/auth'
-import router, { resetRouter } from '@/router'
-import { useTagsViewStore } from './tagsView'
-import { usePermissionStore } from './permission'
-import { initializeSocketListeners, cleanupSocket } from '@/services/socketListeners'
-import { getClockStatus } from '@/api/employeesession'
+  getToken,
+  setToken,
+  removeToken,
+  getUserId,
+  setUserId,
+  removeUserId
+} from '@/utils/auth';
+import router, { resetRouter } from '@/router';
+import { useTagsViewStore } from './tagsView';
+import { usePermissionStore } from './permission';
+import { initializeSocketListeners, cleanupSocket } from '@/services/socketListeners';
+import { getClockStatus } from '@/api/employeesession';
 
 interface LoginInfo {
-    username: string
-    password: string
+  username: string
+  password: string
 }
 
 export const useUserStore = defineStore('user', () => {
-    // ============================================================
-    // STATE
-    // ============================================================
+  const token = ref<string>(getToken());
+  const userId = ref<string>(getUserId());
 
-    const token = ref<string>(getToken())
-    const userId = ref<string>(getUserId())
+  const name = ref('');
+  const avatar = ref('');
 
-    const name = ref('')
-    const avatar = ref('')
+  const roles = ref<string[]>([]);
+  const roleId = ref<number | null>(null);
+  const roleName = ref('');
+  const permissions = ref<string[]>([]);
 
-    const roles = ref<string[]>([])
-    const roleId = ref<number | null>(null)
-    const roleName = ref('')
-    const permissions = ref<string[]>([])
+  const companyId = ref<number | null>(null);
+  const companyName = ref('');
 
-    const companyId = ref<number | null>(null)
-    const companyName = ref('')
+  const locationId = ref('');
+  const location = ref('');
+  const locations = ref<any[]>([]);
+  const allowfaceCheckin = ref(false);
 
-    const locationId = ref('')
-    const location = ref('')
-    const locations = ref<any[]>([])
-    const allowfaceCheckin = ref(false)
+  const infoLoaded = ref(false);
 
-    const infoLoaded = ref(false)
+  const hasfaceallowed = computed(() => allowfaceCheckin.value);
 
-    const hasfaceallowed = computed(() => allowfaceCheckin.value)
+  const normalizedRole = computed(() =>
+    String(roleName.value || '').trim().toLowerCase()
+  );
 
-    // ============================================================
-    // ROLE HELPERS
-    // ============================================================
+  const isSystemAdmin = computed(
+    () => normalizedRole.value === 'system admin'
+  );
 
-    const normalizedRole = computed(() =>
-        String(roleName.value || '').trim().toLowerCase()
-    )
+  const isOwner = computed(
+    () => normalizedRole.value === 'owner'
+  );
 
-    const isSystemAdmin = computed(
-        () => normalizedRole.value === 'system admin'
-    )
+  const isAdmin = computed(
+    () => normalizedRole.value === 'admin'
+  );
 
-    const isOwner = computed(
-        () => normalizedRole.value === 'owner'
-    )
+  const isManager = computed(
+    () => normalizedRole.value === 'manager'
+  );
 
-    const isAdmin = computed(
-        () => normalizedRole.value === 'admin'
-    )
+  // this is new
+  const isEmployee = computed(() => normalizedRole.value === 'employee');
+  // this is new
+  const isCheckIn = computed(() => normalizedRole.value === 'checkin');
 
-    const isManager = computed(
-        () => normalizedRole.value === 'manager'
-    )
+  const isOwnerOrAdmin = computed(() => isOwner.value || isAdmin.value);
 
-    const isEmployee = computed(
-        () => normalizedRole.value === 'employee'
-    )
+  const isClocked = ref(false);
+  const isClockedIn = computed(() => isClocked.value);
+  const activeClockSession = ref(null);
 
-    const isOwnerOrAdmin = computed(
-        () => isOwner.value || isAdmin.value
-    )
+  function setClockedIn(value) {
+    isClocked.value = Boolean(value);
+  }
 
-    const isClocked = ref(false)
-    const isClockedIn = computed(() => isClocked.value)
-    const activeClockSession = ref(null)
+  function isSystemAdminPermission(permission: string): boolean {
+    return [
+      'companies.',
+      'locations.',
+      'users.'
+    ].some(prefix => permission.startsWith(prefix));
+  }
 
-    function setClockedIn(value) {
-        isClocked.value = Boolean(value)
+  function hasPermission(permission: string): boolean {
+    if (isSystemAdmin.value) {
+      return isSystemAdminPermission(permission);
     }
 
-    // ============================================================
-    // PERMISSION HELPER
-    // ============================================================
-
-    function isSystemAdminPermission(permission: string): boolean {
-        return [
-            'companies.',
-            'locations.',
-            'users.'
-        ].some(prefix => permission.startsWith(prefix))
+    if (isOwner.value) {
+      return true;
     }
 
-    function hasPermission(permission: string): boolean {
-        if (isSystemAdmin.value) {
-            return isSystemAdminPermission(permission)
-        }
+    return permissions.value.includes(permission);
+  }
 
-        if (isOwner.value) {
-            return true
-        }
+  async function login(userInfo: LoginInfo): Promise<void> {
+    // A new authentication must never reuse routes from the
+    // previously logged-in account.
+    // This is new
+    const permissionStore = usePermissionStore();
+    permissionStore.resetRoutes();
+    resetRouter();
 
-        return permissions.value.includes(permission)
+    const response = await apiLogin({
+      username: userInfo.username.trim(),
+      password: userInfo.password
+    });
+
+    token.value = response.token || '';
+    userId.value = String(response.userid || '');
+
+    companyId.value =
+      response.companyid != null
+        ? Number(response.companyid)
+        : null;
+
+    companyName.value =
+      response.companyname || '';
+
+    locationId.value =
+      response.locationid != null
+        ? String(response.locationid)
+        : '';
+
+    location.value =
+      response.locationname || '';
+
+    infoLoaded.value = false;
+
+    setToken(token.value);
+    setUserId(userId.value);
+
+    if (response.locationid) {
+      initializeSocketListeners(response.locationid);
+    }
+  }
+
+  async function getInfo() {
+    //console.log('get info called')
+    const response = await apiGetInfo(
+      token.value,
+      userId.value
+    );
+
+    if (!response?.data) {
+      throw new Error(
+        'Verification failed, please login again.'
+      );
     }
 
-    // ============================================================
-    // LOGIN
-    // ============================================================
+    const data = response.data;
 
-    async function login(userInfo: LoginInfo): Promise<void> {
-        const response = await apiLogin({
-            username: userInfo.username.trim(),
-            password: userInfo.password
-        })
+    console.log(data);
 
-        token.value = response.token || ''
-        userId.value = String(response.userid || '')
+    roles.value = Array.isArray(data.roles) ? data.roles : [];
 
-        companyId.value =
-            response.companyid != null
-                ? Number(response.companyid)
-                : null
+    roleId.value = data.roleid != null ? Number(data.roleid) : null;
 
-        companyName.value =
-            response.companyname || ''
+    roleName.value = data.rolename || '';
 
-        locationId.value =
-            response.locationid != null
-                ? String(response.locationid)
-                : ''
+    permissions.value = Array.isArray(data.permissions) ? data.permissions : [];
 
-        location.value =
-            response.locationname || ''
+    name.value = data.name || '';
+    avatar.value = data.avatar || '';
 
-        infoLoaded.value = false
+    companyId.value = data.companyid != null ? Number(data.companyid) : null;
 
-        setToken(token.value)
-        setUserId(userId.value)
+    companyName.value = data.companyname || '';
 
-        if (response.locationid) {
-            initializeSocketListeners(response.locationid)
-        }
+    if (!locationId.value) {
+      locationId.value = data.locationid != null ? String(data.locationid) : '';
+
+      location.value = data.location || '';
+      allowfaceCheckin.value = Boolean(data.allowfacecheckin);
     }
 
-    // ============================================================
-    // GET USER INFO
-    // ============================================================
+    locations.value = Array.isArray(response.locations) ? response.locations : [];
 
-    async function getInfo() {
-        const response = await apiGetInfo(
-            token.value,
-            userId.value
-        )
+    infoLoaded.value = true;
+   
+    return data;
+  }
 
-        if (!response?.data) {
-            throw new Error(
-                'Verification failed, please login again.'
-            )
-        }
+  async function rebuildRoutes() {
+    console.log('rebuildRoutes called')
+    const permissionStore = usePermissionStore();
 
-        const data = response.data
+    resetRouter();
+    // This is new
+    permissionStore.resetRoutes();
 
-        console.log(data)
-        
+    const accessRoutes = permissionStore.generateRoutes(permissions.value, roleName.value);
 
-        roles.value =
-            Array.isArray(data.roles)
-                ? data.roles
-                : []
+    // console.log(accessRoutes)
+    accessRoutes.forEach(route => { router.addRoute(route); });
 
-        roleId.value =
-            data.roleid != null
-                ? Number(data.roleid)
-                : null
+    //console.log(router.getRoutes())
 
-        roleName.value =
-            data.rolename || ''
+    // console.log(accessRoutes)
+    // This is new
+    permissionStore.setRoutesLoaded(true);
 
-        permissions.value =
-            Array.isArray(data.permissions)
-                ? data.permissions
-                : []
+    const tagsViewStore = useTagsViewStore();
+    tagsViewStore.delAllViews();
+  }
 
-        name.value =
-            data.name || ''
+  async function changeLocation(
+    locid: string,
+    locationname: string
+  ): Promise<void> {
+    locationId.value = String(locid || '');
+    location.value = locationname || '';
 
-        avatar.value =
-            data.avatar || ''
+    cleanupSocket();
 
-        companyId.value =
-            data.companyid != null
-                ? Number(data.companyid)
-                : null
-
-        companyName.value =
-            data.companyname || ''
-
-        if (!locationId.value) {
-            locationId.value =
-                data.locationid != null
-                    ? String(data.locationid)
-                    : ''
-
-            location.value = data.location || ''
-
-
-            allowfaceCheckin.value = data.allowfacecheckin
-
-            console.log('das' + allowfaceCheckin.value)
-        }
-
-        locations.value =
-            Array.isArray(response.locations)
-                ? response.locations
-                : []
-
-        
-        infoLoaded.value = true
-
-        return data
+    if (locid) {
+      initializeSocketListeners(locid);
     }
 
-    // ============================================================
-    // REBUILD ROUTES
-    // ============================================================
+    await getInfo();
+    await rebuildRoutes();
+  }
 
-    async function rebuildRoutes() {
-        const permissionStore = usePermissionStore()
+  function clearUserState(): void {
+    token.value = '';
+    userId.value = '';
 
-        resetRouter()
+    name.value = '';
+    avatar.value = '';
 
-        const accessRoutes =
-            permissionStore.generateRoutes(
-                permissions.value,
-                roleName.value
-            )
+    roles.value = [];
+    roleId.value = null;
+    roleName.value = '';
+    permissions.value = [];
 
-        accessRoutes.forEach(route => {
-            router.addRoute(route)
-        })
+    companyId.value = null;
+    companyName.value = '';
 
-        const tagsViewStore = useTagsViewStore()
-        tagsViewStore.delAllViews()
-    }
+    locationId.value = '';
+    location.value = '';
+    locations.value = [];
+    allowfaceCheckin.value = false;
 
-    // ============================================================
-    // CHANGE LOCATION
-    // ============================================================
+    isClocked.value = false;
+    activeClockSession.value = null;
 
-    async function changeLocation(
-        locid: string,
-        locationname: string
-    ): Promise<void> {
-        locationId.value = String(locid || '')
-        location.value = locationname || ''
+    infoLoaded.value = false;
+  }
 
-        cleanupSocket()
+  async function logout(): Promise<void> {
+    cleanupSocket();
 
-        if (locid) {
-            initializeSocketListeners(locid)
-        }
+    const permissionStore = usePermissionStore();
+    const tagsViewStore = useTagsViewStore();
 
-        await getInfo()
-        await rebuildRoutes()
-    }
+    // Clear auth first so the route guard knows this is a logout.
+    removeToken();
+    removeUserId();
 
-    // ============================================================
-    // CLEAR USER STATE
-    // ============================================================
+    // Clear application state.
+    clearUserState();
 
-    function clearUserState(): void {
-        token.value = ''
-        userId.value = ''
+    // Clear permission/sidebar state.
+    permissionStore.resetRoutes();
+    tagsViewStore.delAllViews();
 
-        name.value = ''
-        avatar.value = ''
-
-        roles.value = []
-        roleId.value = null
-        roleName.value = ''
-        permissions.value = []
-
-        companyId.value = null
-        companyName.value = ''
-
-        locationId.value = ''
-        location.value = ''
-        locations.value = []
-
-        infoLoaded.value = false
-    }
-
-    // ============================================================
-    // LOGOUT
-    //
     // IMPORTANT:
-    // Navigate away BEFORE clearing locationId.
-    // This prevents mounted pages from making requests with:
-    //
-    // locationid=
-    // ============================================================
-
-    async function logout(): Promise<void> {
-        // Stop socket requests first.
-        cleanupSocket()
-
-        // Remove persisted authentication.
-        removeToken()
-        removeUserId()
-
-        // Remove dynamic routes.
-        resetRouter()
-
-        const tagsViewStore = useTagsViewStore()
-        tagsViewStore.delAllViews()
-
-        // Leave current location-dependent page first.
-        if (router.currentRoute.value.path !== '/login') {
-            await router.replace('/login')
-        }
-
-        // Now it is safe to clear reactive state.
-        clearUserState()
+    // Go directly to login BEFORE resetting the router.
+    if (router.currentRoute.value.path !== '/login') {
+      await router.replace('/login');
     }
 
-    // ============================================================
-    // RESET TOKEN
-    //
-    // Used when authentication fails.
-    // Router guard handles navigation.
-    // ============================================================
+    // Now it is safe to remove old dynamic routes.
+    resetRouter();
+  }
 
-    function resetToken(): void {
-        cleanupSocket()
+  function resetToken(): void {
+    cleanupSocket();
 
-        removeToken()
-        removeUserId()
+    removeToken();
+    removeUserId();
 
-        clearUserState()
+    const permissionStore = usePermissionStore();
+    permissionStore.resetRoutes();
+
+    resetRouter();
+    clearUserState();
+  }
+
+  async function loadClockStatus() {
+    try {
+      if (!userId.value) {
+        isClocked.value = false;
+        activeClockSession.value = null;
+        return;
+      }
+
+      const response =
+        await getClockStatus(
+          userId.value
+        );
+
+      isClocked.value =
+        Boolean(
+          response?.data?.clockedIn
+        );
+
+      activeClockSession.value =
+        response?.data?.session || null;
+    } catch (error) {
+      console.error(
+        'Unable to load clock status:',
+        error
+      );
+
+      isClocked.value = false;
+      activeClockSession.value = null;
     }
+  }
 
-    async function loadClockStatus() {
-        try {
-            if (!userId.value) {
-                isClocked.value = false
-                activeClockSession.value = null
-                return
-            }
+  return {
+    token,
+    userId,
 
-            const response =
-                await getClockStatus(
-                    userId.value
-                )
+    name,
+    avatar,
 
-            isClocked.value =
-                Boolean(
-                    response?.data?.clockedIn
-                )
+    roles,
+    roleId,
+    roleName,
+    permissions,
 
-            activeClockSession.value =
-                response?.data?.session || null
+    companyId,
+    companyName,
 
-        } catch (error) {
-            console.error(
-                'Unable to load clock status:',
-                error
-            )
+    locationId,
+    location,
+    locations,
 
-            isClocked.value = false
-            activeClockSession.value = null
-        }
-    }
+    infoLoaded,
 
-    // ============================================================
-    // RETURN
-    // ============================================================
+    normalizedRole,
+    isSystemAdmin,
+    isOwnerOrAdmin,
+    isOwner,
+    isAdmin,
+    isManager,
+    isEmployee,
+    isCheckIn,
 
-    return {
-        token,
-        userId,
+    hasPermission,
+    hasfaceallowed,
 
-        name,
-        avatar,
+    login,
+    getInfo,
+    logout,
+    resetToken,
+    changeLocation,
+    rebuildRoutes,
 
-        roles,
-        roleId,
-        roleName,
-        permissions,
-
-        companyId,
-        companyName,
-
-        locationId,
-        location,
-        locations,
-
-        infoLoaded,
-
-        normalizedRole,
-        isSystemAdmin,
-        isOwnerOrAdmin,
-        isOwner,
-        isAdmin,
-        isManager,
-        isEmployee,
-
-        hasPermission,
-        hasfaceallowed,
-
-        login,
-        getInfo,
-        logout,
-        resetToken,
-        changeLocation,
-        rebuildRoutes,
-
-        isClockedIn,
-        isClocked,
-        activeClockSession,
-        setClockedIn,
-        loadClockStatus
-    }
-})
+    isClockedIn,
+    isClocked,
+    activeClockSession,
+    setClockedIn,
+    loadClockStatus
+  };
+});
 
 if (import.meta.hot) {
-    import.meta.hot.accept(
-        acceptHMRUpdate(
-            useUserStore,
-            import.meta.hot
-        )
+  import.meta.hot.accept(
+    acceptHMRUpdate(
+      useUserStore,
+      import.meta.hot
     )
+  );
 }

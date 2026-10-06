@@ -63,11 +63,11 @@ export default defineComponent({
             radius: [15, 95],
             center: ['50%', '38%'],
             data: [
-                { value: 100, name: 'IGT' },
-                { value: 240, name: 'Twinstar' },
-                { value: 149, name: 'J-43' },
-                { value: 350, name: 'Firelink' },
-                { value: 270, name: 'Wood' }
+              { value: 100, name: 'IGT' },
+              { value: 240, name: 'Twinstar' },
+              { value: 149, name: 'J-43' },
+              { value: 350, name: 'Firelink' },
+              { value: 270, name: 'Wood' }
             ],
             animationEasing: 'cubicInOut',
             animationDuration: 2600

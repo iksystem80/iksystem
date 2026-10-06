@@ -1,182 +1,181 @@
 <template>
-    <el-scrollbar ref="scrollContainer"
-                  :vertical="false"
-                  class="scroll-container"
-                  @wheel.prevent="handleScroll">
-        <slot />
-    </el-scrollbar>
+  <el-scrollbar ref="scrollContainer"
+                :vertical="false"
+                class="scroll-container"
+                @wheel.prevent="handleScroll">
+    <slot />
+  </el-scrollbar>
 </template>
 
 <script setup lang="ts">
-    import {
-        computed,
-        nextTick,
-        onBeforeUnmount,
-        onMounted,
-        ref
-    } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref
+} from 'vue';
 
-    defineOptions({
-        name: 'ScrollPane'
-    })
+defineOptions({
+  name: 'ScrollPane'
+});
 
-    const tagAndTagSpacing = 4
+const tagAndTagSpacing = 4;
 
-    /**
+/**
      * Element Plus scrollbar ref
      */
-    const scrollContainer = ref<any>(null)
+const scrollContainer = ref<any>(null);
 
-    /**
+/**
      * Get the actual scrollable wrapper.
      *
      * Element Plus exposes the wrapper through:
      * scrollbar.$refs.wrapRef
      */
-    const scrollWrapper = computed<HTMLElement | null>(() => {
-        return scrollContainer.value?.$refs?.wrapRef || null
-    })
+const scrollWrapper = computed<HTMLElement | null>(() => {
+  return scrollContainer.value?.$refs?.wrapRef || null;
+});
 
-    /**
+/**
      * Emit scroll event to parent.
      */
-    const emit = defineEmits<{
-        (e: 'scroll'): void
-    }>()
+const emit = defineEmits<{(e: 'scroll'): void
+    }>();
 
-    /**
+/**
      * Handle mouse wheel.
      *
      * Converts vertical mouse-wheel movement into
      * horizontal scrolling.
      */
-    function handleScroll(event: WheelEvent) {
-        const wrapper = scrollWrapper.value
+function handleScroll(event: WheelEvent) {
+  const wrapper = scrollWrapper.value;
 
-        if (!wrapper) {
-            return
-        }
+  if (!wrapper) {
+    return;
+  }
 
-        const delta =
+  const delta =
             event.deltaY ||
             event.deltaX ||
-            0
+            0;
 
-        wrapper.scrollLeft += delta
-    }
+  wrapper.scrollLeft += delta;
+}
 
-    /**
+/**
      * Native scroll listener.
      */
-    function handleNativeScroll() {
-        emit('scroll')
-    }
+function handleNativeScroll() {
+  emit('scroll');
+}
 
-    /**
+/**
      * Move the supplied tag into the visible area.
      *
      * currentTag must be an HTMLElement.
      */
-    async function moveToTarget(
-        currentTag: HTMLElement | null
-    ) {
-        await nextTick()
+async function moveToTarget(
+  currentTag: HTMLElement | null
+) {
+  await nextTick();
 
-        const wrapper = scrollWrapper.value
+  const wrapper = scrollWrapper.value;
 
-        if (!wrapper || !currentTag) {
-            return
-        }
+  if (!wrapper || !currentTag) {
+    return;
+  }
 
-        const container =
-            scrollContainer.value?.$el as HTMLElement | undefined
+  const container =
+            scrollContainer.value?.$el as HTMLElement | undefined;
 
-        if (!container) {
-            return
-        }
+  if (!container) {
+    return;
+  }
 
-        const containerWidth =
-            container.offsetWidth
+  const containerWidth =
+            container.offsetWidth;
 
-        const tagLeft =
-            currentTag.offsetLeft
+  const tagLeft =
+            currentTag.offsetLeft;
 
-        const tagRight =
+  const tagRight =
             tagLeft +
-            currentTag.offsetWidth
+            currentTag.offsetWidth;
 
-        const currentScrollLeft =
-            wrapper.scrollLeft
+  const currentScrollLeft =
+            wrapper.scrollLeft;
 
-        const visibleLeft =
-            currentScrollLeft
+  const visibleLeft =
+            currentScrollLeft;
 
-        const visibleRight =
+  const visibleRight =
             currentScrollLeft +
-            containerWidth
+            containerWidth;
 
-        /**
+  /**
          * Tag is outside the right side.
          */
-        if (
-            tagRight >
+  if (
+    tagRight >
             visibleRight
-        ) {
-            wrapper.scrollLeft =
+  ) {
+    wrapper.scrollLeft =
                 tagRight -
                 containerWidth +
-                tagAndTagSpacing
+                tagAndTagSpacing;
 
-            return
-        }
+    return;
+  }
 
-        /**
+  /**
          * Tag is outside the left side.
          */
-        if (
-            tagLeft <
+  if (
+    tagLeft <
             visibleLeft
-        ) {
-            wrapper.scrollLeft =
+  ) {
+    wrapper.scrollLeft =
                 tagLeft -
-                tagAndTagSpacing
-        }
-    }
+                tagAndTagSpacing;
+  }
+}
 
-    /**
+/**
      * Expose methods to parent component.
      *
      * TagsView uses:
      *
      * scrollPane.value?.moveToTarget(element)
      */
-    defineExpose({
-        moveToTarget
-    })
+defineExpose({
+  moveToTarget
+});
 
-    onMounted(() => {
-        const wrapper = scrollWrapper.value
+onMounted(() => {
+  const wrapper = scrollWrapper.value;
 
-        if (wrapper) {
-            wrapper.addEventListener(
-                'scroll',
-                handleNativeScroll,
-                true
-            )
-        }
-    })
+  if (wrapper) {
+    wrapper.addEventListener(
+      'scroll',
+      handleNativeScroll,
+      true
+    );
+  }
+});
 
-    onBeforeUnmount(() => {
-        const wrapper = scrollWrapper.value
+onBeforeUnmount(() => {
+  const wrapper = scrollWrapper.value;
 
-        if (wrapper) {
-            wrapper.removeEventListener(
-                'scroll',
-                handleNativeScroll,
-                true
-            )
-        }
-    })
+  if (wrapper) {
+    wrapper.removeEventListener(
+      'scroll',
+      handleNativeScroll,
+      true
+    );
+  }
+});
 </script>
 
 <style lang="scss" scoped>

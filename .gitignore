@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+node_modules/
 .DS_Store
 dist
 dist-ssr
@@ -29,48 +29,13 @@ coverage
 
 *.tsbuildinfo
 
-
-# ========================================
-# IK System - Environment Configuration
-# ========================================
+# Environment files
 .env
 .env.*
 !.env.example
 
-# Local Visual Studio files
-.vs/
-
-# Certificates and private keys
+# Local SSL certificates
 certs/
-*.keystore
-*.jks
-*.p12
-*.p8
-*.mobileprovision
-*.pem
 
-# ========================================
-# Capacitor Android
-# ========================================
-android/.gradle/
-android/local.properties
-android/app/build/
-android/build/
-android/.idea/
-*.apk
-*.aab
-
-# ========================================
-# Capacitor iOS
-# ========================================
-ios/DerivedData/
-ios/App/Pods/
-ios/build/
-*.xcarchive
-*.ipa
-
-# ========================================
-# Operating System
-# ========================================
-Thumbs.db
-
+# Backup/archive files
+*.zip

@@ -8,7 +8,15 @@ import vueEslintParser from 'vue-eslint-parser';
 
 export default [
   // 忽略文件配置
-  { ignores: ['node_modules/**', 'dist/**', '.vscode/*'] },
+  {
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      '.vscode/**',
+      'android/**',
+      'ios/**'
+    ]
+  },
 
   // 推荐的ESLint配置
   js.configs.recommended,
@@ -173,10 +181,19 @@ export default [
       }],
       'no-unreachable': 'error',
       'no-unsafe-finally': 'error',
-      'no-unused-vars': ['error', {
+
+      // Use the TypeScript-aware unused-variable rule only.
+      // This prevents duplicate no-unused-vars reports.
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', {
         'vars': 'all',
         'args': 'none'
       }],
+
+      // Existing project uses `any` extensively. Keep it allowed while
+      // retaining the rest of the TypeScript recommended checks.
+      '@typescript-eslint/no-explicit-any': 'off',
+
       'no-useless-call': 'error',
       'no-useless-computed-key': 'error',
       'no-useless-constructor': 'error',
@@ -221,10 +238,6 @@ export default [
       'vue/attribute-hyphenation': ['error', 'always'],
       'vue/order-in-components': 'error',
       'vue/singleline-html-element-content-newline': 'off',
-      // 'vue/singleline-html-element-content-newline': ['error', {
-      //   'ignoreWhenNoAttributes': true,
-      //   'ignoreWhenEmpty': true
-      // }],
       'wrap-iife': ['error', 'any'],
       'yield-star-spacing': ['error', 'both'],
       'yoda': ['error', 'never'],

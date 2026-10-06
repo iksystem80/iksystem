@@ -1,170 +1,169 @@
 <template>
-    <div class="timeline-container">
-        <div v-if="loading" class="timeline-loading">
-            Loading history...
-        </div>
-        <el-empty v-else-if="groupedTimeline.length === 0" description="No customer activity found." />
-        <el-timeline v-else>
-            <el-timeline-item v-for="group in groupedTimeline" :key="group.key" :timestamp="group.displayDateTime" placement="top" type="primary">
-                <el-card class="timeline-card" shadow="hover">
-                    <div v-for="(item, index) in group.items" :key="item.id" class="timeline-log">
-                        <div class="timeline-header">
-                            <h4>
-                                {{ getTitle(item) }}
-                            </h4>
-                            <el-tag :type="getTagType(item.logtype)" size="small" effect="light">
-                                {{ getTagLabel(item.logtype) }}
-                            </el-tag>
-                        </div>
-                        <p class="timeline-description">
-                            {{ item.description }}
-                        </p>
-                        <div v-if="item.oldvalue !== null && item.newvalue !== null" class="change-values">
-                            <span class="old-value">
-                                {{ formatValue(item.logtype, item.oldvalue) }}
-                            </span>
-                            <span class="arrow">
-                                →
-                            </span>
-                            <span class="new-value">
-                                {{ formatValue(item.logtype, item.newvalue) }}
-                            </span>
-                        </div>
-                        <el-divider v-if="index < group.items.length - 1" class="log-divider" />
-                    </div>
-                </el-card>
-            </el-timeline-item>
-        </el-timeline>
+  <div class="timeline-container">
+    <div v-if="loading" class="timeline-loading">
+      Loading history...
     </div>
+    <el-empty v-else-if="groupedTimeline.length === 0" description="No customer activity found." />
+    <el-timeline v-else>
+      <el-timeline-item v-for="group in groupedTimeline" :key="group.key" :timestamp="group.displayDateTime" placement="top" type="primary">
+        <el-card class="timeline-card" shadow="hover">
+          <div v-for="(item, index) in group.items" :key="item.id" class="timeline-log">
+            <div class="timeline-header">
+              <h4>
+                {{ getTitle(item) }}
+              </h4>
+              <el-tag :type="getTagType(item.logtype)" size="small" effect="light">
+                {{ getTagLabel(item.logtype) }}
+              </el-tag>
+            </div>
+            <p class="timeline-description">
+              {{ item.description }}
+            </p>
+            <div v-if="item.oldvalue !== null && item.newvalue !== null" class="change-values">
+              <span class="old-value">
+                {{ formatValue(item.logtype, item.oldvalue) }}
+              </span>
+              <span class="arrow">
+                →
+              </span>
+              <span class="new-value">
+                {{ formatValue(item.logtype, item.newvalue) }}
+              </span>
+            </div>
+            <el-divider v-if="index < group.items.length - 1" class="log-divider" />
+          </div>
+        </el-card>
+      </el-timeline-item>
+    </el-timeline>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getcustomerlogs } from '@/api/customer'
+import { ref, computed, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
+import { getcustomerlogs } from '@/api/customer';
 
 const props = defineProps({
-      customer: {
-        type: Object,
-        required: true
-      }
-})
+  customer: {
+    type: Object,
+    required: true
+  }
+});
 
-const timeline = ref([])
-const loading = ref(false)
+const timeline = ref([]);
+const loading = ref(false);
 
 const loadTimeline = async () => {
-      try {
-        loading.value = true
+  try {
+    loading.value = true;
 
-        const response = await getcustomerlogs(props.customer.id)
+    const response = await getcustomerlogs(props.customer.id);
 
-        timeline.value = response.data ?? []
-
-      } catch (error) {
-        ElMessage.error(
-          error.response?.data?.message ||
+    timeline.value = response.data ?? [];
+  } catch (error) {
+    ElMessage.error(
+      error.response?.data?.message ||
           'Unable to load customer history.'
-        )
-      } finally {
-        loading.value = false
-      }
-}
+    );
+  } finally {
+    loading.value = false;
+  }
+};
 
 defineExpose({
-    reloadTimeline: loadTimeline
-})
+  reloadTimeline: loadTimeline
+});
 
 const groupedTimeline = computed(() => {
-      const groups = {}
+  const groups = {};
 
-      timeline.value.forEach(item => {
-        const date = new Date(item.datecreated)
+  timeline.value.forEach(item => {
+    const date = new Date(item.datecreated);
 
-        // Group by date + hour + minute
-        const key = [
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate(),
-          date.getHours(),
-          date.getMinutes()
-        ].join('-')
+    // Group by date + hour + minute
+    const key = [
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes()
+    ].join('-');
 
-        if (!groups[key]) {
-          groups[key] = {
-            key,
+    if (!groups[key]) {
+      groups[key] = {
+        key,
 
-            displayDateTime: date.toLocaleString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit'
-            }),
+        displayDateTime: date.toLocaleString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        }),
 
-            items: []
-          }
-        }
+        items: []
+      };
+    }
 
-        groups[key].items.push(item)
-      })
+    groups[key].items.push(item);
+  });
 
-      return Object.values(groups)
-})
+  return Object.values(groups);
+});
 
 const getTitle = item => {
-      if (item.logtype === 'POINTS') {
-        return 'Customer Points Updated'
-      }
+  if (item.logtype === 'POINTS') {
+    return 'Customer Points Updated';
+  }
 
-      if (item.logtype === 'PRIVILEGED_MATCH_RULE') {
-        return 'Privileged Match Rule Updated'
-      }
+  if (item.logtype === 'PRIVILEGED_MATCH_RULE') {
+    return 'Privileged Match Rule Updated';
+  }
 
-      return 'Customer Updated'
-}
+  return 'Customer Updated';
+};
 
 const getTagLabel = type => {
-      if (type === 'POINTS') {
-        return 'Points'
-      }
+  if (type === 'POINTS') {
+    return 'Points';
+  }
 
-      if (type === 'PRIVILEGED_MATCH_RULE') {
-        return 'Match Rule'
-      }
+  if (type === 'PRIVILEGED_MATCH_RULE') {
+    return 'Match Rule';
+  }
 
-      return 'Update'
-}
+  return 'Update';
+};
 
 const getTagType = type => {
-      if (type === 'POINTS') {
-        return 'primary'
-      }
+  if (type === 'POINTS') {
+    return 'primary';
+  }
 
-      if (type === 'PRIVILEGED_MATCH_RULE') {
-        return 'warning'
-      }
+  if (type === 'PRIVILEGED_MATCH_RULE') {
+    return 'warning';
+  }
 
-      return 'info'
-}
+  return 'info';
+};
 
 const formatValue = (type, value) => {
-      if (type === 'PRIVILEGED_MATCH_RULE') {
-        return String(value) === 'true'
-          ? 'Enabled'
-          : 'Disabled'
-      }
+  if (type === 'PRIVILEGED_MATCH_RULE') {
+    return String(value) === 'true'
+      ? 'Enabled'
+      : 'Disabled';
+  }
 
-      if (type === 'POINTS') {
-        return `${value} pts`
-      }
+  if (type === 'POINTS') {
+    return `${value} pts`;
+  }
 
-      return value
-}
+  return value;
+};
 
 onMounted(() => {
-      loadTimeline()
-})
+  loadTimeline();
+});
 </script>
 
 <style scoped lang="scss">

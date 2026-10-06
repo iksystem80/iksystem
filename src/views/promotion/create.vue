@@ -8,12 +8,12 @@
           </el-icon>
         </el-button>
         <div>
-          <h2>{{ isEditMode ? 'Continue Promotion Draft' : 'Create Promotion' }}</h2>
-          <p>
+          <h2 class="page-title">{{ isEditMode ? 'Continue Promotion Draft' : 'Create Promotion' }}</h2>
+          <div class="page-subtitle">
             {{ isEditMode
-                ? 'Continue editing your saved draft, update customers, then save or send.'
-                : 'Select a finished template, choose eligible customers, then save or send.' }}
-          </p>
+              ? 'Continue editing your saved draft, update customers, then save or send.'
+              : 'Select a finished template, choose eligible customers, then save or send.' }}
+          </div>
         </div>
       </div>
     </div>
@@ -36,7 +36,7 @@
         </div>
         <el-form-item label="Template">
           <el-select v-model="form.templateid" filterable placeholder="Select a generated template" style="width: 100%" @change="syncTemplateImage">
-              <el-option v-for="item in templates" :key="item.id" :label="item.name" :value="Number(item.id)" />
+            <el-option v-for="item in templates" :key="item.id" :label="item.name" :value="Number(item.id)" />
           </el-select>
         </el-form-item>
         <div v-if="selectedTemplate?.finalimageurl" class="poster-preview" >
@@ -155,18 +155,18 @@ import {
   onMounted,
   reactive,
   ref
-} from 'vue'
+} from 'vue';
 
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router';
 import {
   ElMessage,
   ElMessageBox
-} from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
+} from 'element-plus';
+import { ArrowLeft } from '@element-plus/icons-vue';
 
-import { useUserStore } from '@/store/modules/user'
-import { getcustomers } from '@/api/customer'
-import { getPromotionTemplates } from '@/api/promotionTemplate'
+import { useUserStore } from '@/store/modules/user';
+import { getcustomers } from '@/api/customer';
+import { getPromotionTemplates } from '@/api/promotionTemplate';
 
 import {
   createPromotion,
@@ -175,34 +175,34 @@ import {
   savePromotionRecipients,
   sendPromotion,
   updatePromotion
-} from '@/api/promotion'
+} from '@/api/promotion';
 
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
+const route = useRoute();
+const router = useRouter();
+const userStore = useUserStore();
 
-const customerTableRef = ref<any>(null)
+const customerTableRef = ref<any>(null);
 
 const activePromotionId = ref(
   Number(route.query.id || 0)
-)
+);
 
-const templates = ref<any[]>([])
-const customers = ref<any[]>([])
-const selectedCustomers = ref<any[]>([])
-const customerSearch = ref('')
+const templates = ref<any[]>([]);
+const customers = ref<any[]>([]);
+const selectedCustomers = ref<any[]>([]);
+const customerSearch = ref('');
 
-const loadingCustomers = ref(false)
-const saving = ref(false)
-const sending = ref(false)
+const loadingCustomers = ref(false);
+const saving = ref(false);
+const sending = ref(false);
 
 const locationId = computed(() =>
   Number(userStore.locationId || 0)
-)
+);
 
 const isEditMode = computed(() =>
   activePromotionId.value > 0
-)
+);
 
 const form = reactive({
   name: '',
@@ -210,22 +210,22 @@ const form = reactive({
   channel: 'MMS',
   messagetext: '',
   finalimageurl: ''
-})
+});
 
 const selectedTemplate = computed(() =>
   templates.value.find(
     item => Number(item.id) === Number(form.templateid)
   ) || null
-)
+);
 
 const filteredCustomers = computed(() => {
   const term =
     customerSearch.value
       .trim()
-      .toLowerCase()
+      .toLowerCase();
 
   if (!term) {
-    return customers.value
+    return customers.value;
   }
 
   return customers.value.filter(item => {
@@ -236,41 +236,41 @@ const filteredCustomers = computed(() => {
     ]
       .filter(Boolean)
       .join(' ')
-      .toLowerCase()
+      .toLowerCase();
 
-    return searchable.includes(term)
-  })
-})
+    return searchable.includes(term);
+  });
+});
 
 const eligibleCustomerCount = computed(() =>
   customers.value.filter(isCustomerSelectable).length
-)
+);
 
 function customerName(customer: any) {
   const value =
-    `${customer?.firstname || ''} ${customer?.lastname || ''}`.trim()
+    `${customer?.firstname || ''} ${customer?.lastname || ''}`.trim();
 
-  return value || `Customer #${customer?.id || ''}`
+  return value || `Customer #${customer?.id || ''}`;
 }
 
 function customerInitials(customer: any) {
   const first =
     String(customer?.firstname || '')
       .trim()
-      .charAt(0)
+      .charAt(0);
 
   const last =
     String(customer?.lastname || '')
       .trim()
-      .charAt(0)
+      .charAt(0);
 
-  return `${first}${last}`.toUpperCase() || 'C'
+  return `${first}${last}`.toUpperCase() || 'C';
 }
 
 function hasPhone(customer: any) {
   return Boolean(
     String(customer?.phone || '').trim()
-  )
+  );
 }
 
 function isCustomerSelectable(customer: any) {
@@ -279,38 +279,38 @@ function isCustomerSelectable(customer: any) {
     customer.isactive !== false &&
     customer.isblacklist !== true &&
     hasPhone(customer)
-  )
+  );
 }
 
 function customerIneligibleReason(customer: any) {
   if (customer?.isactive === false) {
-    return 'Customer is inactive.'
+    return 'Customer is inactive.';
   }
 
   if (customer?.isblacklist === true) {
-    return 'Customer is blacklisted.'
+    return 'Customer is blacklisted.';
   }
 
   if (!hasPhone(customer)) {
-    return 'Customer does not have a phone number.'
+    return 'Customer does not have a phone number.';
   }
 
-  return 'Customer is not eligible.'
+  return 'Customer is not eligible.';
 }
 
 function syncTemplateImage() {
   form.finalimageurl =
-    selectedTemplate.value?.finalimageurl || ''
+    selectedTemplate.value?.finalimageurl || '';
 }
 
 function handleCustomerSelection(rows: any[]) {
-  selectedCustomers.value = rows
+  selectedCustomers.value = rows;
 }
 
 function selectAllEligible() {
-  if (!customerTableRef.value) return
+  if (!customerTableRef.value) return;
 
-  customerTableRef.value.clearSelection()
+  customerTableRef.value.clearSelection();
 
   customers.value
     .filter(isCustomerSelectable)
@@ -318,55 +318,55 @@ function selectAllEligible() {
       customerTableRef.value.toggleRowSelection(
         customer,
         true
-      )
-    })
+      );
+    });
 }
 
 function clearSelection() {
-  customerTableRef.value?.clearSelection()
+  customerTableRef.value?.clearSelection();
 }
 
 function selectedCustomerIds() {
   return selectedCustomers.value
     .filter(isCustomerSelectable)
     .map(customer => Number(customer.id))
-    .filter(id => Number.isInteger(id) && id > 0)
+    .filter(id => Number.isInteger(id) && id > 0);
 }
 
 async function loadTemplates() {
   const response =
     await getPromotionTemplates({
       generatedOnly: true
-    })
+    });
 
   templates.value =
     Array.isArray(response.data)
       ? response.data
-      : []
+      : [];
 }
 
 async function loadCustomers() {
   if (!locationId.value) {
-    customers.value = []
-    return
+    customers.value = [];
+    return;
   }
 
   try {
-    loadingCustomers.value = true
+    loadingCustomers.value = true;
 
     const response =
-      await getcustomers(locationId.value)
+      await getcustomers(locationId.value);
 
     customers.value =
       Array.isArray(response.data)
         ? response.data
-        : []
+        : [];
   } catch (error) {
-    console.error(error)
-    customers.value = []
-    ElMessage.error('Unable to load customers.')
+    console.error(error);
+    customers.value = [];
+    ElMessage.error('Unable to load customers.');
   } finally {
-    loadingCustomers.value = false
+    loadingCustomers.value = false;
   }
 }
 
@@ -374,30 +374,30 @@ function validatePromotion() {
   if (!form.name.trim()) {
     ElMessage.warning(
       'Please enter a promotion name.'
-    )
-    return false
+    );
+    return false;
   }
 
   if (!form.templateid) {
     ElMessage.warning(
       'Please select a template.'
-    )
-    return false
+    );
+    return false;
   }
 
   if (!selectedTemplate.value?.finalimageurl) {
     ElMessage.warning(
       'The selected template does not have a generated final image.'
-    )
-    return false
+    );
+    return false;
   }
 
-  return true
+  return true;
 }
 
 async function saveCampaign() {
   if (!validatePromotion()) {
-    return null
+    return null;
   }
 
   const payload = {
@@ -408,28 +408,28 @@ async function saveCampaign() {
       form.messagetext.trim() || null,
     finalimageurl:
       selectedTemplate.value.finalimageurl
-  }
+  };
 
   if (isEditMode.value) {
     const response =
       await updatePromotion({
         id: activePromotionId.value,
         ...payload
-      })
+      });
 
     return {
       id: activePromotionId.value,
       ...response.data
-    }
+    };
   }
 
   const response =
-    await createPromotion(payload)
+    await createPromotion(payload);
 
   activePromotionId.value =
-    Number(response.data.id)
+    Number(response.data.id);
 
-  return response.data
+  return response.data;
 }
 
 async function saveSelectedRecipients(
@@ -438,30 +438,30 @@ async function saveSelectedRecipients(
   await savePromotionRecipients({
     promotionid: promotionId,
     customerids: selectedCustomerIds()
-  })
+  });
 }
 
 async function saveDraft() {
   try {
-    saving.value = true
+    saving.value = true;
 
     const wasNew =
-      !isEditMode.value
+      !isEditMode.value;
 
     const promotion =
-      await saveCampaign()
+      await saveCampaign();
 
-    if (!promotion) return
+    if (!promotion) return;
 
     await saveSelectedRecipients(
       promotion.id
-    )
+    );
 
     ElMessage.success(
       wasNew
         ? 'Promotion draft saved. You can continue editing it here.'
         : 'Promotion draft updated.'
-    )
+    );
 
     if (wasNew) {
       await router.replace({
@@ -469,27 +469,27 @@ async function saveDraft() {
         query: {
           id: promotion.id
         }
-      })
+      });
     }
   } catch (error) {
-    console.error(error)
+    console.error(error);
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function saveAndSend() {
-  const ids = selectedCustomerIds()
+  const ids = selectedCustomerIds();
 
   if (!ids.length) {
     ElMessage.warning(
       'Select at least one eligible customer.'
-    )
-    return
+    );
+    return;
   }
 
   if (!validatePromotion()) {
-    return
+    return;
   }
 
   try {
@@ -501,39 +501,39 @@ async function saveAndSend() {
         cancelButtonText: 'Cancel',
         type: 'warning'
       }
-    )
+    );
 
-    sending.value = true
+    sending.value = true;
 
     const promotion =
-      await saveCampaign()
+      await saveCampaign();
 
-    if (!promotion) return
+    if (!promotion) return;
 
     await savePromotionRecipients({
       promotionid: promotion.id,
       customerids: ids
-    })
+    });
 
     await sendPromotion(
       promotion.id
-    )
+    );
 
     ElMessage.success(
       'Promotion queued for sending.'
-    )
+    );
 
     router.push(
       `/promotion/${promotion.id}`
-    )
+    );
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') {
-      return
+      return;
     }
 
-    console.error(error)
+    console.error(error);
   } finally {
-    sending.value = false
+    sending.value = false;
   }
 }
 
@@ -545,11 +545,11 @@ async function restoreCustomerSelection(
       recipientRows
         .map(item => Number(item.customerid))
         .filter(id => id > 0)
-    )
+    );
 
-  await nextTick()
+  await nextTick();
 
-  customerTableRef.value?.clearSelection()
+  customerTableRef.value?.clearSelection();
 
   customers.value
     .filter(customer =>
@@ -560,13 +560,13 @@ async function restoreCustomerSelection(
       customerTableRef.value?.toggleRowSelection(
         customer,
         true
-      )
-    })
+      );
+    });
 }
 
 async function loadDraft() {
   if (!isEditMode.value) {
-    return
+    return;
   }
 
   const [
@@ -575,10 +575,10 @@ async function loadDraft() {
   ] = await Promise.all([
     getPromotion(activePromotionId.value),
     getPromotionRecipients(activePromotionId.value)
-  ])
+  ]);
 
   const item =
-    detailResponse.data
+    detailResponse.data;
 
   if (
     String(item?.status || '').toLowerCase() !==
@@ -586,31 +586,31 @@ async function loadDraft() {
   ) {
     ElMessage.warning(
       'Only draft promotions can be continued.'
-    )
+    );
 
     await router.replace(
       `/promotion/${activePromotionId.value}`
-    )
+    );
 
-    return
+    return;
   }
 
   form.name =
-    item.name || ''
+    item.name || '';
 
   form.templateid =
     item.templateid
       ? Number(item.templateid)
-      : null
+      : null;
 
   form.channel =
-    item.channel || 'MMS'
+    item.channel || 'MMS';
 
   form.messagetext =
-    item.messagetext || ''
+    item.messagetext || '';
 
   form.finalimageurl =
-    item.finalimageurl || ''
+    item.finalimageurl || '';
 
   /*
    * Prefer the current generated image from the selected
@@ -618,18 +618,18 @@ async function loadDraft() {
    */
   if (selectedTemplate.value?.finalimageurl) {
     form.finalimageurl =
-      selectedTemplate.value.finalimageurl
+      selectedTemplate.value.finalimageurl;
   }
 
   await restoreCustomerSelection(
     Array.isArray(recipientsResponse.data)
       ? recipientsResponse.data
       : []
-  )
+  );
 }
 
 function goBack() {
-  router.push('/promotion')
+  router.push('/promotion');
 }
 
 onMounted(async () => {
@@ -637,19 +637,18 @@ onMounted(async () => {
     await Promise.all([
       loadTemplates(),
       loadCustomers()
-    ])
+    ]);
 
-    await loadDraft()
+    await loadDraft();
   } catch (error) {
-    console.error(error)
+    console.error(error);
 
     if (isEditMode.value) {
       ElMessage.error(
         'Unable to load promotion draft.'
-      )
+      );
     }
   }
-})
+});
 </script>
-
 

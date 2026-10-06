@@ -1,21 +1,21 @@
 <template>
-    <div class="sidebar-logo-container"
-         :class="{ collapse }">
-        <transition name="sidebarLogoFade">
-            <router-link :key="collapse ? 'collapse' : 'expand'"
-                         class="sidebar-logo-link"
-                         to="/">
-                <img v-if="logo"
-                     :src="logo"
-                     class="sidebar-logo" />
+  <div class="sidebar-logo-container"
+       :class="{ collapse }">
+    <transition name="sidebarLogoFade">
+      <router-link :key="collapse ? 'collapse' : 'expand'"
+                   class="sidebar-logo-link"
+                   to="/">
+        <img v-if="logo"
+             :src="logo"
+             class="sidebar-logo" />
 
-                <h1 v-if="!collapse || !logo"
-                    class="sidebar-title">
-                    {{ title }}
-                </h1>
-            </router-link>
-        </transition>
-    </div>
+        <h1 v-if="!collapse || !logo"
+            class="sidebar-title">
+          {{ title }}
+        </h1>
+      </router-link>
+    </transition>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -23,11 +23,11 @@
         collapse: boolean
     }
 
-    defineProps<Props>()
+defineProps<Props>();
 
-    const title = 'IK System'
+const title = 'IK System';
 
-    const logo ='/src/assets/logo.png'
+const logo = '/src/assets/logo.png';
 </script>
 
 <style lang="scss" scoped>

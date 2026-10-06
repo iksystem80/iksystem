@@ -1,147 +1,146 @@
 <template>
-    <div class="account-tab">
-        <!-- POINTS -->
-        <el-card class="settings-card" shadow="never">
-            <div class="section-header">
-                <div>
-                    <h3>Customer Points</h3>
-                    <p>
-                        Update the customer's current point balance.
-                    </p>
-                </div>
-                <div class="points-badge">
-                    {{ customer.points }} pts
-                </div>
-            </div>
-            <el-divider />
-            <el-form label-position="top">
-                <el-form-item label="Points">
-                    <el-input-number v-model="form.points" :min="0" :step="10" inputmode="numeric" class="points-input" />
-                </el-form-item>
-                <div class="quick-points">
-                    <el-button @click="addPoints(20)">
-                        20
-                    </el-button>
-                    <el-button @click="addPoints(40)">
-                        40
-                    </el-button>
-                    <el-button @click="addPoints(60)">
-                        60
-                    </el-button>
-                    <el-button @click="addPoints(80)">
-                        80
-                    </el-button>
-                    <el-button @click="addPoints(100)">
-                        100
-                    </el-button>
-                </div>
-            </el-form>
-        </el-card>
-        <!-- PRIVILEGED MATCH RULE -->
-        <el-card class="settings-card" shadow="never">
-            <div class="setting-row">
-                <div class="setting-info">
-                    <div class="setting-title">
-                        Privileged Match Rule
-                    </div>
-                    <div class="setting-description">
-                        When enabled, this customer is subject to custom match limits
-                        rather than global rules.
-                    </div>
-                </div>
-                <el-switch v-model="form.privilegedMatchRule" size="large" inline-prompt active-text="ON" inactive-text="OFF" />
-            </div>
-            <div v-if="form.privilegedMatchRule" class="privileged-info">
-                <div class="privileged-icon">
-                    <el-icon>
-                        <InfoFilled />
-                    </el-icon>
-                </div>
-                <span>
-                    Custom match limits will apply to this customer.
-                </span>
-            </div>
-        </el-card>
-        <!-- SAVE -->
-        <div class="save-section">
-            <el-button type="primary" size="large" :loading="saving" @click="saveAccount">
-                Save Changes
-            </el-button>
+  <div class="account-tab">
+    <!-- POINTS -->
+    <el-card class="settings-card" shadow="never">
+      <div class="section-header">
+        <div>
+          <h3>Customer Points</h3>
+          <p>
+            Update the customer's current point balance.
+          </p>
         </div>
+        <div class="points-badge">
+          {{ customer.points }} pts
+        </div>
+      </div>
+      <el-divider />
+      <el-form label-position="top">
+        <el-form-item label="Points">
+          <el-input-number v-model="form.points" :min="0" :step="10" inputmode="numeric" class="points-input" />
+        </el-form-item>
+        <div class="quick-points">
+          <el-button @click="addPoints(20)">
+            20
+          </el-button>
+          <el-button @click="addPoints(40)">
+            40
+          </el-button>
+          <el-button @click="addPoints(60)">
+            60
+          </el-button>
+          <el-button @click="addPoints(80)">
+            80
+          </el-button>
+          <el-button @click="addPoints(100)">
+            100
+          </el-button>
+        </div>
+      </el-form>
+    </el-card>
+    <!-- PRIVILEGED MATCH RULE -->
+    <el-card class="settings-card" shadow="never">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">
+            Privileged Match Rule
+          </div>
+          <div class="setting-description">
+            When enabled, this customer is subject to custom match limits
+            rather than global rules.
+          </div>
+        </div>
+        <el-switch v-model="form.privilegedMatchRule" size="large" inline-prompt active-text="ON" inactive-text="OFF" />
+      </div>
+      <div v-if="form.privilegedMatchRule" class="privileged-info">
+        <div class="privileged-icon">
+          <el-icon>
+            <InfoFilled />
+          </el-icon>
+        </div>
+        <span>
+          Custom match limits will apply to this customer.
+        </span>
+      </div>
+    </el-card>
+    <!-- SAVE -->
+    <div class="save-section">
+      <el-button type="primary" size="large" :loading="saving" @click="saveAccount">
+        Save Changes
+      </el-button>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { InfoFilled } from '@element-plus/icons-vue'
+import { reactive, ref, watch } from 'vue';
+import { ElMessage } from 'element-plus';
+import { InfoFilled } from '@element-plus/icons-vue';
 
-import { updateCustomerAccount } from '@/api/customer'
-import { useUserStore } from '@/store/modules/user'
+import { updateCustomerAccount } from '@/api/customer';
+import { useUserStore } from '@/store/modules/user';
 
-const userStore = useUserStore()
+const userStore = useUserStore();
 
 const props = defineProps({
-        customer: {
-            type: Object,
-            required: true
-        }
-})
+  customer: {
+    type: Object,
+    required: true
+  }
+});
 
-const emit = defineEmits(['updated'])
+const emit = defineEmits(['updated']);
 
-const saving = ref(false)
+const saving = ref(false);
 
 const form = reactive({
-        points: 0,
-        privilegedMatchRule: false
-})
+  points: 0,
+  privilegedMatchRule: false
+});
 
 watch(
-        () => props.customer,
-        customer => {
-            if (!customer) return
+  () => props.customer,
+  customer => {
+    if (!customer) return;
 
-            form.points = customer.points ?? 0
-            form.privilegedMatchRule =
-                customer.privilegedmatchrule ?? false
-        },
-        {
-            immediate: true
-        }
-)
+    form.points = customer.points ?? 0;
+    form.privilegedMatchRule =
+                customer.privilegedmatchrule ?? false;
+  },
+  {
+    immediate: true
+  }
+);
 
 const addPoints = amount => {
-        form.points = amount
-}
+  form.points = amount;
+};
 
 const saveAccount = async () => {
-        try {
-            saving.value = true
+  try {
+    saving.value = true;
 
-            const payload = {
-                customerid: props.customer.id,
-                userId: userStore.userId,
-                points: form.points,
-                privilegedmatchrule: form.privilegedMatchRule
-            }
+    const payload = {
+      customerid: props.customer.id,
+      userId: userStore.userId,
+      points: form.points,
+      privilegedmatchrule: form.privilegedMatchRule
+    };
 
-            const response =
-                await updateCustomerAccount(payload)
+    const response =
+                await updateCustomerAccount(payload);
 
-            ElMessage.success(response.message)
+    ElMessage.success(response.message);
 
-            emit('updated')
-
-        } catch (error) {
-            ElMessage.error(
-                error.response?.data?.message ||
+    emit('updated');
+  } catch (error) {
+    ElMessage.error(
+      error.response?.data?.message ||
                 'Unable to update customer.'
-            )
-        } finally {
-            saving.value = false
-        }
-}
+    );
+  } finally {
+    saving.value = false;
+  }
+};
 </script>
 
 <style scoped lang="scss">

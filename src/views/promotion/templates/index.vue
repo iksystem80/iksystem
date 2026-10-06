@@ -2,7 +2,7 @@
   <div class="page irfan-promotion-templates-index irfan-ui-page">
     <div class="page-header">
       <div>
-        <h2>Promotion Templates</h2>
+        <h2 class="page-title">Promotion Templates</h2>
         <p>Create a poster from a system template or one of your saved designs.</p>
       </div>
       <el-button type="primary" @click="createBlank">
@@ -47,65 +47,65 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import {
   getPromotionTemplates,
   duplicatePromotionTemplate
-} from '@/api/promotionTemplate'
+} from '@/api/promotionTemplate';
 
-const router = useRouter()
-const loading = ref(false)
-const search = ref('')
-const templates = ref<any[]>([])
+const router = useRouter();
+const loading = ref(false);
+const search = ref('');
+const templates = ref<any[]>([]);
 
 const filteredTemplates = computed(() => {
-  const term = search.value.trim().toLowerCase()
+  const term = search.value.trim().toLowerCase();
 
   if (!term) {
-    return templates.value
+    return templates.value;
   }
 
   return templates.value.filter(item =>
     String(item.name || '')
       .toLowerCase()
       .includes(term)
-  )
-})
+  );
+});
 
 async function loadTemplates() {
   try {
-    loading.value = true
-    const response = await getPromotionTemplates()
-    templates.value = response.data ?? []
+    loading.value = true;
+    const response = await getPromotionTemplates();
+    templates.value = response.data ?? [];
   } catch (error) {
-    console.error(error)
-    ElMessage.error('Unable to load promotion templates.')
+    console.error(error);
+    ElMessage.error('Unable to load promotion templates.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function createBlank() {
-  router.push('/promotion/templates/create')
+  router.push('/promotion/templates/create');
 }
 
 function editTemplate(item: any) {
-  router.push(`/promotion/templates/${item.id}/edit`)
+  router.push(`/promotion/templates/${item.id}/edit`);
 }
 
 async function useTemplate(item: any) {
   try {
     const response = await duplicatePromotionTemplate({
       templateid: item.id
-    })
+    });
 
     router.push(
       `/promotion/templates/${response.data.id}/edit`
-    )
+    );
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 }
 
@@ -113,16 +113,15 @@ async function duplicateTemplate(item: any) {
   try {
     await duplicatePromotionTemplate({
       templateid: item.id
-    })
+    });
 
-    ElMessage.success('Template duplicated.')
-    await loadTemplates()
+    ElMessage.success('Template duplicated.');
+    await loadTemplates();
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 }
 
-onMounted(loadTemplates)
+onMounted(loadTemplates);
 </script>
-
 
