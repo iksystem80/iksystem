@@ -261,7 +261,7 @@ import { ElMessage } from 'element-plus';
 import { ArrowRight, Filter, UserFilled, Calendar, Coin, Money } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
-import { getEmployeeSessionSummary } from '@/api/employeeSession';
+import { getEmployeeSessionSummary } from '@/api/employeesession';
 
 const router = useRouter();
 const userStore = useUserStore();

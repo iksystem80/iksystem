@@ -235,7 +235,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
-import { getEmployeeSessionReport } from '@/api/employeeSession';
+import { getEmployeeSessionReport } from '@/api/employeesession';
 
 const route = useRoute();
 const router = useRouter();

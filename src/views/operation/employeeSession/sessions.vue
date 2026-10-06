@@ -136,7 +136,7 @@ import { ElMessage } from 'element-plus';
 import { ArrowLeft, ArrowRight, Clock, Picture } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
-import { getEmployeeReportSessions } from '@/api/employeeSession';
+import { getEmployeeReportSessions } from '@/api/employeesession';
 import SessionPhotoAuditDrawer from './SessionPhotoAuditDrawer.vue';
 
 const route = useRoute();

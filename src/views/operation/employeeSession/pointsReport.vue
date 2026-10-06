@@ -262,7 +262,7 @@ import { ArrowLeft } from '@element-plus/icons-vue';
       import {
         getEmployeeSessionPointsReport,
         updateCustomerMatchReview
-      } from '@/api/employeeSession';
+      } from '@/api/employeesession';
 
       const route = useRoute();
       const router = useRouter();
