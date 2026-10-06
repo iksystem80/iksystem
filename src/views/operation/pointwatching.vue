@@ -32,8 +32,8 @@
 import { ref, computed } from 'vue';
 import { Calendar, User } from '@element-plus/icons-vue';
 
-import PointsByDate from './components/PointsByDate.vue';
-import PointsByEmployee from './components/PointsByEmployee.vue';
+import PointsByDate from './components/pointsbydate.vue';
+import PointsByEmployee from './components/pointsbyemployee.vue';
 
 import { useUserStore } from '@/store/modules/user';
 
