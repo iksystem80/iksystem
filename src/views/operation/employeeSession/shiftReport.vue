@@ -302,8 +302,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
-import ExportPdfButton from '@/components/ExportPdfButton.vue';
-import { exportShiftReportPdf } from '@/utils/exportShiftReportPdf';
+import ExportPdfButton from '@/components/exportpdfbutton.vue';
+import { exportShiftReportPdf } from '@/utils/exportshiftreportpdf';
 import { getEmployeeSessionShiftReport } from '@/api/employeesession';
 
 const route = useRoute();

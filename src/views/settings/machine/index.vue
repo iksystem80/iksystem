@@ -561,7 +561,7 @@ import {
     saveInitialMachineReading,
     resetInitialMachineReading,
     deactivateMachine
-} from '@/api/machineInitialReading';
+} from '@/api/machineinitialreading';
 
 const userStore = useUserStore();
 

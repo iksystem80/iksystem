@@ -227,7 +227,7 @@ import {
   getAdminMoneyTrailReport,
   getSessionCashHistoryReport,
   getLocationCash
-} from '@/api/employeeFinance';
+} from '@/api/employeefinance';
 
 const activeFinanceTab = ref('overview');
 const activityRange = ref('today');

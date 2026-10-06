@@ -168,7 +168,7 @@ import { CapacitorNfc } from '@capgo/capacitor-nfc';
 import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/MyCamera';
 import { getcustomers } from '@/api/customer';
-import { getTicketOutMachine, getTicketOutState, saveTicketOut } from '@/api/ticketOut';
+import { getTicketOutMachine, getTicketOutState, saveTicketOut } from '@/api/ticketout';
 
 const userStore = useUserStore();
 const employeeName = computed(() =>

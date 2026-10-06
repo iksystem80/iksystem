@@ -100,7 +100,7 @@ import {
   updatePromotionTemplate,
   generatePromotionTemplateImage,
   uploadPromotionAsset
-} from '@/api/promotionTemplate';
+} from '@/api/promotiontemplate';
 
 const route = useRoute();
 const router = useRouter();

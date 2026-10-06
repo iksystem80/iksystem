@@ -38,8 +38,8 @@ import { useUserStore } from '@/store/modules/user';
 import { useSettingsStore } from '@/store/modules/settings';
 
 // Vue 3 replacement for ResizeMixin
-import { useResizeHandler } from './composables/useResizeHandler';
-import { initializeSocketListeners } from '@/services/socketListeners';
+import { useResizeHandler } from './composables/useresizehandler';
+import { initializeSocketListeners } from '@/services/socketlisteners';
 
 const appStore = useAppStore();
 const userStore = useUserStore();

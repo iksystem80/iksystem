@@ -2,7 +2,7 @@ import { isString, isArray } from '@/utils/validate';
 import settings from '@/settings';
 import { nextTick } from 'vue';
 import type { App } from 'vue';
-import { useErrorLogStore } from '@/store/modules/errorLog';
+import { useErrorLogStore } from '@/store/modules/errorlog';
 
 // you can set in settings.js
 // errorLog: 'production' | ['production', 'development']

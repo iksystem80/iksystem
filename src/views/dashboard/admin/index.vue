@@ -31,10 +31,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import PanelGroup from '../components/PanelGroup';
-import CurrentCustomer from '../../components/CurrentCustomer';
-import PieChart from '../components/PieChart';
-import BarChart from '../components/BarChart';
+import PanelGroup from '../components/panelgroup';
+import CurrentCustomer from '../../components/currentcustomer';
+import PieChart from '../components/piechart';
+import BarChart from '../components/barchart';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
 

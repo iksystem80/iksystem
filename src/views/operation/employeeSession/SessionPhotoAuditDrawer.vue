@@ -70,7 +70,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { ArrowLeft, ArrowRight, Check, CircleCheckFilled, Close, CloseBold, Picture } from '@element-plus/icons-vue';
-import { getEmployeeSessionPointsReport, updateCustomerMatchReview } from '@/api/employeeSession';
+import { getEmployeeSessionPointsReport, updateCustomerMatchReview } from '@/api/employeesession';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

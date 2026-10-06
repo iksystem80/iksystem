@@ -489,8 +489,8 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/MyCamera';
-import ExportPdfButton from '@/components/ExportPdfButton.vue';
-import { exportEmployeeTransactionPdf } from '@/utils/exportEmployeeTransactionPdf';
+import ExportPdfButton from '@/components/exportpdfbutton.vue';
+import { exportEmployeeTransactionPdf } from '@/utils/exportemployeetransactionpdf';
 import request from '@/utils/request';
 import { getcustomers } from '@/api/customer';
 import {
@@ -503,7 +503,7 @@ import {
                   acceptCashHandover,
                   getCashHistory,
                   acceptAdminFunding
-} from '@/api/employeeFinance';
+} from '@/api/employeefinance';
 
 const userStore = useUserStore();
 const locationId = computed(() => userStore.locationId);

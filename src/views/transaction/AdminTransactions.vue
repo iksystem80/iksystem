@@ -295,7 +295,7 @@ import {
     sendCustodyEmployeeSupport,
     getLocationCash,
     addCustodyExpense
-} from '@/api/employeeFinance';
+} from '@/api/employeefinance';
 
 const userStore = useUserStore();
 const locationId = computed(() => userStore.locationId);

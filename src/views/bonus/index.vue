@@ -310,7 +310,7 @@ import {
         getBonusGiveMachine,
         getBonusGiveState,
         saveBonusAward
-} from '@/api/bonusGive';
+} from '@/api/bonusgive';
 
 const userStore = useUserStore();
 const employeeName = computed(() =>

@@ -141,7 +141,7 @@ import request from '@/utils/request';
 import language from './utils/language.js';
 import mimes from './utils/mimes.js';
 import data2blob from './utils/data2blob.js';
-import effectRipple from './utils/effectRipple.js';
+import effectRipple from './utils/effectripple.js';
 export default defineComponent({
   props: {
     // 域，上传文件name，触发事件会带上（如果一个页面多个图片上传控件，可以做区分

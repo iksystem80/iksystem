@@ -50,7 +50,7 @@
 import { storeToRefs } from 'pinia';
 
 import PanThumb from '@/components/PanThumb';
-import Mallki from '@/components/TextHoverEffect/Mallki';
+import Mallki from '@/components/TextHoverEffect/mallki';
 import { useUserStore } from '@/store/modules/user';
 
 defineOptions({

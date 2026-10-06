@@ -6,7 +6,7 @@
 
 <script>
 import { defineComponent } from 'vue';
-import { requestAnimationFrame, cancelAnimationFrame } from './requestAnimationFrame.js';
+import { requestAnimationFrame, cancelAnimationFrame } from './requestanimationframe.js';
 export default defineComponent({
   props: {
     startVal: {

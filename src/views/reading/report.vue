@@ -1020,7 +1020,7 @@ import {
 import {
       getReadingProfitPosting,
       postReadingProfit
-} from '@/api/employeeFinance';
+} from '@/api/employeefinance';
 
 const userStore =
             useUserStore();

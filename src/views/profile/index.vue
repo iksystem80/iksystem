@@ -48,10 +48,10 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft } from '@element-plus/icons-vue';
 
-import UserCard from './components/UserCard.vue';
-import Activity from './components/Activity.vue';
-import Timeline from './components/Timeline.vue';
-import Account from './components/Account.vue';
+import UserCard from './components/usercard.vue';
+import Activity from './components/activity.vue';
+import Timeline from './components/timeline.vue';
+import Account from './components/account.vue';
 
 import { getcustomerbyid } from '@/api/customer';
 

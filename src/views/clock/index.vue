@@ -253,7 +253,7 @@ import {
 
 import { useUserStore } from '@/store/modules/user';
 import { useRouter } from 'vue-router';
-import { getEmployeeFinance } from '@/api/employeeFinance';
+import { getEmployeeFinance } from '@/api/employeefinance';
 
 import {
       clockIn,

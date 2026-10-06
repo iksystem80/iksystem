@@ -1274,8 +1274,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import request from '@/utils/request';
 import { useUserStore } from '@/store/modules/user';
-import { getWeeklyReportDay, getWeeklyReportWeek } from '@/api/weeklyReport';
-import { getExpenseTypes } from '@/api/employeeFinance';
+import { getWeeklyReportDay, getWeeklyReportWeek } from '@/api/weeklyreport';
+import { getExpenseTypes } from '@/api/employeefinance';
 
 const userStore = useUserStore();
 

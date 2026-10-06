@@ -32,7 +32,7 @@
 
 <script>
 import { defineComponent } from 'vue';
-import Todo from './Todo.vue';
+import Todo from './todo.vue';
 
 const STORAGE_KEY = 'todos';
 const filters = {

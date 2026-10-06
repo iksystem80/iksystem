@@ -205,13 +205,13 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: '/sessiontrasaction',
         name: 'EmployeeFinance',
-        component: () => import('@/views/transaction/EmployeeTransactions.vue'),
+        component: () => import('@/views/transaction/employeetransactions.vue'),
         meta: { title: 'Transaction', noCache: true, permission: 'clock.read', roles: ['employee'] }
       },
       {
         path: '/admintransaction',
         name: 'AdminFinance',
-        component: () => import('@/views/transaction/OwnerAdminTransactions.vue'),
+        component: () => import('@/views/transaction/owneradmintransactions.vue'),
         meta: { title: 'Transaction', noCache: true, permission: 'employeesession.update', roles: ['owner', 'admin', 'system admin'] }
       }
     ]
@@ -252,7 +252,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId',
-        component: () => import('@/views/operation/employeeSession/sessionReports.vue'),
+        component: () => import('@/views/operation/employeeSession/sessionreports.vue'),
         name: 'EmployeeSessionReportMenu',
         meta: {
           title: 'Session Reports',
@@ -263,7 +263,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/points',
-        component: () => import('@/views/operation/employeeSession/pointsReport.vue'),
+        component: () => import('@/views/operation/employeeSession/pointsreport.vue'),
         name: 'EmployeeSessionPointsReport',
         meta: {
           title: 'Points Report',
@@ -274,7 +274,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/shift',
-        component: () => import('@/views/operation/employeeSession/shiftReport.vue'),
+        component: () => import('@/views/operation/employeeSession/shiftreport.vue'),
         name: 'EmployeeSessionShiftReport',
         meta: {
           title: 'Shift Report',
@@ -285,7 +285,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/ticket-out',
-        component: () => import('@/views/operation/employeeSession/ticketOutReport.vue'),
+        component: () => import('@/views/operation/employeeSession/ticketoutreport.vue'),
         name: 'EmployeeSessionTicketOutReport',
         meta: {
           title: 'Ticket Out Report',
@@ -296,7 +296,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/raffle',
-        component: () => import('@/views/operation/employeeSession/raffleReport.vue'),
+        component: () => import('@/views/operation/employeeSession/rafflereport.vue'),
         name: 'EmployeeSessionRaffleReport',
         meta: {
           title: 'Raffle Report',
@@ -307,7 +307,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/bonus',
-        component: () => import('@/views/operation/employeeSession/bonusReport.vue'),
+        component: () => import('@/views/operation/employeeSession/bonusreport.vue'),
         name: 'EmployeeSessionBonusReport',
         meta: {
           title: 'Bonus Report',
@@ -360,13 +360,13 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'overview',
         name: 'FinancialOverview',
-        component: () => import('@/views/report/FinancialOverview.vue'),
+        component: () => import('@/views/report/financialoverview.vue'),
         meta: { title: 'Financial Overview', noCache: true, hidden: true }
       },
       {
         path: 'location-cash',
         name: 'LocationCashLedger',
-        component: () => import('@/views/report/LocationCashLedger.vue'),
+        component: () => import('@/views/report/locationcashledger.vue'),
         meta: { title: 'Location Ledger', noCache: true, hidden: true }
       },
       {
@@ -384,13 +384,13 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'session-cash-report',
         name: 'SessionCashHistoryReport',
-        component: () => import('@/views/report/SessionCashHistoryReport.vue'),
+        component: () => import('@/views/report/sessioncashhistoryreport.vue'),
         meta: { title: 'Session Cash Report', noCache: true, hidden: true }
       },
       {
         path: 'money-trail-report',
         name: 'MoneyTrailReport',
-        component: () => import('@/views/report/MoneyTrailReport.vue'),
+        component: () => import('@/views/report/moneytrailreport.vue'),
         meta: {
           title: 'Money Trail Report', noCache: true, hidden: true
         }

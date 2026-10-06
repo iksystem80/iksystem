@@ -28,8 +28,8 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import router, { resetRouter } from '@/router';
 
-import Logo from './Logo.vue';
-import SidebarItem from './SidebarItem.vue';
+import Logo from './logo.vue';
+import SidebarItem from './sidebaritem.vue';
 
 import { useAppStore } from '@/store/modules/app';
 import { usePermissionStore } from '@/store/modules/permission';

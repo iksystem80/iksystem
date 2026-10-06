@@ -53,7 +53,7 @@ import { ElMessage } from 'element-plus';
 import {
   getPromotionTemplates,
   duplicatePromotionTemplate
-} from '@/api/promotionTemplate';
+} from '@/api/promotiontemplate';
 
 const router = useRouter();
 const loading = ref(false);

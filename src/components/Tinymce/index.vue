@@ -13,10 +13,10 @@ import { defineComponent } from 'vue';
  * docs:
  * https://vue3-element-admin-site.midfar.com/feature/component/rich-editor.html#tinymce
  */
-import editorImage from './components/EditorImage';
+import editorImage from './components/editorimage';
 import plugins from './plugins';
 import toolbar from './toolbar';
-import load from './dynamicLoadScript';
+import load from './dynamicloadscript';
 
 // why use this cdn, detail see https://github.com/PanJiaChen/tinymce-all-in-one
 const tinymceCDN = 'https://unpkg.com/tinymce-all-in-one@4.9.3/tinymce.min.js';

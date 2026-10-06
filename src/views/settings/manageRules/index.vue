@@ -168,8 +168,8 @@ import { ElMessage } from 'element-plus';
 import { Check } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
-import { getManageRules, updateManageRules } from '@/api/manageRules';
-import RuleToggleCard from './components/RuleToggleCard.vue';
+import { getManageRules, updateManageRules } from '@/api/managerules';
+import RuleToggleCard from './components/ruletogglecard.vue';
 
 const userStore = useUserStore();
 

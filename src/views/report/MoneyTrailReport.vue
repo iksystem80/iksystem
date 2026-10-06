@@ -66,7 +66,7 @@ import { ArrowLeft, Refresh } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';
-import { getAdminMoneyTrailReport } from '@/api/employeeFinance';
+import { getAdminMoneyTrailReport } from '@/api/employeefinance';
 
 const router = useRouter();
 const userStore = useUserStore();

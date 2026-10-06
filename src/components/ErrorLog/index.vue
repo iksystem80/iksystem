@@ -75,7 +75,7 @@
 import { ref } from 'vue';
 import { Delete as IconDelete } from '@element-plus/icons-vue';
 import { storeToRefs } from 'pinia';
-import { useErrorLogStore } from '@/store/modules/errorLog';
+import { useErrorLogStore } from '@/store/modules/errorlog';
 const errorLogStore = useErrorLogStore();
 const { logs: errorLogs } = storeToRefs(errorLogStore);
 const dialogTableVisible = ref(false);

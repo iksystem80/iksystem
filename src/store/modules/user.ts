@@ -10,9 +10,9 @@ import {
   removeUserId
 } from '@/utils/auth';
 import router, { resetRouter } from '@/router';
-import { useTagsViewStore } from './tagsView';
+import { useTagsViewStore } from './tagsview';
 import { usePermissionStore } from './permission';
-import { initializeSocketListeners, cleanupSocket } from '@/services/socketListeners';
+import { initializeSocketListeners, cleanupSocket } from '@/services/socketlisteners';
 import { getClockStatus } from '@/api/employeesession';
 
 interface LoginInfo {

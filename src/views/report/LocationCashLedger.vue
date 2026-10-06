@@ -104,7 +104,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
-import { getAdminFinanceOverview, getLocationCash, addInitialCapital, acceptInitialCapital, cancelInitialCapital, setCustodyOpening, sendCustodyTransfer, acceptCustodyTransfer, cancelCustodyTransfer, depositBusinessBank, withdrawBusinessBank, distributeOwnerCash, addCustodyExpense } from '@/api/employeeFinance';
+import { getAdminFinanceOverview, getLocationCash, addInitialCapital, acceptInitialCapital, cancelInitialCapital, setCustodyOpening, sendCustodyTransfer, acceptCustodyTransfer, cancelCustodyTransfer, depositBusinessBank, withdrawBusinessBank, distributeOwnerCash, addCustodyExpense } from '@/api/employeefinance';
 const store = useUserStore(); const locationId = computed(() => store.locationId); const userId = computed(() => data.value.viewerId);
 const role = computed(() => String(store.roleName || '').toLowerCase()); const allowed = computed(() => ['owner', 'admin', 'system admin'].includes(role.value)); const isOwner = computed(() => ['owner', 'system admin'].includes(role.value)); const isAdminRole = computed(() => ['admin', 'system admin'].includes(role.value));
 const data = ref({ accounts: [], people: [], capital: [], transfers: [], entries: [], expenseTypes: [], unlinkedProfit: {}, pendingEmployeeHandovers: 0 }); const employeeCash = ref(0); const loading = ref(false); const busy = ref(false);

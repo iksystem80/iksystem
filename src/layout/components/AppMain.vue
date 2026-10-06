@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useTagsViewStore } from '@/store/modules/tagsView';
+import { useTagsViewStore } from '@/store/modules/tagsview';
 
 defineOptions({
   name: 'AppMain'

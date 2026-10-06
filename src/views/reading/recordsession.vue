@@ -813,7 +813,7 @@ import {
         deletesession,
         deletereading
 } from '@/api/reading';
-import { getReadingEmployeeCoverage, saveReadingEmployeeCoverage } from '@/api/readingCoverage';
+import { getReadingEmployeeCoverage, saveReadingEmployeeCoverage } from '@/api/readingcoverage';
 
 import {
         getmachinebynumber

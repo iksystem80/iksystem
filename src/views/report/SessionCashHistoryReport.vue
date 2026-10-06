@@ -78,7 +78,7 @@ import { ArrowLeft, Refresh } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';
-import { getSessionCashHistoryReport } from '@/api/employeeFinance';
+import { getSessionCashHistoryReport } from '@/api/employeefinance';
 
 const router = useRouter();
 const userStore = useUserStore();

@@ -166,7 +166,7 @@ import { ArrowLeft } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
 import { getcustomers } from '@/api/customer';
-import { getPromotionTemplates } from '@/api/promotionTemplate';
+import { getPromotionTemplates } from '@/api/promotiontemplate';
 
 import {
   createPromotion,

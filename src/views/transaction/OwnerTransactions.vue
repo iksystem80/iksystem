@@ -163,7 +163,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
-import { getLocationCash, addInitialCapital, cancelInitialCapital, sendCustodyTransfer, acceptCustodyTransfer, cancelCustodyTransfer, depositBusinessBank, withdrawBusinessBank, distributeOwnerCash } from '@/api/employeeFinance';
+import { getLocationCash, addInitialCapital, cancelInitialCapital, sendCustodyTransfer, acceptCustodyTransfer, cancelCustodyTransfer, depositBusinessBank, withdrawBusinessBank, distributeOwnerCash } from '@/api/employeefinance';
 const store = useUserStore(); const router = useRouter(); const locationId = computed(() => store.locationId);
 const isOwner = computed(() => ['owner', 'system admin'].includes(String(store.roleName || '').trim().toLowerCase()));
 const data = ref({ viewerId: null, accounts: [], people: [], capital: [], transfers: [], entries: [] }); const tab = ref('overview'); const loading = ref(false); const busy = ref(false);

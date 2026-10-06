@@ -100,8 +100,8 @@
 import { defineComponent } from 'vue';
 import path from 'path-browserify';
 import { isExternal } from '@/utils/validate';
-import AppLink from './Link';
-import FixiOSBug from './FixiOSBug';
+import AppLink from './link';
+import FixiOSBug from './fixiosbug';
 import { useSettingsStore } from '@/store/modules/settings';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
