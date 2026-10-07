@@ -444,7 +444,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'manage-rules',
         name: 'ManageRules',
-        component: () => import('@/views/settings/manageRules/index.vue'),
+        component: () => import('@/views/settings/managerules/index.vue'),
         meta: { title: 'Manage Rules', noCache: true, permission: 'managerules.read' }
       }
     ]
