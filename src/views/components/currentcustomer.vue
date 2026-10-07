@@ -137,7 +137,7 @@ import {
   WarningFilled
 } from '@element-plus/icons-vue';
 
-import PanThumb from '@/components/PanThumb';
+import PanThumb from '@/components/panthumb';
 import assignmachine from '../components/assignmachine';
 
 import { useUserStore } from '@/store/modules/user';

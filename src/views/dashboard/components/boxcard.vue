@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 
-import PanThumb from '@/components/PanThumb';
+import PanThumb from '@/components/panthumb';
 import Mallki from '@/components/TextHoverEffect/mallki';
 import { useUserStore } from '@/store/modules/user';
 
