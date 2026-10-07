@@ -252,7 +252,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId',
-        component: () => import('@/views/operation/employeeSession/sessionreports.vue'),
+        component: () => import('@/views/operation/employeesession/sessionreports.vue'),
         name: 'EmployeeSessionReportMenu',
         meta: {
           title: 'Session Reports',
@@ -263,7 +263,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/points',
-        component: () => import('@/views/operation/employeeSession/pointsreport.vue'),
+        component: () => import('@/views/operation/employeesession/pointsreport.vue'),
         name: 'EmployeeSessionPointsReport',
         meta: {
           title: 'Points Report',
@@ -274,7 +274,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/shift',
-        component: () => import('@/views/operation/employeeSession/shiftreport.vue'),
+        component: () => import('@/views/operation/employeesession/shiftreport.vue'),
         name: 'EmployeeSessionShiftReport',
         meta: {
           title: 'Shift Report',
@@ -285,7 +285,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/ticket-out',
-        component: () => import('@/views/operation/employeeSession/ticketoutreport.vue'),
+        component: () => import('@/views/operation/employeesession/ticketoutreport.vue'),
         name: 'EmployeeSessionTicketOutReport',
         meta: {
           title: 'Ticket Out Report',
@@ -296,7 +296,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/raffle',
-        component: () => import('@/views/operation/employeeSession/rafflereport.vue'),
+        component: () => import('@/views/operation/employeesession/rafflereport.vue'),
         name: 'EmployeeSessionRaffleReport',
         meta: {
           title: 'Raffle Report',
@@ -307,7 +307,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId/session/:sessionId/bonus',
-        component: () => import('@/views/operation/employeeSession/bonusreport.vue'),
+        component: () => import('@/views/operation/employeesession/bonusreport.vue'),
         name: 'EmployeeSessionBonusReport',
         meta: {
           title: 'Bonus Report',
