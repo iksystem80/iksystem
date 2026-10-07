@@ -166,7 +166,7 @@ import { ArrowLeft, Cellphone, Connection } from '@element-plus/icons-vue';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorNfc } from '@capgo/capacitor-nfc';
 import { useUserStore } from '@/store/modules/user';
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import { getcustomers } from '@/api/customer';
 import { getTicketOutMachine, getTicketOutState, saveTicketOut } from '@/api/ticketout';
 

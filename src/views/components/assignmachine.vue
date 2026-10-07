@@ -281,7 +281,7 @@ import { reactive, ref, onBeforeUnmount, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import { getmachinebynumber } from '@/api/machine';
 import { saveassignmachine } from '@/api/customer';
 

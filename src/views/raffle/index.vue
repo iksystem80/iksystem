@@ -232,7 +232,7 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { ArrowLeft, ArrowRight, Loading, Setting } from '@element-plus/icons-vue';
 import { useUserStore } from '@/store/modules/user';
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import { getcustomers } from '@/api/customer';
 import { completeRaffle, getRaffleState, startRaffle } from '@/api/raffle';
 

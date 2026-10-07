@@ -303,7 +303,7 @@ import { ElMessage } from 'element-plus';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorNfc } from '@capgo/capacitor-nfc';
 import { useUserStore } from '@/store/modules/user';
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import { getcustomers } from '@/api/customer';
 import {
         getActiveBonusChoices,

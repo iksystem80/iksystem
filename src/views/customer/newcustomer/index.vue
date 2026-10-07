@@ -179,7 +179,7 @@ import {
 
 import { useUserStore } from '@/store/modules/user';
 import { useRouter } from 'vue-router';
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import { savecustomer } from '@/api/customer';
 import { unformatPhone } from '@/utils/phone';
 

@@ -488,7 +488,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import ExportPdfButton from '@/components/exportpdfbutton.vue';
 import { exportEmployeeTransactionPdf } from '@/utils/exportemployeetransactionpdf';
 import request from '@/utils/request';

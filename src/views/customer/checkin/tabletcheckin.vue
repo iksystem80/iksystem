@@ -146,7 +146,7 @@ import { computed, nextTick, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Back, SwitchButton } from '@element-plus/icons-vue';
 import { useUserStore } from '@/store/modules/user';
-import CameraApp from '@/components/MyCamera';
+import CameraApp from '@/components/mycamera';
 import { checkin } from '@/api/customer';
 import { unformatPhone } from '@/utils/phone';
 
