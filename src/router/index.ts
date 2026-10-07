@@ -231,7 +231,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions',
-        component: () => import('@/views/operation/employeeSession/index.vue'),
+        component: () => import('@/views/operation/employeesession/index.vue'),
         name: 'EmployeeSessionReports',
         meta: {
           title: 'Employee Sessions',
@@ -241,7 +241,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       },
       {
         path: 'employee-sessions/:employeeId',
-        component: () => import('@/views/operation/employeeSession/sessions.vue'),
+        component: () => import('@/views/operation/employeesession/sessions.vue'),
         name: 'EmployeeSessionList',
         meta: {
           title: 'Employee Sessions',
