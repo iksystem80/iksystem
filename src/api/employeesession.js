@@ -90,3 +90,11 @@ export function getEmployeeSessionShiftReport(sessionid, locationid) {
   });
 }
 
+export function getEmployeeSessionLuckyBirdReport(sessionid, locationid) {
+  return request({
+    url: `/employeesession/reports/session/${sessionid}/lucky-bird`,
+    method: 'get',
+    params: { locationid }
+  });
+}
+

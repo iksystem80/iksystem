@@ -6,12 +6,11 @@
                class="hamburger-container"
                @toggleClick="toggleSidebar" />
 
-    <Breadcrumb id="breadcrumb-container"
+    <Breadcrumb id="breadcrumb-container" v-if="device !== 'mobile'"
                 class="breadcrumb-container" />
 
-    <!-- LOCATION -->
-    <div v-if="device !== 'mobile'"
-         class="location-container">
+    <!-- LOCATION v-if="device !== 'mobile'"-->
+    <div class="location-container">
       <div class="location-pill">
         <el-icon class="location-pill-icon">
           <Location />
@@ -25,17 +24,19 @@
 
     <div class="right-menu">
 
+      <span class="right-menu-item clock-menu-item"
+            style="cursor: pointer; height: 50px; align-items: center; justify-content: center; "
+            @click="openClockPage">
+        <el-icon v-if="userStore.isClockedIn" size="24" style="color:forestgreen;margin-top:13px;"><Clock /></el-icon>
+        <el-icon v-else size="24" style="color:indianred;margin-top:13px;"><Clock /></el-icon>
+      </span>
+
       <template v-if="device !== 'mobile'">
 
         <!--<Search id="header-search"
-                        class="right-menu-item" />-->
+                  class="right-menu-item" />-->
 
-        <span class="right-menu-item clock-menu-item"
-              style="cursor: pointer; height: 50px; align-items: center; justify-content: center; "
-              @click="openClockPage">
-          <el-icon v-if="userStore.isClockedIn" size="24" style="color:forestgreen;margin-top:13px;"><Clock /></el-icon>
-          <el-icon v-else size="24" style="color:indianred;margin-top:13px;"><Clock /></el-icon>
-        </span>
+
 
         <ErrorLog v-if="userStore.isSystemAdmin"
                   class="errLog-container right-menu-item hover-effect" />

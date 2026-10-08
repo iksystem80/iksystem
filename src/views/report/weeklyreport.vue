@@ -120,16 +120,22 @@
               class="weekly-report-empty" />
 
     <template v-else-if="selectedDay">
-      <el-card shadow="never" class="weekly-report-session-card">
+      <el-card shadow="never" class="weekly-report-session-card weekly-selected-day-banner">
         <div class="weekly-report-session-row">
-          <div>
-            <span class="weekly-report-eyebrow">Selected Reading Day</span>
-            <h3>{{ longDate(selectedDate) }}</h3>
-            <p v-if="selectedSession">
-              Reading Session #{{ selectedSession.id }} ·
-              {{ formatDateTime(selectedSession.startedAt) }} -
-              {{ formatDateTime(selectedSession.endedAt) }}
-            </p>
+          <div class="weekly-selected-day-main">
+            <div class="weekly-selected-day-icon">
+              <el-icon><Calendar /></el-icon>
+            </div>
+
+            <div class="weekly-selected-day-copy">
+              <span class="weekly-report-eyebrow">Selected Reading Day</span>
+              <h3>{{ longDate(selectedDate) }}</h3>
+              <p v-if="selectedSession">
+                Reading Session #{{ selectedSession.id }} ·
+                {{ formatDateTime(selectedSession.startedAt) }} -
+                {{ formatDateTime(selectedSession.endedAt) }}
+              </p>
+            </div>
           </div>
 
           <div v-if="selectedDay.sessions.length > 1" class="weekly-report-session-select">
@@ -261,58 +267,58 @@
                 </el-card>
               </div>
 
-              <el-card shadow="never" class="weekly-report-section-card space-top">
-                <template #header>
-                  <div>
-                    <strong>Session Cash Flow</strong>
-                    <div class="small-text">Employee-session cash flow in order, followed by the Admin closing position.</div>
-                  </div>
-                </template>
+              <el-collapse v-model="sessionCashFlowActiveNames"
+                           class="weekly-session-cashflow-collapse weekly-report-section-card space-top">
+                <el-collapse-item name="session-cash-flow">
+                  <template #title>
+                    <strong style="font-size:14px; font-weight:600">Session Cash Flow</strong>
+                  </template>
 
-                <div class="weekly-report-table-wrap">
-                  <el-table :data="cashFlowSessionRows" size="small" class="report-table">
-                    <el-table-column label="Employee / Session" min-width="250">
-                      <template #default="{ row }">
-                        <div class="weekly-report-shift-main">
-                          <strong>{{ row.isAdmin ? `Admin · Reading Session #${row.id}` : row.name }}</strong>
-                          <span v-if="row.isAdmin">Machine collection + Admin reading transactions</span>
-                          <span v-else>Session #{{ row.id }} · {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}</span>
-                        </div>
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="Opening Bank" width="135" align="right">
-                      <template #default="{ row }">
-                        {{ money(row.opening) }}
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="Pull / Credits" width="140" align="right">
-                      <template #default="{ row }">
-                        <strong class="credit">+{{ money(row.received) }}</strong>
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="Expense" width="125" align="right">
-                      <template #default="{ row }">
-                        <strong class="debit">-{{ money(row.expenses) }}</strong>
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="Calculated" width="135" align="right">
-                      <template #default="{ row }">
-                        <strong>{{ money(row.calculated) }}</strong>
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="Actual" width="125" align="right">
-                      <template #default="{ row }">
-                        <strong>{{ money(row.actual) }}</strong>
-                      </template>
-                    </el-table-column>
-                    <el-table-column label="Short / Over" width="135" align="right">
-                      <template #default="{ row }">
-                        <strong :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</strong>
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                </div>
-              </el-card>
+                  <div class="weekly-report-table-wrap">
+                    <el-table :data="cashFlowSessionRows" size="small" class="report-table weekly-report-table">
+                      <el-table-column label="Employee / Session" min-width="250">
+                        <template #default="{ row }">
+                          <div class="weekly-report-shift-main">
+                            <strong>{{ row.isAdmin ? `Admin · Reading Session #${row.id}` : row.name }}</strong>
+                            <span v-if="row.isAdmin">Machine collection + Admin reading transactions</span>
+                            <span v-else>Session #{{ row.id }} · {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}</span>
+                          </div>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="Opening Bank" width="135" align="right">
+                        <template #default="{ row }">
+                          {{ money(row.opening) }}
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="Pull / Credits" width="140" align="right">
+                        <template #default="{ row }">
+                          <strong class="credit">+{{ money(row.received) }}</strong>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="Expense" width="125" align="right">
+                        <template #default="{ row }">
+                          <strong class="debit">-{{ money(row.expenses) }}</strong>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="Calculated" width="135" align="right">
+                        <template #default="{ row }">
+                          <strong>{{ money(row.calculated) }}</strong>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="Actual" width="125" align="right">
+                        <template #default="{ row }">
+                          <strong>{{ money(row.actual) }}</strong>
+                        </template>
+                      </el-table-column>
+                      <el-table-column label="Short / Over" width="135" align="right">
+                        <template #default="{ row }">
+                          <strong :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</strong>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
             </template>
           </div>
         </el-tab-pane>
@@ -348,20 +354,21 @@
                   </div>
                 </template>
 
-                <el-tabs v-model="readingDetailTab" class="weekly-reading-detail-tabs">
+                <el-tabs v-model="readingDetailTab" class="weekly-reading-detail-tabs" style="margin:15px;">
                   <el-tab-pane label="Machine Wise" name="machine">
                     <div class="weekly-report-table-wrap">
                       <el-table :data="report.reading.machines"
-                                stripe
                                 show-summary
                                 :summary-method="machineReadingSummaryMethod"
-                                class="report-table">
-                        <el-table-column prop="machinenumber" label="Machine #" min-width="90" fixed="left">
+                                class="report-table weekly-report-table">
+                        <el-table-column prop="machinenumber" label="Machine #" min-width="60" fixed="left">
                           <template #default="{ row }">
-                            <strong>{{ row.machinenumber }}</strong>
+                            <span class="weekly-machine-number-badge ">
+                              {{ row.machinenumber }}
+                            </span>
                           </template>
                         </el-table-column>
-                        <el-table-column prop="previousin" label="Previous IN" min-width="105" align="right">
+                        <el-table-column prop="previousin" label="Previous IN" min-width="95" align="right">
                           <template #default="{ row }">
                             {{ number(row.previousin) }}
                           </template>
@@ -371,12 +378,12 @@
                             {{ number(row.previousout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="currentin" label="Current IN" min-width="105" align="right">
+                        <el-table-column prop="currentin" label="Current IN" min-width="95" align="right">
                           <template #default="{ row }">
                             {{ number(row.currentin) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="currentout" label="Current OUT" min-width="105" align="right">
+                        <el-table-column prop="currentout" label="Current OUT" min-width="95" align="right">
                           <template #default="{ row }">
                             {{ number(row.currentout) }}
                           </template>
@@ -391,29 +398,29 @@
                             {{ number(row.dailyout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="ticketout" label="Ticket Out" min-width="100" align="right">
+                        <el-table-column prop="ticketout" label="Ticket Out" min-width="95" align="right">
                           <template #default="{ row }">
                             {{ number(row.ticketout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column label="OUT Check" min-width="105" align="center">
+                        <el-table-column label="OUT Check" min-width="110" align="center">
                           <template #default="{ row }">
                             <el-tag :type="machineOutCheckType(row)" effect="light" round>
                               {{ machineOutCheckLabel(row) }}
                             </el-tag>
                           </template>
                         </el-table-column>
-                        <el-table-column prop="difference" label="Difference" min-width="105" align="right">
+                        <el-table-column prop="difference" label="Difference" min-width="95" align="right">
                           <template #default="{ row }">
                             {{ money(row.difference) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="points" label="Points Given" min-width="110" align="right">
+                        <el-table-column prop="points" label="Points Given" min-width="95" align="right">
                           <template #default="{ row }">
                             {{ money(row.points) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="net" label="Net" min-width="110" align="right">
+                        <el-table-column prop="net" label="Net" min-width="90" align="right">
                           <template #default="{ row }">
                             <strong>{{ money(row.net) }}</strong>
                           </template>
@@ -435,7 +442,9 @@
                       <div v-for="row in report.reading.machines"
                            :key="row.id"
                            class="weekly-report-mobile-card">
-                        <strong>Machine #{{ row.machinenumber }}</strong>
+                        <span class="weekly-machine-number-badge weekly-machine-number-badge-mobile">
+                          {{ row.machinenumber }}
+                        </span>
                         <div><span>Previous IN</span><b>{{ number(row.previousin) }}</b></div>
                         <div><span>Previous OUT</span><b>{{ number(row.previousout) }}</b></div>
                         <div><span>Current IN</span><b>{{ number(row.currentin) }}</b></div>
@@ -456,10 +465,9 @@
                   <el-tab-pane label="Machine Type Wise" name="type">
                     <div class="weekly-report-table-wrap">
                       <el-table :data="report.reading.byMachineType"
-                                stripe
                                 show-summary
                                 :summary-method="readingSummaryMethod"
-                                class="report-table">
+                                class="report-table weekly-report-table">
                         <el-table-column prop="machineType" label="Machine Type" min-width="160" fixed="left" />
                         <el-table-column prop="machineCount" label="Machines" min-width="90" align="right" />
                         <el-table-column prop="in" label="IN" min-width="105" align="right">
@@ -613,7 +621,7 @@
                 </template>
 
                 <el-table :data="report.expenses.employeeSessions"
-                          size="small">
+                          size="small" class="weekly-report-table">
                   <el-table-column label="Employee / Session" min-width="310">
                     <template #default="{ row: shift }">
                       <div class="weekly-report-shift-main">
@@ -924,7 +932,7 @@
                 </template>
 
                 <div class="weekly-report-table-wrap">
-                  <el-table :data="employeeCashFlowRows" size="small" class="report-table">
+                  <el-table :data="employeeCashFlowRows" size="small" class="report-table weekly-report-table">
                     <el-table-column label="Employee / Session" min-width="250">
                       <template #default="{ row }">
                         <div class="weekly-report-shift-main">
@@ -1036,6 +1044,11 @@
                     <strong>{{ percentage(report.percentages.important.bonusGiven.percentage) }}</strong>
                   </div>
                   <div>
+                    <span>Lucky Bird Given</span>
+                    <small>{{ money(report.percentages.important.luckyBirdGiven.amount) }}</small>
+                    <strong>{{ percentage(report.percentages.important.luckyBirdGiven.percentage) }}</strong>
+                  </div>
+                  <div>
                     <span>Payroll</span>
                     <small>{{ money(report.percentages.important.payroll.amount) }}</small>
                     <strong>{{ percentage(report.percentages.important.payroll.percentage) }}</strong>
@@ -1058,7 +1071,7 @@
                width="720px"
                class="compact-detail-dialog"
                append-to-body>
-      <el-table :data="adminReadingCredits" stripe size="small">
+      <el-table :data="adminReadingCredits" size="small" class="weekly-report-table">
         <el-table-column prop="creditTypeName" label="Credit Type" min-width="170" />
         <el-table-column prop="notes" label="Notes" min-width="250">
           <template #default="{ row }">
@@ -1084,7 +1097,7 @@
                width="720px"
                class="compact-detail-dialog"
                append-to-body>
-      <el-table :data="adminReadingExpenses" stripe size="small">
+      <el-table :data="adminReadingExpenses" size="small" class="weekly-report-table">
         <el-table-column prop="expenseTypeName" label="Expense Type" min-width="170" />
         <el-table-column prop="notes" label="Notes" min-width="250">
           <template #default="{ row }">
@@ -1213,9 +1226,8 @@
                class="compact-detail-dialog"
                append-to-body>
       <el-table :data="selectedExpenseTypeDetails"
-                stripe
                 size="small"
-                class="compact-detail-table">
+                class="compact-detail-table weekly-report-table">
         <el-table-column label="Source / Session" min-width="190">
           <template #default="{ row }">
             <strong>{{ row.employeeName }}</strong>
@@ -1247,7 +1259,7 @@
                :title="expenseDialogTitle"
                width="680px"
                append-to-body>
-      <el-table :data="selectedShiftExpenses" stripe>
+      <el-table :data="selectedShiftExpenses" class="weekly-report-table">
         <el-table-column prop="category" label="Expense" min-width="150" />
         <el-table-column prop="details" label="Details" min-width="260" />
         <el-table-column label="Amount" width="130" align="right">
@@ -1300,6 +1312,7 @@ const selectedExpenseCategory = ref('');
 const adminCreditDetailsVisible = ref(false);
 const adminExpenseDetailsVisible = ref(false);
 const analyticsBreakdownVisible = ref(false);
+const sessionCashFlowActiveNames = ref<string[]>([]);
 const readingDetailTab = ref('machine');
 
 const adminExpenseDialogVisible = ref(false);
@@ -1307,9 +1320,9 @@ const adminExpenseSaving = ref(false);
 const adminExpenseTypesLoading = ref(false);
 const adminExpenseTypes = ref<any[]>([]);
 const adminExpenseForm = ref({
-                expensetypeid: null as number | null,
-                amount: '',
-                notes: ''
+                        expensetypeid: null as number | null,
+                        amount: '',
+                        notes: ''
 });
 
 const adminCreditDialogVisible = ref(false);
@@ -1317,758 +1330,760 @@ const adminCreditSaving = ref(false);
 const adminCreditTypesLoading = ref(false);
 const adminCreditTypes = ref<any[]>([]);
 const adminCreditForm = ref({
-                credittypeid: null as number | null,
-                amount: '',
-                notes: ''
+                        credittypeid: null as number | null,
+                        amount: '',
+                        notes: ''
 });
 
 const isAdminUser = computed(() =>
-                String(userStore.roleName || '').trim().toLowerCase() === 'admin'
+                        String(userStore.roleName || '').trim().toLowerCase() === 'admin'
 );
 
 const expenseCategories = computed(() =>
-            Array.isArray(report.value?.expenses?.categories)
-              ? report.value.expenses.categories
-              : []
+                    Array.isArray(report.value?.expenses?.categories)
+                      ? report.value.expenses.categories
+                      : []
 );
 
 const expenseTotal = computed(() => Number(report.value?.expenses?.total || 0));
 
 const adminReadingCredits = computed(() =>
-            Array.isArray(report.value?.readingSessionCash?.credits)
-              ? report.value.readingSessionCash.credits
-              : []
+                    Array.isArray(report.value?.readingSessionCash?.credits)
+                      ? report.value.readingSessionCash.credits
+                      : []
 );
 
 const adminReadingExpenses = computed(() =>
-            Array.isArray(report.value?.readingSessionCash?.expenses)
-              ? report.value.readingSessionCash.expenses
-              : []
+                    Array.isArray(report.value?.readingSessionCash?.expenses)
+                      ? report.value.readingSessionCash.expenses
+                      : []
 );
 
 const adminCreditTotal = computed(() => Number(report.value?.readingSessionCash?.creditTotal || 0));
 const adminExpenseTotal = computed(() => Number(report.value?.readingSessionCash?.expenseTotal || 0));
 
 const cashFlowSessionRows = computed(() => {
-            const employeeRows = Array.isArray(report.value?.cashFlow?.sessionBreakdown)
-              ? report.value.cashFlow.sessionBreakdown
-              : [];
-            const admin = report.value?.cashFlow?.adminBreakdown;
+                    const employeeRows = Array.isArray(report.value?.cashFlow?.sessionBreakdown)
+                      ? report.value.cashFlow.sessionBreakdown
+                      : [];
+                    const admin = report.value?.cashFlow?.adminBreakdown;
 
-            return admin ? [...employeeRows, admin] : employeeRows;
+                    return admin ? [...employeeRows, admin] : employeeRows;
 });
 
 const employeeCashFlowRows = computed(() =>
-            Array.isArray(report.value?.cashFlow?.sessionBreakdown)
-              ? report.value.cashFlow.sessionBreakdown
-              : []
+                    Array.isArray(report.value?.cashFlow?.sessionBreakdown)
+                      ? report.value.cashFlow.sessionBreakdown
+                      : []
 );
 
 const selectedExpenseTypeDetails = computed(() => {
-            const category = selectedExpenseCategory.value;
-            const sessions = report.value?.expenses?.employeeSessions ?? [];
+                    const category = selectedExpenseCategory.value;
+                    const sessions = report.value?.expenses?.employeeSessions ?? [];
 
-            const employeeDetails = sessions.flatMap((session: any) =>
-              (Array.isArray(session.expenseDetails) ? session.expenseDetails : [])
-                .filter((item: any) => String(item.category || '') === category)
-                .map((item: any) => ({
-                  ...item,
-                  employeeName: session.name || 'Employee',
-                  sessionId: session.id
-                }))
-            );
+                    const employeeDetails = sessions.flatMap((session: any) =>
+                      (Array.isArray(session.expenseDetails) ? session.expenseDetails : [])
+                        .filter((item: any) => String(item.category || '') === category)
+                        .map((item: any) => ({
+                          ...item,
+                          employeeName: session.name || 'Employee',
+                          sessionId: session.id
+                        }))
+                    );
 
-            const adminDetails = (report.value?.expenses?.adminDetails ?? [])
-              .filter((item: any) => String(item.category || 'Expense') === category);
+                    const adminDetails = (report.value?.expenses?.adminDetails ?? [])
+                      .filter((item: any) => String(item.category || 'Expense') === category);
 
-            return [...employeeDetails, ...adminDetails];
+                    return [...employeeDetails, ...adminDetails];
 });
 const selectedExpenseTypeTotal = computed(() =>
-            selectedExpenseTypeDetails.value.reduce(
-              (sum: number, item: any) => sum + Number(item.amount || 0),
-              0
-            )
+                    selectedExpenseTypeDetails.value.reduce(
+                      (sum: number, item: any) => sum + Number(item.amount || 0),
+                      0
+                    )
 );
 
 const expenseTypeDialogTitle = computed(() =>
-            selectedExpenseCategory.value
-              ? `${selectedExpenseCategory.value} Details`
-              : 'Expense Details'
+                    selectedExpenseCategory.value
+                      ? `${selectedExpenseCategory.value} Details`
+                      : 'Expense Details'
 );
 
 function validExpenseAmount(value: any) {
-            return /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) &&
-              Number(value) > 0;
+                    return /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) &&
+                      Number(value) > 0;
 }
 
 async function loadAdminExpenseTypes() {
-            if (!userStore.locationId || adminExpenseTypesLoading.value) return;
+                    if (!userStore.locationId || adminExpenseTypesLoading.value) return;
 
-            try {
-              adminExpenseTypesLoading.value = true;
-              const response = await getExpenseTypes(Number(userStore.locationId));
-              adminExpenseTypes.value = response?.data || response || [];
-            } catch (error: any) {
-              ElMessage.error(
-                error?.response?.data?.message ||
-                error?.message ||
-                'Unable to load expense types.'
-              );
-            } finally {
-              adminExpenseTypesLoading.value = false;
-            }
+                    try {
+                      adminExpenseTypesLoading.value = true;
+                      const response = await getExpenseTypes(Number(userStore.locationId));
+                      adminExpenseTypes.value = response?.data || response || [];
+                    } catch (error: any) {
+                      ElMessage.error(
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        'Unable to load expense types.'
+                      );
+                    } finally {
+                      adminExpenseTypesLoading.value = false;
+                    }
 }
 
 async function loadAdminCreditTypes() {
-            if (!userStore.locationId || adminCreditTypesLoading.value) return;
+                    if (!userStore.locationId || adminCreditTypesLoading.value) return;
 
-            try {
-              adminCreditTypesLoading.value = true;
-              const response = await request({
-                url: '/employeefinance/credit-types',
-                method: 'get',
-                params: { locationid: Number(userStore.locationId) }
-              });
-              adminCreditTypes.value = response?.data || response || [];
-            } catch (error: any) {
-              ElMessage.error(
-                error?.response?.data?.message ||
-                error?.message ||
-                'Unable to load credit types.'
-              );
-            } finally {
-              adminCreditTypesLoading.value = false;
-            }
+                    try {
+                      adminCreditTypesLoading.value = true;
+                      const response = await request({
+                        url: '/employeefinance/credit-types',
+                        method: 'get',
+                        params: { locationid: Number(userStore.locationId) }
+                      });
+                      adminCreditTypes.value = response?.data || response || [];
+                    } catch (error: any) {
+                      ElMessage.error(
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        'Unable to load credit types.'
+                      );
+                    } finally {
+                      adminCreditTypesLoading.value = false;
+                    }
 }
 
 async function openAdminCreditDialog() {
-            if (!isAdminUser.value || !selectedSessionId.value) return;
+                    if (!isAdminUser.value || !selectedSessionId.value) return;
 
-            adminCreditForm.value = {
-              credittypeid: null,
-              amount: '',
-              notes: ''
-            };
+                    adminCreditForm.value = {
+                      credittypeid: null,
+                      amount: '',
+                      notes: ''
+                    };
 
-            adminCreditDialogVisible.value = true;
-            await loadAdminCreditTypes();
+                    adminCreditDialogVisible.value = true;
+                    await loadAdminCreditTypes();
 }
 
 async function saveAdminCredit() {
-            if (!isAdminUser.value || !selectedSessionId.value) return;
+                    if (!isAdminUser.value || !selectedSessionId.value) return;
 
-            if (!adminCreditForm.value.credittypeid) {
-              return ElMessage.warning('Select a credit type.');
-            }
+                    if (!adminCreditForm.value.credittypeid) {
+                      return ElMessage.warning('Select a credit type.');
+                    }
 
-            if (!validExpenseAmount(adminCreditForm.value.amount)) {
-              return ElMessage.warning('Enter a positive amount with up to two decimals.');
-            }
+                    if (!validExpenseAmount(adminCreditForm.value.amount)) {
+                      return ElMessage.warning('Enter a positive amount with up to two decimals.');
+                    }
 
-            try {
-              adminCreditSaving.value = true;
+                    try {
+                      adminCreditSaving.value = true;
 
-              await request({
-                url: '/employeefinance/admin/reading-session-credit',
-                method: 'post',
-                data: {
-                  locationid: Number(userStore.locationId),
-                  readingsessionid: Number(selectedSessionId.value),
-                  credittypeid: Number(adminCreditForm.value.credittypeid),
-                  amount: adminCreditForm.value.amount,
-                  notes: adminCreditForm.value.notes
-                }
-              });
+                      await request({
+                        url: '/employeefinance/admin/reading-session-credit',
+                        method: 'post',
+                        data: {
+                          locationid: Number(userStore.locationId),
+                          readingsessionid: Number(selectedSessionId.value),
+                          credittypeid: Number(adminCreditForm.value.credittypeid),
+                          amount: adminCreditForm.value.amount,
+                          notes: adminCreditForm.value.notes
+                        }
+                      });
 
-              ElMessage.success('Admin credit added.');
-              adminCreditDialogVisible.value = false;
-              await loadDayReport();
-            } catch (error: any) {
-              ElMessage.error(
-                error?.response?.data?.message ||
-                error?.message ||
-                'Unable to add Admin credit.'
-              );
-            } finally {
-              adminCreditSaving.value = false;
-            }
+                      ElMessage.success('Admin credit added.');
+                      adminCreditDialogVisible.value = false;
+                      await loadDayReport();
+                    } catch (error: any) {
+                      ElMessage.error(
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        'Unable to add Admin credit.'
+                      );
+                    } finally {
+                      adminCreditSaving.value = false;
+                    }
 }
 
 async function openAdminExpenseDialog() {
-            if (!isAdminUser.value || !selectedSessionId.value) return;
+                    if (!isAdminUser.value || !selectedSessionId.value) return;
 
-            adminExpenseForm.value = {
-              expensetypeid: null,
-              amount: '',
-              notes: ''
-            };
+                    adminExpenseForm.value = {
+                      expensetypeid: null,
+                      amount: '',
+                      notes: ''
+                    };
 
-            adminExpenseDialogVisible.value = true;
-            await loadAdminExpenseTypes();
+                    adminExpenseDialogVisible.value = true;
+                    await loadAdminExpenseTypes();
 }
 
 async function saveAdminExpense() {
-            if (!isAdminUser.value || !selectedSessionId.value) return;
+                    if (!isAdminUser.value || !selectedSessionId.value) return;
 
-            if (!adminExpenseForm.value.expensetypeid) {
-              return ElMessage.warning('Select an expense type.');
-            }
+                    if (!adminExpenseForm.value.expensetypeid) {
+                      return ElMessage.warning('Select an expense type.');
+                    }
 
-            if (!validExpenseAmount(adminExpenseForm.value.amount)) {
-              return ElMessage.warning('Enter a positive amount with up to two decimals.');
-            }
+                    if (!validExpenseAmount(adminExpenseForm.value.amount)) {
+                      return ElMessage.warning('Enter a positive amount with up to two decimals.');
+                    }
 
-            try {
-              adminExpenseSaving.value = true;
+                    try {
+                      adminExpenseSaving.value = true;
 
-              await request({
-                url: '/employeefinance/admin/reading-session-expense',
-                method: 'post',
-                data: {
-                  locationid: Number(userStore.locationId),
-                  readingsessionid: Number(selectedSessionId.value),
-                  expensetypeid: Number(adminExpenseForm.value.expensetypeid),
-                  amount: adminExpenseForm.value.amount,
-                  notes: adminExpenseForm.value.notes
-                }
-              });
+                      await request({
+                        url: '/employeefinance/admin/reading-session-expense',
+                        method: 'post',
+                        data: {
+                          locationid: Number(userStore.locationId),
+                          readingsessionid: Number(selectedSessionId.value),
+                          expensetypeid: Number(adminExpenseForm.value.expensetypeid),
+                          amount: adminExpenseForm.value.amount,
+                          notes: adminExpenseForm.value.notes
+                        }
+                      });
 
-              ElMessage.success('Admin expense added.');
-              adminExpenseDialogVisible.value = false;
-              await loadDayReport();
-            } catch (error: any) {
-              ElMessage.error(
-                error?.response?.data?.message ||
-                error?.message ||
-                'Unable to add Admin expense.'
-              );
-            } finally {
-              adminExpenseSaving.value = false;
-            }
+                      ElMessage.success('Admin expense added.');
+                      adminExpenseDialogVisible.value = false;
+                      await loadDayReport();
+                    } catch (error: any) {
+                      ElMessage.error(
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        'Unable to add Admin expense.'
+                      );
+                    } finally {
+                      adminExpenseSaving.value = false;
+                    }
 }
 
 function openExpenseTypeDetails(item: any) {
-            selectedExpenseCategory.value = String(item?.category || '');
-            expenseTypeDialogVisible.value = true;
+                    selectedExpenseCategory.value = String(item?.category || '');
+                    expenseTypeDialogVisible.value = true;
 }
 
 const selectedShiftExpenses = computed(() =>
-                Array.isArray(selectedExpenseShift.value?.expenseDetails)
-                  ? selectedExpenseShift.value.expenseDetails
-                  : []
+                        Array.isArray(selectedExpenseShift.value?.expenseDetails)
+                          ? selectedExpenseShift.value.expenseDetails
+                          : []
 );
 
 const selectedShiftExpenseTotal = computed(() =>
-                selectedShiftExpenses.value.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
+                        selectedShiftExpenses.value.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
 );
 
 const expenseDialogTitle = computed(() => {
-                const shift = selectedExpenseShift.value;
-                if (!shift) return 'Employee Session Expenses';
-                return `${shift.name} · Session #${shift.id} Expenses`;
+                        const shift = selectedExpenseShift.value;
+                        if (!shift) return 'Employee Session Expenses';
+                        return `${shift.name} · Session #${shift.id} Expenses`;
 });
 
 function openShiftExpenses(shift: any) {
-                selectedExpenseShift.value = shift;
-                expenseDialogVisible.value = true;
+                        selectedExpenseShift.value = shift;
+                        expenseDialogVisible.value = true;
 }
 
 function machineOutVariance(row: any) {
-                return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
+                        return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
 }
 
 function machineOutCheckType(row: any) {
-                const variance = machineOutVariance(row);
-                if (Math.abs(variance) < 0.005) return 'info';
-                return variance > 0 ? 'success' : 'danger';
+                        const variance = machineOutVariance(row);
+                        if (Math.abs(variance) < 0.005) return 'info';
+                        return variance > 0 ? 'success' : 'danger';
 }
 
 function machineOutCheckLabel(row: any) {
-                const variance = machineOutVariance(row);
-                if (Math.abs(variance) < 0.005) return 'Even';
-                return variance > 0 ? 'Short Paid' : 'Over Paid';
+                        const variance = machineOutVariance(row);
+                        if (Math.abs(variance) < 0.005) return 'Even';
+                        return variance > 0 ? 'Short Paid' : 'Over Paid';
 }
 
 function machineLifePayPercent(row: any) {
-                const currentIn = Number(row?.currentin || 0);
-                const currentOut = Number(row?.currentout || 0);
-                if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
-                return `${((currentOut / currentIn) * 100).toFixed(2)}%`;
+                        const currentIn = Number(row?.currentin || 0);
+                        const currentOut = Number(row?.currentout || 0);
+                        if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
+                        return `${((currentOut / currentIn) * 100).toFixed(2)}%`;
 }
 
 function machineLifeHoldPercent(row: any) {
-                const currentIn = Number(row?.currentin || 0);
-                const currentOut = Number(row?.currentout || 0);
-                if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
-                return `${(100 - ((currentOut / currentIn) * 100)).toFixed(2)}%`;
+                        const currentIn = Number(row?.currentin || 0);
+                        const currentOut = Number(row?.currentout || 0);
+                        if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
+                        return `${(100 - ((currentOut / currentIn) * 100)).toFixed(2)}%`;
 }
 
 function machineReadingSummaryMethod({ columns, data }: any) {
-                return columns.map((column: any, index: number) => {
-                  if (index === 0) return 'Total';
+                        return columns.map((column: any, index: number) => {
+                          if (index === 0) return 'Total';
 
-                  switch (column.property) {
-                    case 'dailyin':
-                      return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyin || 0), 0));
-                    case 'dailyout':
-                      return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyout || 0), 0));
-                    case 'ticketout':
-                      return number(data.reduce((sum: number, row: any) => sum + Number(row.ticketout || 0), 0));
-                    case 'difference':
-                      return money(data.reduce((sum: number, row: any) => sum + Number(row.difference || 0), 0));
-                    case 'points':
-                      return money(data.reduce((sum: number, row: any) => sum + Number(row.points || 0), 0));
-                    case 'net':
-                      return money(data.reduce((sum: number, row: any) => sum + Number(row.net || 0), 0));
-                    default:
-                      return '';
-                  }
-                });
+                          switch (column.property) {
+                            case 'dailyin':
+                              return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyin || 0), 0));
+                            case 'dailyout':
+                              return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyout || 0), 0));
+                            case 'ticketout':
+                              return number(data.reduce((sum: number, row: any) => sum + Number(row.ticketout || 0), 0));
+                            case 'difference':
+                              return money(data.reduce((sum: number, row: any) => sum + Number(row.difference || 0), 0));
+                            case 'points':
+                              return money(data.reduce((sum: number, row: any) => sum + Number(row.points || 0), 0));
+                            case 'net':
+                              return money(data.reduce((sum: number, row: any) => sum + Number(row.net || 0), 0));
+                            default:
+                              return '';
+                          }
+                        });
 }
 
 function readingSummaryMethod({ columns }: any) {
-              const totals = report.value?.reading?.totals || {};
+                      const totals = report.value?.reading?.totals || {};
 
-              return columns.map((column: any, index: number) => {
-                if (index === 0) return 'Total';
+                      return columns.map((column: any, index: number) => {
+                        if (index === 0) return 'Total';
 
-                switch (column.property) {
-                  case 'machineCount':
-                    return number((report.value?.reading?.byMachineType || []).reduce(
-                      (sum: number, row: any) => sum + Number(row.machineCount || 0), 0
-                    ));
-                  case 'in':
-                    return number(totals.totalIn);
-                  case 'out':
-                    return number(totals.totalOut);
-                  case 'difference':
-                    return money(totals.grossProfit);
-                  case 'points':
-                    return money(totals.points);
-                  case 'net':
-                    return money(totals.net);
-                  default:
-                    return '';
-                }
-              });
+                        switch (column.property) {
+                          case 'machineCount':
+                            return number((report.value?.reading?.byMachineType || []).reduce(
+                              (sum: number, row: any) => sum + Number(row.machineCount || 0), 0
+                            ));
+                          case 'in':
+                            return number(totals.totalIn);
+                          case 'out':
+                            return number(totals.totalOut);
+                          case 'difference':
+                            return money(totals.grossProfit);
+                          case 'points':
+                            return money(totals.points);
+                          case 'net':
+                            return money(totals.net);
+                          default:
+                            return '';
+                        }
+                      });
 }
 
 const availableDays = computed(() =>
-                weekDays.value.filter(item => Array.isArray(item.sessions) && item.sessions.length > 0)
+                        weekDays.value.filter(item => Array.isArray(item.sessions) && item.sessions.length > 0)
 );
 
 const selectedDay = computed(() =>
-                weekDays.value.find(item => item.date === selectedDate.value) || null
+                        weekDays.value.find(item => item.date === selectedDate.value) || null
 );
 
 const selectedSession = computed(() =>
-                selectedDay.value?.sessions?.find((item: any) => Number(item.id) === Number(selectedSessionId.value)) || null
+                        selectedDay.value?.sessions?.find((item: any) => Number(item.id) === Number(selectedSessionId.value)) || null
 );
 
 const weekModeLabel = computed(() => {
-                if (weekMode.value === 'last') return 'Last Week';
-                if (weekMode.value === 'custom') return 'Custom Week';
-                return 'Current Week';
+                        if (weekMode.value === 'last') return 'Last Week';
+                        if (weekMode.value === 'custom') return 'Custom Week';
+                        return 'Current Week';
 });
 
 const formattedWeekRange = computed(() => {
-                if (!weekStart.value || !weekEnd.value) return '';
-                return `${formatDateOnly(weekStart.value)} - ${formatDateOnly(weekEnd.value)}`;
+                        if (!weekStart.value || !weekEnd.value) return '';
+                        return `${formatDateOnly(weekStart.value)} - ${formatDateOnly(weekEnd.value)}`;
 });
 
 const canGoNextWeek = computed(() => {
-                if (!weekStart.value) return false;
+                        if (!weekStart.value) return false;
 
-                const selectedStart = fromDateKey(weekStart.value);
-                const currentMonday = mondayOf(new Date());
+                        const selectedStart = fromDateKey(weekStart.value);
+                        const currentMonday = mondayOf(new Date());
 
-                if (Number.isNaN(selectedStart.getTime())) {
-                  return false;
-                }
+                        if (Number.isNaN(selectedStart.getTime())) {
+                          return false;
+                        }
 
-                return selectedStart.getTime() < currentMonday.getTime();
+                        return selectedStart.getTime() < currentMonday.getTime();
 });
 
 function pad(value: number) {
-                return String(value).padStart(2, '0');
+                        return String(value).padStart(2, '0');
 }
 
 function dateKey(date: Date) {
-                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+                        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 function normalizeDateKey(value: any) {
-                const text = String(value || '').trim();
+                        const text = String(value || '').trim();
 
-                const exact = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-                if (exact) {
-                  return `${exact[1]}-${exact[2]}-${exact[3]}`;
-                }
+                        const exact = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                        if (exact) {
+                          return `${exact[1]}-${exact[2]}-${exact[3]}`;
+                        }
 
-                const parsed = new Date(text);
-                if (Number.isNaN(parsed.getTime())) {
-                  return '';
-                }
+                        const parsed = new Date(text);
+                        if (Number.isNaN(parsed.getTime())) {
+                          return '';
+                        }
 
-                return dateKey(parsed);
+                        return dateKey(parsed);
 }
 
 function fromDateKey(value: string) {
-                const normalized = normalizeDateKey(value);
+                        const normalized = normalizeDateKey(value);
 
-                if (!normalized) {
-                  return new Date(NaN);
-                }
+                        if (!normalized) {
+                          return new Date(NaN);
+                        }
 
-                const [year, month, day] =
-                  normalized.split('-').map(Number);
+                        const [year, month, day] =
+                          normalized.split('-').map(Number);
 
-                return new Date(year, month - 1, day);
+                        return new Date(year, month - 1, day);
 }
 
 function mondayOf(date: Date) {
-                const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                const weekday = result.getDay();
-                const delta = weekday === 0 ? -6 : 1 - weekday;
-                result.setDate(result.getDate() + delta);
-                return result;
+                        const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                        const weekday = result.getDay();
+                        const delta = weekday === 0 ? -6 : 1 - weekday;
+                        result.setDate(result.getDate() + delta);
+                        return result;
 }
 
 function plusDays(date: Date, days: number) {
-                const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                result.setDate(result.getDate() + days);
-                return result;
+                        const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                        result.setDate(result.getDate() + days);
+                        return result;
 }
 
 function setStandardWeek(mode: 'current' | 'last') {
-                const currentMonday = mondayOf(new Date());
-                const start = mode === 'last' ? plusDays(currentMonday, -7) : currentMonday;
-                weekStart.value = dateKey(start);
-                weekEnd.value = dateKey(plusDays(start, 6));
+                        const currentMonday = mondayOf(new Date());
+                        const start = mode === 'last' ? plusDays(currentMonday, -7) : currentMonday;
+                        weekStart.value = dateKey(start);
+                        weekEnd.value = dateKey(plusDays(start, 6));
 }
 
 async function changeWeek(direction: -1 | 1) {
-                if (!weekStart.value || weekLoading.value) {
-                  return;
-                }
+                        if (!weekStart.value || weekLoading.value) {
+                          return;
+                        }
 
-                const currentStart = fromDateKey(weekStart.value);
+                        const currentStart = fromDateKey(weekStart.value);
 
-                if (Number.isNaN(currentStart.getTime())) {
-                  return;
-                }
+                        if (Number.isNaN(currentStart.getTime())) {
+                          return;
+                        }
 
-                const currentMonday = mondayOf(new Date());
-                let targetStart = plusDays(currentStart, direction * 7);
+                        const currentMonday = mondayOf(new Date());
+                        let targetStart = plusDays(currentStart, direction * 7);
 
-                // Never allow week navigation beyond the current week.
-                if (targetStart.getTime() > currentMonday.getTime()) {
-                  targetStart = currentMonday;
-                }
+                        // Never allow week navigation beyond the current week.
+                        if (targetStart.getTime() > currentMonday.getTime()) {
+                          targetStart = currentMonday;
+                        }
 
-                const targetEnd = plusDays(targetStart, 6);
-                const targetStartKey = dateKey(targetStart);
-                const targetEndKey = dateKey(targetEnd);
-                const lastWeekStartKey = dateKey(plusDays(currentMonday, -7));
-                const currentWeekStartKey = dateKey(currentMonday);
+                        const targetEnd = plusDays(targetStart, 6);
+                        const targetStartKey = dateKey(targetStart);
+                        const targetEndKey = dateKey(targetEnd);
+                        const lastWeekStartKey = dateKey(plusDays(currentMonday, -7));
+                        const currentWeekStartKey = dateKey(currentMonday);
 
-                weekStart.value = targetStartKey;
-                weekEnd.value = targetEndKey;
+                        weekStart.value = targetStartKey;
+                        weekEnd.value = targetEndKey;
 
-                if (targetStartKey === currentWeekStartKey) {
-                  weekMode.value = 'current';
-                  customRange.value = [];
-                } else if (targetStartKey === lastWeekStartKey) {
-                  weekMode.value = 'last';
-                  customRange.value = [];
-                } else {
-                  weekMode.value = 'custom';
-                  customRange.value = [targetStartKey, targetEndKey];
-                }
+                        if (targetStartKey === currentWeekStartKey) {
+                          weekMode.value = 'current';
+                          customRange.value = [];
+                        } else if (targetStartKey === lastWeekStartKey) {
+                          weekMode.value = 'last';
+                          customRange.value = [];
+                        } else {
+                          weekMode.value = 'custom';
+                          customRange.value = [targetStartKey, targetEndKey];
+                        }
 
-                draftWeekMode.value = weekMode.value;
-                draftCustomRange.value = [...customRange.value];
+                        draftWeekMode.value = weekMode.value;
+                        draftCustomRange.value = [...customRange.value];
 
-                await loadWeek();
+                        await loadWeek();
 }
 
 function openWeekFilter() {
-                draftWeekMode.value = weekMode.value;
-                draftCustomRange.value = [...customRange.value];
+                        draftWeekMode.value = weekMode.value;
+                        draftCustomRange.value = [...customRange.value];
 
-                if (
-                  draftWeekMode.value === 'custom' &&
-                  draftCustomRange.value.length !== 2 &&
-                  weekStart.value &&
-                  weekEnd.value
-                ) {
-                  draftCustomRange.value = [
-                    weekStart.value,
-                    weekEnd.value
-                  ];
-                }
+                        if (
+                          draftWeekMode.value === 'custom' &&
+                          draftCustomRange.value.length !== 2 &&
+                          weekStart.value &&
+                          weekEnd.value
+                        ) {
+                          draftCustomRange.value = [
+                            weekStart.value,
+                            weekEnd.value
+                          ];
+                        }
 
-                filterDrawerVisible.value = true;
+                        filterDrawerVisible.value = true;
 }
 
 function validateCustomWeek(value: string[]) {
-                if (
-                  !Array.isArray(value) ||
-                  value.length !== 2
-                ) {
-                  ElMessage.warning(
-                    'Please select a Monday to Sunday date range.'
-                  );
-                  return false;
-                }
+                        if (
+                          !Array.isArray(value) ||
+                          value.length !== 2
+                        ) {
+                          ElMessage.warning(
+                            'Please select a Monday to Sunday date range.'
+                          );
+                          return false;
+                        }
 
-                const start = fromDateKey(value[0]);
-                const end = fromDateKey(value[1]);
+                        const start = fromDateKey(value[0]);
+                        const end = fromDateKey(value[1]);
 
-                if (
-                  Number.isNaN(start.getTime()) ||
-                  Number.isNaN(end.getTime())
-                ) {
-                  ElMessage.warning(
-                    'Please select a valid custom week.'
-                  );
-                  return false;
-                }
+                        if (
+                          Number.isNaN(start.getTime()) ||
+                          Number.isNaN(end.getTime())
+                        ) {
+                          ElMessage.warning(
+                            'Please select a valid custom week.'
+                          );
+                          return false;
+                        }
 
-                const days = Math.round(
-                  (end.getTime() - start.getTime()) /
-                    86400000
-                );
+                        const days = Math.round(
+                          (end.getTime() - start.getTime()) /
+                            86400000
+                        );
 
-                if (
-                  start.getDay() !== 1 ||
-                  end.getDay() !== 0 ||
-                  days !== 6
-                ) {
-                  ElMessage.warning(
-                    'Custom Week must start on Monday and end on Sunday.'
-                  );
-                  return false;
-                }
+                        if (
+                          start.getDay() !== 1 ||
+                          end.getDay() !== 0 ||
+                          days !== 6
+                        ) {
+                          ElMessage.warning(
+                            'Custom Week must start on Monday and end on Sunday.'
+                          );
+                          return false;
+                        }
 
-                return true;
+                        return true;
 }
 
 async function applyWeekFilter() {
-                if (draftWeekMode.value === 'custom') {
-                  if (!validateCustomWeek(draftCustomRange.value)) {
-                    return;
-                  }
+                        if (draftWeekMode.value === 'custom') {
+                          if (!validateCustomWeek(draftCustomRange.value)) {
+                            return;
+                          }
 
-                  weekMode.value = 'custom';
-                  customRange.value = [
-                    ...draftCustomRange.value
-                  ];
-                  weekStart.value =
-                    draftCustomRange.value[0];
-                  weekEnd.value =
-                    draftCustomRange.value[1];
-                } else {
-                  weekMode.value =
-                    draftWeekMode.value;
+                          weekMode.value = 'custom';
+                          customRange.value = [
+                            ...draftCustomRange.value
+                          ];
+                          weekStart.value =
+                            draftCustomRange.value[0];
+                          weekEnd.value =
+                            draftCustomRange.value[1];
+                        } else {
+                          weekMode.value =
+                            draftWeekMode.value;
 
-                  customRange.value = [];
-                  setStandardWeek(
-                    draftWeekMode.value
-                  );
-                }
+                          customRange.value = [];
+                          setStandardWeek(
+                            draftWeekMode.value
+                          );
+                        }
 
-                filterDrawerVisible.value = false;
+                        filterDrawerVisible.value = false;
 
-                await loadWeek();
+                        await loadWeek();
 }
 
 async function clearWeekFilter() {
-                weekMode.value = 'current';
-                customRange.value = [];
-                draftWeekMode.value = 'current';
-                draftCustomRange.value = [];
+                        weekMode.value = 'current';
+                        customRange.value = [];
+                        draftWeekMode.value = 'current';
+                        draftCustomRange.value = [];
 
-                setStandardWeek('current');
+                        setStandardWeek('current');
 
-                filterDrawerVisible.value = false;
+                        filterDrawerVisible.value = false;
 
-                await loadWeek();
+                        await loadWeek();
 }
 
 async function loadWeek() {
-                if (!userStore.locationId || !weekStart.value || !weekEnd.value) return;
+                        if (!userStore.locationId || !weekStart.value || !weekEnd.value) return;
 
-                weekLoading.value = true;
-                report.value = null;
-                selectedDate.value = '';
-                selectedSessionId.value = null;
+                        weekLoading.value = true;
+                        report.value = null;
+                        selectedDate.value = '';
+                        selectedSessionId.value = null;
 
-                try {
-                  const response = await getWeeklyReportWeek({
-                    locationid: Number(userStore.locationId),
-                    startdate: weekStart.value,
-                    enddate: weekEnd.value
-                  });
+                        try {
+                          const response = await getWeeklyReportWeek({
+                            locationid: Number(userStore.locationId),
+                            startdate: weekStart.value,
+                            enddate: weekEnd.value
+                          });
 
-                  weekDays.value = (response.data?.days || []).map((item: any) => ({
-                    ...item,
-                    date: normalizeDateKey(item.date)
-                  }));
+                          weekDays.value = (response.data?.days || []).map((item: any) => ({
+                            ...item,
+                            date: normalizeDateKey(item.date)
+                          }));
 
-                  const firstAvailable = weekDays.value.find(item => item.sessions?.length);
-                  if (firstAvailable) {
-                    await selectDay(firstAvailable);
-                  }
-                } catch (error) {
-                  console.error(error);
-                  weekDays.value = [];
-                } finally {
-                  weekLoading.value = false;
-                }
+                          const firstAvailable = weekDays.value.find(item => item.sessions?.length);
+                          if (firstAvailable) {
+                            await selectDay(firstAvailable);
+                          }
+                        } catch (error) {
+                          console.error(error);
+                          weekDays.value = [];
+                        } finally {
+                          weekLoading.value = false;
+                        }
 }
 
 async function selectDay(item: any) {
-                if (!item?.sessions?.length) return;
+                        if (!item?.sessions?.length) return;
 
-                selectedDate.value = item.date;
-                selectedSessionId.value = Number(item.sessions[0].id);
-                activeTab.value = 'cashflow';
-                await loadDayReport();
+                        selectedDate.value = item.date;
+                        selectedSessionId.value = Number(item.sessions[0].id);
+                        activeTab.value = 'cashflow';
+                        await loadDayReport();
 }
 
 async function loadDayReport() {
-                if (!userStore.locationId || !selectedSessionId.value) return;
+                        if (!userStore.locationId || !selectedSessionId.value) return;
 
-                analyticsBreakdownVisible.value = false;
-                dayLoading.value = true;
-                report.value = null;
+                        analyticsBreakdownVisible.value = false;
+                        sessionCashFlowActiveNames.value = [];
+                        dayLoading.value = true;
+                        report.value = null;
 
-                try {
-                  const response = await getWeeklyReportDay({
-                    locationid: Number(userStore.locationId),
-                    sessionid: Number(selectedSessionId.value)
-                  });
-                  report.value = response.data || null;
-                } catch (error) {
-                  console.error(error);
-                } finally {
-                  dayLoading.value = false;
-                }
+                        try {
+                          const response = await getWeeklyReportDay({
+                            locationid: Number(userStore.locationId),
+                            sessionid: Number(selectedSessionId.value)
+                          });
+                          report.value = response.data || null;
+                        } catch (error) {
+                          console.error(error);
+                        } finally {
+                          dayLoading.value = false;
+                        }
 }
 
 function money(value: any) {
-                const amount = Number(value || 0);
-                return amount.toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                });
+                        const amount = Number(value || 0);
+                        return amount.toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        });
 }
 
 function signedMoney(value: any) {
-                const amount = Number(value || 0);
-                const formatted = money(Math.abs(amount));
-                if (amount > 0) return `+${formatted}`;
-                if (amount < 0) return `-${formatted}`;
-                return formatted;
+                        const amount = Number(value || 0);
+                        const formatted = money(Math.abs(amount));
+                        if (amount > 0) return `+${formatted}`;
+                        if (amount < 0) return `-${formatted}`;
+                        return formatted;
 }
 
 function percentage(value: any) {
-                const amount = Number(value || 0);
-                return `${amount.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}%`;
+                        const amount = Number(value || 0);
+                        return `${amount.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}%`;
 }
 
 function number(value: any) {
-                return Number(value || 0).toLocaleString('en-US', {
-                  maximumFractionDigits: 2
-                });
+                        return Number(value || 0).toLocaleString('en-US', {
+                          maximumFractionDigits: 2
+                        });
 }
 
 function shiftPercent(value: any, total: any) {
-          const amount = Number(value || 0);
-          const totalAmount = Number(total || 0);
+                  const amount = Number(value || 0);
+                  const totalAmount = Number(total || 0);
 
-          if (!totalAmount) return 0;
+                  if (!totalAmount) return 0;
 
-          return Math.round((amount / totalAmount) * 100);
+                  return Math.round((amount / totalAmount) * 100);
 }
 
 function timeLabel(value: any) {
-          const text = String(value || '').slice(0, 5);
-          const [hourText, minute = '00'] = text.split(':');
-          const hour = Number(hourText);
+                  const text = String(value || '').slice(0, 5);
+                  const [hourText, minute = '00'] = text.split(':');
+                  const hour = Number(hourText);
 
-          if (!Number.isFinite(hour)) return text || '—';
+                  if (!Number.isFinite(hour)) return text || '—';
 
-          const suffix = hour >= 12 ? 'PM' : 'AM';
-          const displayHour = hour % 12 || 12;
+                  const suffix = hour >= 12 ? 'PM' : 'AM';
+                  const displayHour = hour % 12 || 12;
 
-          return `${displayHour}:${minute} ${suffix}`;
+                  return `${displayHour}:${minute} ${suffix}`;
 }
 
 function amountClass(value: any) {
-                const amount = Number(value || 0);
-                if (amount < 0) return 'is-negative';
-                if (amount > 0) return 'is-positive';
-                return '';
+                        const amount = Number(value || 0);
+                        if (amount < 0) return 'is-negative';
+                        if (amount > 0) return 'is-positive';
+                        return '';
 }
 
 function formatDateOnly(value: string) {
-                if (!value) return '';
-                const date = fromDateKey(value);
-                return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}/${date.getFullYear()}`;
+                        if (!value) return '';
+                        const date = fromDateKey(value);
+                        return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}/${date.getFullYear()}`;
 }
 
 function shortDate(value: string) {
-                if (!value) return '';
-                const date = fromDateKey(value);
-                return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
+                        if (!value) return '';
+                        const date = fromDateKey(value);
+                        return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
 }
 
 function dayName(value: string) {
-                if (!value) return '';
-                return fromDateKey(value).toLocaleDateString('en-US', { weekday: 'short' });
+                        if (!value) return '';
+                        return fromDateKey(value).toLocaleDateString('en-US', { weekday: 'short' });
 }
 
 function longDate(value: string) {
-                if (!value) return '';
-                return fromDateKey(value).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric'
-                });
+                        if (!value) return '';
+                        return fromDateKey(value).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        });
 }
 
 function formatDateTime(value: any) {
-                if (!value) return '—';
-                const date = new Date(value);
-                if (Number.isNaN(date.getTime())) return '—';
-                return date.toLocaleString('en-US', {
-                  month: '2-digit',
-                  day: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true
-                });
+                        if (!value) return '—';
+                        const date = new Date(value);
+                        if (Number.isNaN(date.getTime())) return '—';
+                        return date.toLocaleString('en-US', {
+                          month: '2-digit',
+                          day: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        });
 }
 
 watch(
-                () => userStore.locationId,
-                () => {
-                  if (userStore.locationId) loadWeek();
-                }
+                        () => userStore.locationId,
+                        () => {
+                          if (userStore.locationId) loadWeek();
+                        }
 );
 
 onMounted(() => {
-                setStandardWeek('current');
-                loadWeek();
+                        setStandardWeek('current');
+                        loadWeek();
 });
 </script>
+
 

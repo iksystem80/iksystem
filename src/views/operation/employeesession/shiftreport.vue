@@ -118,7 +118,7 @@
           </el-col>
         </el-row>
 
-        <el-card shadow="never" class="employee-finance-breakdown-card">
+        <el-card shadow="never" class="employee-finance-breakdown-card financial-negative-strip">
           <div class="employee-finance-breakdown">
             <div class="employee-finance-breakdown-item">
               <div class="employee-finance-breakdown-icon"><el-icon><Coin /></el-icon></div>
@@ -157,6 +157,13 @@
               <div>
                 <span>Bonus</span>
                 <strong>−{{ money(summary.bonusExpense) }}</strong>
+              </div>
+            </div>
+            <div class="employee-finance-breakdown-item">
+              <div class="employee-finance-breakdown-icon"><el-icon><Present /></el-icon></div>
+              <div>
+                <span>Lucky Bird</span>
+                <strong>−{{ money(summary.luckyBirdExpense) }}</strong>
               </div>
             </div>
           </div>

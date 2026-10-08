@@ -181,7 +181,7 @@
             </el-col>
           </el-row>
 
-          <el-card shadow="never" class="employee-finance-breakdown-card">
+          <el-card shadow="never" class="employee-finance-breakdown-card financial-negative-strip">
             <div class="employee-finance-breakdown">
               <div class="employee-finance-breakdown-item">
                 <div class="employee-finance-breakdown-icon"><el-icon><Coin /></el-icon></div>
@@ -220,6 +220,14 @@
                 <div>
                   <span>Bonus</span>
                   <strong>−{{ money(summary.bonusExpense) }}</strong>
+                </div>
+              </div>
+
+              <div class="employee-finance-breakdown-item">
+                <div class="employee-finance-breakdown-icon"><el-icon><Present /></el-icon></div>
+                <div>
+                  <span>Lucky Bird</span>
+                  <strong>−{{ money(summary.luckyBirdExpense) }}</strong>
                 </div>
               </div>
             </div>
@@ -494,15 +502,15 @@ import { exportEmployeeTransactionPdf } from '@/utils/exportemployeetransactionp
 import request from '@/utils/request';
 import { getcustomers } from '@/api/customer';
 import {
-                  getEmployeeFinance,
-                  getExpenseTypes,
-                  getCreditTypes,
-                  setOpeningCash,
-                  addCashTransaction,
-                  handoverAndClockOut,
-                  acceptCashHandover,
-                  getCashHistory,
-                  acceptAdminFunding
+                    getEmployeeFinance,
+                    getExpenseTypes,
+                    getCreditTypes,
+                    setOpeningCash,
+                    addCashTransaction,
+                    handoverAndClockOut,
+                    acceptCashHandover,
+                    getCashHistory,
+                    acceptAdminFunding
 } from '@/api/employeefinance';
 
 const userStore = useUserStore();
@@ -526,462 +534,462 @@ const extraMatchCustomers = ref([]); const extraMatchCameraOpen = ref(false); co
 const extraMatchPhoto = ref(null); const extraMatchPreview = ref('');
 const extraMatch = ref({ customerid: null, points: '' });
 const transactionOptions = [
-              { label: 'Add Bank', value: 'CASH_RECEIVED', icon: 'WalletFilled' },
-              { label: 'Expense', value: 'EXPENSE', icon: 'Money' },
-              { label: 'Extra Match', value: 'EXTRA_MATCH', icon: 'CirclePlusFilled' },
-              { label: 'Transfer to Employee', value: 'TRANSFER_TO_EMPLOYEE', icon: 'ScaleToOriginal' }
+                { label: 'Add Bank', value: 'CASH_RECEIVED', icon: 'WalletFilled' },
+                { label: 'Expense', value: 'EXPENSE', icon: 'Money' },
+                { label: 'Extra Match', value: 'EXTRA_MATCH', icon: 'CirclePlusFilled' },
+                { label: 'Transfer to Employee', value: 'TRANSFER_TO_EMPLOYEE', icon: 'ScaleToOriginal' }
 ];
-const expenseTransactionTypes = ['EXPENSE', 'MATCH_POINT', 'EXTRA_MATCH', 'RAFFLE', 'TICKET_OUT', 'BONUS', 'OWNER_WITHDRAWAL', 'TRANSFER_OUT'];
+const expenseTransactionTypes = ['EXPENSE', 'MATCH_POINT', 'EXTRA_MATCH', 'RAFFLE', 'TICKET_OUT', 'BONUS', 'LUCKY_BIRD', 'OWNER_WITHDRAWAL', 'TRANSFER_OUT'];
 const creditTransactions = computed(() => transactions.value.filter(item => !expenseTransactionTypes.includes(item.type)).slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
 const expenseTransactions = computed(() => transactions.value.filter(item => expenseTransactionTypes.includes(item.type)).slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))); const employeeName = computed(() => employee.value?.name || userStore.userInfo?.name || userStore.name || userStore.user?.name || session.value?.employeeName || 'Employee');
 const initials = name => String(name || 'E').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase();
 const hasActivity = computed(() => Number(summary.value.entry_count || 0) > 0);
 const hasManualOpening = computed(() => Number(summary.value.opening_count || 0) > 0);
 const hasPendingAcceptance = computed(() =>
-                  pending.value.length > 0 || pendingAdminFunding.value.length > 0
+                    pending.value.length > 0 || pendingAdminFunding.value.length > 0
 );
 const money = value => Number(value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const dateTime = value => value ? new Date(value).toLocaleString() : '—';
 const liveSessionDuration = computed(() => {
-                  if (!session.value?.clockIn) return '0h 0m';
-                  const started = new Date(session.value.clockIn).getTime();
-                  if (!Number.isFinite(started)) return '0h 0m';
+                    if (!session.value?.clockIn) return '0h 0m';
+                    const started = new Date(session.value.clockIn).getTime();
+                    if (!Number.isFinite(started)) return '0h 0m';
 
-                  const totalSeconds = Math.max(0, Math.floor((liveNow.value - started) / 1000));
-                  const hours = Math.floor(totalSeconds / 3600);
-                  const minutes = Math.floor((totalSeconds % 3600) / 60);
-                  const seconds = totalSeconds % 60;
+                    const totalSeconds = Math.max(0, Math.floor((liveNow.value - started) / 1000));
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const minutes = Math.floor((totalSeconds % 3600) / 60);
+                    const seconds = totalSeconds % 60;
 
-                  return `${hours}h ${minutes}m ${seconds}s`;
+                    return `${hours}h ${minutes}m ${seconds}s`;
 });
 const typeLabel = (type, expense, creditType) => ({
-                  OPENING: 'Opening Bank', OPENING_TRANSFER: 'Opening Bank',
-                  TRANSFER_IN: 'Opening Bank', TRANSFER_OUT: 'Transfer to Employee',
-                  CASH_RECEIVED: creditType ? `Add Bank · ${creditType}` : 'Add Bank',
-                  EXPENSE: expense || 'Expense', MATCH_POINT: 'Match Point', EXTRA_MATCH: 'Extra Match', RAFFLE: 'Raffle', TICKET_OUT: 'Ticket Out', BONUS: 'Bonus'
+                    OPENING: 'Opening Bank', OPENING_TRANSFER: 'Opening Bank',
+                    TRANSFER_IN: 'Opening Bank', TRANSFER_OUT: 'Transfer to Employee',
+                    CASH_RECEIVED: creditType ? `Add Bank · ${creditType}` : 'Add Bank',
+                    EXPENSE: expense || 'Expense', MATCH_POINT: 'Match Point', EXTRA_MATCH: 'Extra Match', RAFFLE: 'Raffle', TICKET_OUT: 'Ticket Out', BONUS: 'Bonus', LUCKY_BIRD: 'Lucky Bird'
 }[type] || type);
 const errorText = e => e?.response?.data?.message || e?.message || 'Request failed.';
 const validAmount = (v, allowZero = false) => /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(v).trim()) && (Number(v) > 0 || (allowZero && Number(v) === 0));
 async function loadHistory() {
-                  if (!locationId.value || historyRange.value === 'full') return;
-                  try {
-                    historyLoading.value = true;
-                    history.value = (await getCashHistory(locationId.value, historyRange.value)).data || [];
-                  } catch (e) {
-                    ElMessage.error(errorText(e));
-                  } finally {
-                    historyLoading.value = false;
-                  }
+                    if (!locationId.value || historyRange.value === 'full') return;
+                    try {
+                      historyLoading.value = true;
+                      history.value = (await getCashHistory(locationId.value, historyRange.value)).data || [];
+                    } catch (e) {
+                      ElMessage.error(errorText(e));
+                    } finally {
+                      historyLoading.value = false;
+                    }
 }
 
 async function load() {
-                  if (!locationId.value) return;
-                  try {
-                    loading.value = true;
-                    const response = await getEmployeeFinance(locationId.value);
-                    const d = response.data || {};
-                    session.value = d.session || null; employee.value = d.employee || null; summary.value = d.summary || {};
-                    transactions.value = d.transactions || []; pending.value = d.pending || [];
-                    pendingAdminFunding.value = d.pendingAdminFunding || [];
-                    recipients.value = d.recipients || []; adminRecipients.value = d.adminRecipients || []; expenseTypes.value = d.expenseTypes || []; creditTypes.value = d.creditTypes || [];
-                    if (!recipients.value.length && adminRecipients.value.length) closeSessionForm.value.mode = 'admin';
-                    if (!closeSessionForm.value.toadminid && adminRecipients.value.length === 1) closeSessionForm.value.toadminid = adminRecipients.value[0].id;
-                    transactionExpenseTypes.value = expenseTypes.value.filter(x => x.isActive);
-                    transactionCreditTypes.value = creditTypes.value.filter(x => x.isActive);
-                    await loadHistory();
-                  } catch (e) { ElMessage.error(errorText(e)); } finally { loading.value = false; }
+                    if (!locationId.value) return;
+                    try {
+                      loading.value = true;
+                      const response = await getEmployeeFinance(locationId.value);
+                      const d = response.data || {};
+                      session.value = d.session || null; employee.value = d.employee || null; summary.value = d.summary || {};
+                      transactions.value = d.transactions || []; pending.value = d.pending || [];
+                      pendingAdminFunding.value = d.pendingAdminFunding || [];
+                      recipients.value = d.recipients || []; adminRecipients.value = d.adminRecipients || []; expenseTypes.value = d.expenseTypes || []; creditTypes.value = d.creditTypes || [];
+                      if (!recipients.value.length && adminRecipients.value.length) closeSessionForm.value.mode = 'admin';
+                      if (!closeSessionForm.value.toadminid && adminRecipients.value.length === 1) closeSessionForm.value.toadminid = adminRecipients.value[0].id;
+                      transactionExpenseTypes.value = expenseTypes.value.filter(x => x.isActive);
+                      transactionCreditTypes.value = creditTypes.value.filter(x => x.isActive);
+                      await loadHistory();
+                    } catch (e) { ElMessage.error(errorText(e)); } finally { loading.value = false; }
 }
 
 async function refreshFinanceLive() {
-                  if (!locationId.value || financeWatchRunning || busy.value || document.hidden) return;
+                    if (!locationId.value || financeWatchRunning || busy.value || document.hidden) return;
 
-                  try {
-                    financeWatchRunning = true;
+                    try {
+                      financeWatchRunning = true;
 
-                    const response = await getEmployeeFinance(locationId.value);
-                    const d = response.data || {};
+                      const response = await getEmployeeFinance(locationId.value);
+                      const d = response.data || {};
 
-                    session.value = d.session || null;
-                    employee.value = d.employee || employee.value;
-                    summary.value = d.summary || {};
-                    transactions.value = d.transactions || [];
-                    pending.value = d.pending || [];
-                    pendingAdminFunding.value = d.pendingAdminFunding || [];
-                    recipients.value = d.recipients || [];
-                    adminRecipients.value = d.adminRecipients || [];
+                      session.value = d.session || null;
+                      employee.value = d.employee || employee.value;
+                      summary.value = d.summary || {};
+                      transactions.value = d.transactions || [];
+                      pending.value = d.pending || [];
+                      pendingAdminFunding.value = d.pendingAdminFunding || [];
+                      recipients.value = d.recipients || [];
+                      adminRecipients.value = d.adminRecipients || [];
 
-                    if (Array.isArray(d.expenseTypes)) {
-                      expenseTypes.value = d.expenseTypes;
-                      transactionExpenseTypes.value = d.expenseTypes.filter(x => x.isActive);
+                      if (Array.isArray(d.expenseTypes)) {
+                        expenseTypes.value = d.expenseTypes;
+                        transactionExpenseTypes.value = d.expenseTypes.filter(x => x.isActive);
+                      }
+
+                      if (Array.isArray(d.creditTypes)) {
+                        creditTypes.value = d.creditTypes;
+                        transactionCreditTypes.value = d.creditTypes.filter(x => x.isActive);
+                      }
+
+                      if (
+                        employeeTransfer.value.touserid &&
+                        !recipients.value.some(person => Number(person.id) === Number(employeeTransfer.value.touserid))
+                      ) {
+                        employeeTransfer.value.touserid = null;
+                      }
+                    } catch {
+                      // Silent watcher: normal page actions still show request errors.
+                    } finally {
+                      financeWatchRunning = false;
                     }
-
-                    if (Array.isArray(d.creditTypes)) {
-                      creditTypes.value = d.creditTypes;
-                      transactionCreditTypes.value = d.creditTypes.filter(x => x.isActive);
-                    }
-
-                    if (
-                      employeeTransfer.value.touserid &&
-                      !recipients.value.some(person => Number(person.id) === Number(employeeTransfer.value.touserid))
-                    ) {
-                      employeeTransfer.value.touserid = null;
-                    }
-                  } catch {
-                    // Silent watcher: normal page actions still show request errors.
-                  } finally {
-                    financeWatchRunning = false;
-                  }
 }
 
 async function refreshExpenseTypes() {
-                  if (!locationId.value) return;
-                  try {
-                    transactionTypesLoading.value = true;
-                    const response = await getExpenseTypes(locationId.value);
-                    transactionExpenseTypes.value = response?.data || response || [];
-                  } catch (e) { ElMessage.error(errorText(e)); } finally { transactionTypesLoading.value = false; }
+                    if (!locationId.value) return;
+                    try {
+                      transactionTypesLoading.value = true;
+                      const response = await getExpenseTypes(locationId.value);
+                      transactionExpenseTypes.value = response?.data || response || [];
+                    } catch (e) { ElMessage.error(errorText(e)); } finally { transactionTypesLoading.value = false; }
 }
 
 async function refreshCreditTypes() {
-                  if (!locationId.value) return;
-                  try {
-                    transactionTypesLoading.value = true;
-                    const response = await getCreditTypes(locationId.value);
-                    transactionCreditTypes.value = response?.data || response || [];
-                  } catch (e) { ElMessage.error(errorText(e)); } finally { transactionTypesLoading.value = false; }
+                    if (!locationId.value) return;
+                    try {
+                      transactionTypesLoading.value = true;
+                      const response = await getCreditTypes(locationId.value);
+                      transactionCreditTypes.value = response?.data || response || [];
+                    } catch (e) { ElMessage.error(errorText(e)); } finally { transactionTypesLoading.value = false; }
 }
 
 async function confirmAdminFunding(item) {
-                  if (!session.value) return ElMessage.warning('Clock in before confirming cash.');
-                  try {
-                    await ElMessageBox.confirm(
-                      `I physically received ${money(item.amount)} from ${item.fromAdmin}. Credit this session?`,
-                      'Confirm Owner/Admin cash',
-                      { type: 'warning', confirmButtonText: 'Confirm received' }
-                    );
-                  } catch { return; }
-                  await run(() => acceptAdminFunding(item.id, { sessionid: session.value.id }),
-                    item.fundingType === 'INITIAL_OPENING' ? 'Opening Bank confirmed.' : 'Business support confirmed.');
+                    if (!session.value) return ElMessage.warning('Clock in before confirming cash.');
+                    try {
+                      await ElMessageBox.confirm(
+                        `I physically received ${money(item.amount)} from ${item.fromAdmin}. Credit this session?`,
+                        'Confirm Owner/Admin cash',
+                        { type: 'warning', confirmButtonText: 'Confirm received' }
+                      );
+                    } catch { return; }
+                    await run(() => acceptAdminFunding(item.id, { sessionid: session.value.id }),
+                      item.fundingType === 'INITIAL_OPENING' ? 'Opening Bank confirmed.' : 'Business support confirmed.');
 }
 
 async function run(action, success) {
-                  try { busy.value = true; await action(); ElMessage.success(success); await load(); return true; } catch (e) { ElMessage.error(errorText(e)); return false; } finally { busy.value = false; }
+                    try { busy.value = true; await action(); ElMessage.success(success); await load(); return true; } catch (e) { ElMessage.error(errorText(e)); return false; } finally { busy.value = false; }
 }
 async function saveOpening() {
-                  if (!validAmount(opening.value.amount, true)) return ElMessage.warning('Enter a nonnegative amount (up to 2 decimals).');
-                  if (await run(() => setOpeningCash({ sessionid: session.value.id, ...opening.value }), 'Opening Bank saved.')) { opening.value = { amount: '', notes: '' }; }
+                    if (!validAmount(opening.value.amount, true)) return ElMessage.warning('Enter a nonnegative amount (up to 2 decimals).');
+                    if (await run(() => setOpeningCash({ sessionid: session.value.id, ...opening.value }), 'Opening Bank saved.')) { opening.value = { amount: '', notes: '' }; }
 }
 async function saveTransaction() {
-                  if (!validAmount(transaction.value.amount)) return ElMessage.warning('Enter a positive amount (up to 2 decimals).');
-                  if (transaction.value.type === 'CASH_RECEIVED' && !transaction.value.credittypeid) return ElMessage.warning('Select a credit type.');
-                  if (transaction.value.type === 'EXPENSE' && !transaction.value.expensetypeid) return ElMessage.warning('Select an expense type.');
-                  if (await run(() => addCashTransaction({ sessionid: session.value.id, ...transaction.value }), 'Transaction saved.')) { transaction.value = { type: transaction.value.type, amount: '', expensetypeid: null, credittypeid: null, notes: '' }; }
+                    if (!validAmount(transaction.value.amount)) return ElMessage.warning('Enter a positive amount (up to 2 decimals).');
+                    if (transaction.value.type === 'CASH_RECEIVED' && !transaction.value.credittypeid) return ElMessage.warning('Select a credit type.');
+                    if (transaction.value.type === 'EXPENSE' && !transaction.value.expensetypeid) return ElMessage.warning('Select an expense type.');
+                    if (await run(() => addCashTransaction({ sessionid: session.value.id, ...transaction.value }), 'Transaction saved.')) { transaction.value = { type: transaction.value.type, amount: '', expensetypeid: null, credittypeid: null, notes: '' }; }
 }
 async function refreshTransferRecipients() {
-                  if (!locationId.value) return;
+                    if (!locationId.value) return;
 
-                  try {
-                    transactionTypesLoading.value = true;
-                    const response = await getEmployeeFinance(locationId.value);
-                    const d = response.data || {};
-                    recipients.value = d.recipients || [];
+                    try {
+                      transactionTypesLoading.value = true;
+                      const response = await getEmployeeFinance(locationId.value);
+                      const d = response.data || {};
+                      recipients.value = d.recipients || [];
 
-                    if (
-                      employeeTransfer.value.touserid &&
-                      !recipients.value.some(person => Number(person.id) === Number(employeeTransfer.value.touserid))
-                    ) {
-                      employeeTransfer.value.touserid = null;
+                      if (
+                        employeeTransfer.value.touserid &&
+                        !recipients.value.some(person => Number(person.id) === Number(employeeTransfer.value.touserid))
+                      ) {
+                        employeeTransfer.value.touserid = null;
+                      }
+                    } catch (e) {
+                      ElMessage.error(errorText(e));
+                    } finally {
+                      transactionTypesLoading.value = false;
                     }
-                  } catch (e) {
-                    ElMessage.error(errorText(e));
-                  } finally {
-                    transactionTypesLoading.value = false;
-                  }
 }
 
 async function transferToEmployee() {
-                  if (!session.value) return ElMessage.warning('No active session was found.');
-                  if (!employeeTransfer.value.touserid) return ElMessage.warning('Select the receiving employee.');
-                  if (!validAmount(employeeTransfer.value.amount)) return ElMessage.warning('Enter a positive transfer amount.');
+                    if (!session.value) return ElMessage.warning('No active session was found.');
+                    if (!employeeTransfer.value.touserid) return ElMessage.warning('Select the receiving employee.');
+                    if (!validAmount(employeeTransfer.value.amount)) return ElMessage.warning('Enter a positive transfer amount.');
 
-                  const recipient = recipients.value.find(
-                    person => Number(person.id) === Number(employeeTransfer.value.touserid)
-                  );
-
-                  try {
-                    await ElMessageBox.confirm(
-                      `Transfer ${money(employeeTransfer.value.amount)} to ${recipient?.name || 'this employee'}?`,
-                      'Confirm employee transfer',
-                      { type: 'warning', confirmButtonText: 'Transfer' }
+                    const recipient = recipients.value.find(
+                      person => Number(person.id) === Number(employeeTransfer.value.touserid)
                     );
-                  } catch {
-                    return;
-                  }
 
-                  const response = await run(
-                    () => request({
-                      url: '/employeefinance/transfer-to-employee',
-                      method: 'post',
-                      data: {
-                        sessionid: session.value.id,
-                        touserid: employeeTransfer.value.touserid,
-                        amount: employeeTransfer.value.amount
-                      }
-                    }),
-                    'Money transferred successfully.'
-                  );
-
-                  if (response) {
-                    employeeTransfer.value = { touserid: null, amount: '' };
-                  }
-}
-
-async function confirmTransfer(item) {
-                  if (!session.value) return ElMessage.warning('Clock in before confirming cash.');
-                  try { await ElMessageBox.confirm(`I physically received ${money(item.amount)} from ${item.fromEmployee}. Credit this session?`, 'Confirm cash received', { type: 'warning', confirmButtonText: 'Confirm received' }); } catch { return; }
-                  await run(() => acceptCashHandover(item.id, { sessionid: session.value.id }), 'Handover confirmed.');
-}
-async function loadExtraMatchCustomers() {
-                  if (!locationId.value) return;
-                  try {
-                    extraMatchCustomersLoading.value = true;
-                    const response = await getcustomers(locationId.value);
-                    extraMatchCustomers.value = (Array.isArray(response?.data) ? response.data : []).filter(customer => customer.isactive !== false);
-                  } catch (e) {
-                    extraMatchCustomers.value = [];
-                    ElMessage.error(errorText(e));
-                  } finally { extraMatchCustomersLoading.value = false; }
-}
-async function openExtraMatchCamera() {
-                  if (!extraMatch.value.customerid) return ElMessage.warning('Select a customer first.');
-                  if (!validAmount(extraMatch.value.points)) return ElMessage.warning('Enter a positive amount / points value first.');
-
-                  extraMatchDialogOpen.value = true;
-                  extraMatchCameraOpen.value = true;
-
-                  await nextTick();
-                  extraMatchCameraRef.value?.startCamera();
-}
-
-function closeExtraMatchCamera() {
-                  extraMatchCameraRef.value?.stopCamera?.();
-                  extraMatchCameraOpen.value = false;
-}
-
-function handleExtraMatchCaptured(image) {
-                  extraMatchPhoto.value = image;
-
-                  if (extraMatchPreview.value) URL.revokeObjectURL(extraMatchPreview.value);
-                  extraMatchPreview.value = URL.createObjectURL(image);
-
-                  closeExtraMatchCamera();
-                  extraMatchDialogOpen.value = false;
-}
-
-function resetExtraMatch() {
-                  closeExtraMatchCamera();
-                  extraMatchPhoto.value = null;
-
-                  if (extraMatchPreview.value) URL.revokeObjectURL(extraMatchPreview.value);
-                  extraMatchPreview.value = '';
-
-                  extraMatch.value = { customerid: null, points: '' };
-}
-
-function cancelExtraMatchEntry() {
-                  resetExtraMatch();
-                  ElMessage.info('Extra Match cancelled.');
-}
-async function saveExtraMatchEntry() {
-                  if (!extraMatch.value.customerid) return ElMessage.warning('Select a customer.');
-                  if (!validAmount(extraMatch.value.points)) return ElMessage.warning('Enter a positive amount / points value.');
-                  if (!extraMatchPhoto.value) return ElMessage.warning('Take the customer points photo before saving.');
-                  try {
-                    extraMatchSaving.value = true;
-                    const imageFile = new File([extraMatchPhoto.value], `extra-match-${extraMatch.value.customerid}-${Date.now()}.png`, { type: extraMatchPhoto.value.type || 'image/png' });
-                    const formData = new FormData();
-                    formData.append('image', imageFile);
-                    formData.append('customer', JSON.stringify({
-                      customerid: extraMatch.value.customerid,
-                      points: Number(extraMatch.value.points),
-                      assignedby: userStore.userId,
-                      locationid: locationId.value
-                    }));
-                    await request({ url: '/customer/saveextramatch', method: 'post', data: formData });
-                    ElMessage.success('Extra Match saved successfully.');
-                    extraMatchDialogOpen.value = false;
-                    resetExtraMatch();
-                    await load();
-                  } catch (e) { ElMessage.error(errorText(e)); } finally { extraMatchSaving.value = false; }
-}
-
-async function handleExportPdf() {
-              if (!session.value) return ElMessage.warning('No active session to export.');
-
-              try {
-                pdfExporting.value = true;
-
-                exportEmployeeTransactionPdf({
-                  employeeName: employeeName.value,
-                  session: session.value,
-                  duration: liveSessionDuration.value,
-                  summary: summary.value,
-                  credits: creditTransactions.value,
-                  expenses: expenseTransactions.value
-                });
-
-                ElMessage.success('PDF exported.');
-              } catch (e) {
-                ElMessage.error(e?.message || 'Unable to export PDF.');
-              } finally {
-                pdfExporting.value = false;
-              }
-}
-
-const canCloseSession = computed(() =>
-                  closeSessionForm.value.mode === 'employee'
-                    ? Boolean(closeSessionForm.value.touserid && recipients.value.length)
-                    : Boolean(closeSessionForm.value.toadminid && adminRecipients.value.length)
-);
-
-function resetCloseSession() {
-                  closeSessionForm.value = {
-                    mode: recipients.value.length ? 'employee' : 'admin',
-                    touserid: null,
-                    toadminid: adminRecipients.value.length === 1 ? adminRecipients.value[0].id : null,
-                    actualcash: '',
-                    notes: ''
-                  };
-}
-
-async function openCloseSession() {
-                  if (!locationId.value) return;
-
-                  try {
-                    busy.value = true;
-
-                    // Refresh current session and eligible recipients at the moment
-                    // the employee opens Close Session, so newly clocked-in users appear.
-                    const response = await getEmployeeFinance(locationId.value);
-                    const d = response.data || {};
-
-                    session.value = d.session || null;
-                    summary.value = d.summary || {};
-                    recipients.value = d.recipients || [];
-                    adminRecipients.value = d.adminRecipients || [];
-
-                    if (!session.value) {
-                      ElMessage.warning('No active session was found.');
+                    try {
+                      await ElMessageBox.confirm(
+                        `Transfer ${money(employeeTransfer.value.amount)} to ${recipient?.name || 'this employee'}?`,
+                        'Confirm employee transfer',
+                        { type: 'warning', confirmButtonText: 'Transfer' }
+                      );
+                    } catch {
                       return;
                     }
 
-                    resetCloseSession();
-                    handoverDialogOpen.value = true;
-                  } catch (e) {
-                    ElMessage.error(errorText(e));
-                  } finally {
-                    busy.value = false;
-                  }
-}
-
-async function closeSession() {
-                  const form = closeSessionForm.value;
-
-                  if (form.mode === 'employee' && !form.touserid) return ElMessage.warning('Select the receiving employee.');
-                  if (form.mode === 'admin' && !form.toadminid) return ElMessage.warning('Select the receiving Admin.');
-                  if (form.actualcash !== '' && !validAmount(form.actualcash, true)) {
-                    return ElMessage.warning('Physical cash counted must be a nonnegative amount (up to 2 decimals).');
-                  }
-
-                  const actual = form.actualcash === '' ? summary.value.balance : form.actualcash;
-                  const recipient = form.mode === 'employee'
-                    ? recipients.value.find(item => Number(item.id) === Number(form.touserid))?.name || 'employee'
-                    : adminRecipients.value.find(item => Number(item.id) === Number(form.toadminid))?.name || 'Admin';
-
-                  try {
-                    await ElMessageBox.confirm(
-                      form.mode === 'employee'
-                        ? `Hand over ${money(actual)} to ${recipient} and close this session?`
-                        : `Transfer ${money(actual)} to ${recipient} and close this session?`,
-                      'Confirm Session Close',
-                      { type: 'warning', confirmButtonText: 'Close Session' }
-                    );
-                  } catch {
-                    return;
-                  }
-
-                  await run(async () => {
-                    let response;
-
-                    if (form.mode === 'employee') {
-                      response = await handoverAndClockOut({
-                        sessionid: session.value.id,
-                        touserid: form.touserid,
-                        actualcash: form.actualcash,
-                        notes: form.notes
-                      });
-                    } else {
-                      response = await request({
-                        url: '/employeefinance/close-to-admin-and-clockout',
+                    const response = await run(
+                      () => request({
+                        url: '/employeefinance/transfer-to-employee',
                         method: 'post',
                         data: {
                           sessionid: session.value.id,
-                          toadminid: form.toadminid,
-                          actualcash: form.actualcash,
-                          notes: form.notes
+                          touserid: employeeTransfer.value.touserid,
+                          amount: employeeTransfer.value.amount
                         }
-                      });
+                      }),
+                      'Money transferred successfully.'
+                    );
+
+                    if (response) {
+                      employeeTransfer.value = { touserid: null, amount: '' };
+                    }
+}
+
+async function confirmTransfer(item) {
+                    if (!session.value) return ElMessage.warning('Clock in before confirming cash.');
+                    try { await ElMessageBox.confirm(`I physically received ${money(item.amount)} from ${item.fromEmployee}. Credit this session?`, 'Confirm cash received', { type: 'warning', confirmButtonText: 'Confirm received' }); } catch { return; }
+                    await run(() => acceptCashHandover(item.id, { sessionid: session.value.id }), 'Handover confirmed.');
+}
+async function loadExtraMatchCustomers() {
+                    if (!locationId.value) return;
+                    try {
+                      extraMatchCustomersLoading.value = true;
+                      const response = await getcustomers(locationId.value);
+                      extraMatchCustomers.value = (Array.isArray(response?.data) ? response.data : []).filter(customer => customer.isactive !== false);
+                    } catch (e) {
+                      extraMatchCustomers.value = [];
+                      ElMessage.error(errorText(e));
+                    } finally { extraMatchCustomersLoading.value = false; }
+}
+async function openExtraMatchCamera() {
+                    if (!extraMatch.value.customerid) return ElMessage.warning('Select a customer first.');
+                    if (!validAmount(extraMatch.value.points)) return ElMessage.warning('Enter a positive amount / points value first.');
+
+                    extraMatchDialogOpen.value = true;
+                    extraMatchCameraOpen.value = true;
+
+                    await nextTick();
+                    extraMatchCameraRef.value?.startCamera();
+}
+
+function closeExtraMatchCamera() {
+                    extraMatchCameraRef.value?.stopCamera?.();
+                    extraMatchCameraOpen.value = false;
+}
+
+function handleExtraMatchCaptured(image) {
+                    extraMatchPhoto.value = image;
+
+                    if (extraMatchPreview.value) URL.revokeObjectURL(extraMatchPreview.value);
+                    extraMatchPreview.value = URL.createObjectURL(image);
+
+                    closeExtraMatchCamera();
+                    extraMatchDialogOpen.value = false;
+}
+
+function resetExtraMatch() {
+                    closeExtraMatchCamera();
+                    extraMatchPhoto.value = null;
+
+                    if (extraMatchPreview.value) URL.revokeObjectURL(extraMatchPreview.value);
+                    extraMatchPreview.value = '';
+
+                    extraMatch.value = { customerid: null, points: '' };
+}
+
+function cancelExtraMatchEntry() {
+                    resetExtraMatch();
+                    ElMessage.info('Extra Match cancelled.');
+}
+async function saveExtraMatchEntry() {
+                    if (!extraMatch.value.customerid) return ElMessage.warning('Select a customer.');
+                    if (!validAmount(extraMatch.value.points)) return ElMessage.warning('Enter a positive amount / points value.');
+                    if (!extraMatchPhoto.value) return ElMessage.warning('Take the customer points photo before saving.');
+                    try {
+                      extraMatchSaving.value = true;
+                      const imageFile = new File([extraMatchPhoto.value], `extra-match-${extraMatch.value.customerid}-${Date.now()}.png`, { type: extraMatchPhoto.value.type || 'image/png' });
+                      const formData = new FormData();
+                      formData.append('image', imageFile);
+                      formData.append('customer', JSON.stringify({
+                        customerid: extraMatch.value.customerid,
+                        points: Number(extraMatch.value.points),
+                        assignedby: userStore.userId,
+                        locationid: locationId.value
+                      }));
+                      await request({ url: '/customer/saveextramatch', method: 'post', data: formData });
+                      ElMessage.success('Extra Match saved successfully.');
+                      extraMatchDialogOpen.value = false;
+                      resetExtraMatch();
+                      await load();
+                    } catch (e) { ElMessage.error(errorText(e)); } finally { extraMatchSaving.value = false; }
+}
+
+async function handleExportPdf() {
+                if (!session.value) return ElMessage.warning('No active session to export.');
+
+                try {
+                  pdfExporting.value = true;
+
+                  exportEmployeeTransactionPdf({
+                    employeeName: employeeName.value,
+                    session: session.value,
+                    duration: liveSessionDuration.value,
+                    summary: summary.value,
+                    credits: creditTransactions.value,
+                    expenses: expenseTransactions.value
+                  });
+
+                  ElMessage.success('PDF exported.');
+                } catch (e) {
+                  ElMessage.error(e?.message || 'Unable to export PDF.');
+                } finally {
+                  pdfExporting.value = false;
+                }
+}
+
+const canCloseSession = computed(() =>
+                    closeSessionForm.value.mode === 'employee'
+                      ? Boolean(closeSessionForm.value.touserid && recipients.value.length)
+                      : Boolean(closeSessionForm.value.toadminid && adminRecipients.value.length)
+);
+
+function resetCloseSession() {
+                    closeSessionForm.value = {
+                      mode: recipients.value.length ? 'employee' : 'admin',
+                      touserid: null,
+                      toadminid: adminRecipients.value.length === 1 ? adminRecipients.value[0].id : null,
+                      actualcash: '',
+                      notes: ''
+                    };
+}
+
+async function openCloseSession() {
+                    if (!locationId.value) return;
+
+                    try {
+                      busy.value = true;
+
+                      // Refresh current session and eligible recipients at the moment
+                      // the employee opens Close Session, so newly clocked-in users appear.
+                      const response = await getEmployeeFinance(locationId.value);
+                      const d = response.data || {};
+
+                      session.value = d.session || null;
+                      summary.value = d.summary || {};
+                      recipients.value = d.recipients || [];
+                      adminRecipients.value = d.adminRecipients || [];
+
+                      if (!session.value) {
+                        ElMessage.warning('No active session was found.');
+                        return;
+                      }
+
+                      resetCloseSession();
+                      handoverDialogOpen.value = true;
+                    } catch (e) {
+                      ElMessage.error(errorText(e));
+                    } finally {
+                      busy.value = false;
+                    }
+}
+
+async function closeSession() {
+                    const form = closeSessionForm.value;
+
+                    if (form.mode === 'employee' && !form.touserid) return ElMessage.warning('Select the receiving employee.');
+                    if (form.mode === 'admin' && !form.toadminid) return ElMessage.warning('Select the receiving Admin.');
+                    if (form.actualcash !== '' && !validAmount(form.actualcash, true)) {
+                      return ElMessage.warning('Physical cash counted must be a nonnegative amount (up to 2 decimals).');
                     }
 
-                    userStore.setClockedIn(false);
-                    handoverDialogOpen.value = false;
-                    return response;
-                  }, form.mode === 'employee'
-                    ? 'Session closed; handover is pending confirmation.'
-                    : `Session closed; cash transferred to ${recipient}.`);
+                    const actual = form.actualcash === '' ? summary.value.balance : form.actualcash;
+                    const recipient = form.mode === 'employee'
+                      ? recipients.value.find(item => Number(item.id) === Number(form.touserid))?.name || 'employee'
+                      : adminRecipients.value.find(item => Number(item.id) === Number(form.toadminid))?.name || 'Admin';
+
+                    try {
+                      await ElMessageBox.confirm(
+                        form.mode === 'employee'
+                          ? `Hand over ${money(actual)} to ${recipient} and close this session?`
+                          : `Transfer ${money(actual)} to ${recipient} and close this session?`,
+                        'Confirm Session Close',
+                        { type: 'warning', confirmButtonText: 'Close Session' }
+                      );
+                    } catch {
+                      return;
+                    }
+
+                    await run(async () => {
+                      let response;
+
+                      if (form.mode === 'employee') {
+                        response = await handoverAndClockOut({
+                          sessionid: session.value.id,
+                          touserid: form.touserid,
+                          actualcash: form.actualcash,
+                          notes: form.notes
+                        });
+                      } else {
+                        response = await request({
+                          url: '/employeefinance/close-to-admin-and-clockout',
+                          method: 'post',
+                          data: {
+                            sessionid: session.value.id,
+                            toadminid: form.toadminid,
+                            actualcash: form.actualcash,
+                            notes: form.notes
+                          }
+                        });
+                      }
+
+                      userStore.setClockedIn(false);
+                      handoverDialogOpen.value = false;
+                      return response;
+                    }, form.mode === 'employee'
+                      ? 'Session closed; handover is pending confirmation.'
+                      : `Session closed; cash transferred to ${recipient}.`);
 }
 watch(() => closeSessionForm.value.mode, mode => {
-                  if (mode === 'employee') closeSessionForm.value.toadminid = null;
-                  else {
-                    closeSessionForm.value.touserid = null;
-                    if (adminRecipients.value.length === 1) closeSessionForm.value.toadminid = adminRecipients.value[0].id;
-                  }
+                    if (mode === 'employee') closeSessionForm.value.toadminid = null;
+                    else {
+                      closeSessionForm.value.touserid = null;
+                      if (adminRecipients.value.length === 1) closeSessionForm.value.toadminid = adminRecipients.value[0].id;
+                    }
 });
 watch(transactionMode, async mode => {
-                  if (mode === 'EXTRA_MATCH') {
-                    if (!extraMatchCustomers.value.length) await loadExtraMatchCustomers();
-                    return;
-                  }
+                    if (mode === 'EXTRA_MATCH') {
+                      if (!extraMatchCustomers.value.length) await loadExtraMatchCustomers();
+                      return;
+                    }
 
-                  if (mode === 'TRANSFER_TO_EMPLOYEE') {
-                    await refreshTransferRecipients();
-                    return;
-                  }
+                    if (mode === 'TRANSFER_TO_EMPLOYEE') {
+                      await refreshTransferRecipients();
+                      return;
+                    }
 
-                  transaction.value.type = mode;
+                    transaction.value.type = mode;
 
-                  if (mode === 'CASH_RECEIVED') transaction.value.expensetypeid = null;
-                  else transaction.value.credittypeid = null;
+                    if (mode === 'CASH_RECEIVED') transaction.value.expensetypeid = null;
+                    else transaction.value.credittypeid = null;
 });
 watch(locationId, load);
 
 onMounted(() => {
-                  load();
+                    load();
 
-                  liveClockTimer = window.setInterval(() => {
-                    liveNow.value = Date.now();
-                  }, 1000);
+                    liveClockTimer = window.setInterval(() => {
+                      liveNow.value = Date.now();
+                    }, 1000);
 
-                  // Keep this employee's finance screen synchronized with transactions
-                  // created from another employee's screen (for example TRANSFER_IN).
-                  financeWatchTimer = window.setInterval(() => {
-                    refreshFinanceLive();
-                  }, 1000);
+                    // Keep this employee's finance screen synchronized with transactions
+                    // created from another employee's screen (for example TRANSFER_IN).
+                    financeWatchTimer = window.setInterval(() => {
+                      refreshFinanceLive();
+                    }, 1000);
 });
 
 onBeforeUnmount(() => {
-                  if (liveClockTimer) window.clearInterval(liveClockTimer);
-                  if (financeWatchTimer) window.clearInterval(financeWatchTimer);
+                    if (liveClockTimer) window.clearInterval(liveClockTimer);
+                    if (financeWatchTimer) window.clearInterval(financeWatchTimer);
 });
 </script>
 

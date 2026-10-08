@@ -223,6 +223,33 @@
             <ArrowRight />
           </el-icon>
         </button>
+
+        <button class="report-option active"
+                type="button"
+                @click="openLuckyBirdReport">
+          <div class="report-icon">
+            <el-icon>
+              <Trophy />
+            </el-icon>
+          </div>
+
+          <div class="report-copy">
+            <strong>Lucky Bird Report</strong>
+
+            <span>
+              Review Lucky Bird payouts, machines, customers and photo entries from this session.
+            </span>
+
+            <div class="mini-stats">
+              <span>{{ Number(session.luckyBirdEntries || 0).toLocaleString() }} Lucky Birds</span>
+              <span>{{ money(session.luckyBirdTotal) }}</span>
+            </div>
+          </div>
+
+          <el-icon class="arrow">
+            <ArrowRight />
+          </el-icon>
+        </button>
       </div>
     </template>
   </div>
@@ -331,6 +358,16 @@ function openRaffleReport() {
 function openBonusReport() {
     router.push({
       name: 'EmployeeSessionBonusReport',
+      params: {
+        employeeId: route.params.employeeId,
+        sessionId: route.params.sessionId
+      }
+    });
+}
+
+function openLuckyBirdReport() {
+    router.push({
+      name: 'EmployeeSessionLuckyBirdReport',
       params: {
         employeeId: route.params.employeeId,
         sessionId: route.params.sessionId

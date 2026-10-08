@@ -1177,6 +1177,41 @@ aside {
     font-size: 14px;
 }
 
+
+/* ============================================================
+   GENERIC EMPLOYEE-BANNER THEME
+   Same visual treatment used by employee/session report banners.
+   Can be reused on non-el-card sections.
+============================================================ */
+.employee-banner-theme {
+    background: linear-gradient(135deg, #1e2447, #11162f) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+    .employee-banner-theme .ticket-reconcile-eyebrow,
+    .employee-banner-theme .ticket-reconcile-top p,
+    .employee-banner-theme .ticket-reconcile-open-hint,
+    .employee-banner-theme .ticket-reconcile-bottom span,
+    .employee-banner-theme .ticket-reconcile-bottom small {
+        color: #aeb4d6 !important;
+    }
+
+    .employee-banner-theme .ticket-reconcile-net.is-even,
+    .employee-banner-theme .ticket-reconcile-bottom strong {
+        color: #fff !important;
+    }
+
+    .employee-banner-theme .ticket-reconcile-badge,
+    .employee-banner-theme .ticket-reconcile-bottom > div {
+        background: rgba(255, 255, 255, .055) !important;
+        border: 1px solid rgba(255, 255, 255, .10) !important;
+    }
+
+    .employee-banner-theme:hover {
+        border-color: transparent !important;
+    }
+
 /* Employee profile banner */
 .employee-banner {
     background: linear-gradient(135deg,#1e2447,#11162f);
@@ -3477,6 +3512,10 @@ aside {
 @media (max-width: 700px) {
     .app-container {
         padding: 10px;
+    }
+
+    .main-container.hasFixedHeader .app-main-scroll {
+        margin-bottom: 40px;
     }
 
     .metric-grid, .panel-grid {
@@ -6986,20 +7025,80 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
         border-radius: 12px;
     }
 
+        .posting-card .el-card__body {
+            padding: 16px 18px;
+        }
+
     .posting-layout {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 14px;
+        gap: 18px;
         flex-wrap: wrap;
     }
 
-        .posting-layout p {
-            margin: 4px 0 0;
+    .posting-content {
+        flex: 1 1 620px;
+        min-width: 0;
+    }
+
+    .posting-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--el-text-color-secondary);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .45px;
+        text-transform: uppercase;
+    }
+
+    .posting-total {
+        display: block;
+        color: var(--el-text-color-primary);
+        font-size: 28px;
+        font-weight: 750;
+        line-height: 1.05;
+    }
+
+    .posting-summary-line {
+        margin: 7px 0 0;
+        color: var(--el-text-color-secondary);
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+        .posting-summary-line strong {
+            color: var(--el-text-color-primary);
+            font-weight: 700;
         }
+
+    .posting-meta {
+        margin: 10px 0 0 !important;
+    }
+
+    .posting-action {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+    }
 
     .posting-error {
         margin-top: 10px;
+    }
+
+    @media (max-width: 767px) {
+        .posting-layout {
+            align-items: stretch;
+        }
+
+        .posting-content,
+        .posting-action {
+            width: 100%;
+        }
+
+            .posting-action .el-button {
+                width: 100%;
+            }
     }
     /* ============================================================
         PROFIT COLORS
@@ -13236,4 +13335,630 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
         min-height: 48px;
         padding: 10px 12px;
     }
+}
+
+
+/* ============================================================
+   CUSTOMER / NEW CUSTOMER
+   Restored from centralized my.scss
+============================================================ */
+.irfan-customer-newcustomer-index.new-customer-page {
+    min-height: 100%;
+    padding: 20px;
+    background: var(--el-bg-color-page);
+}
+
+/* HEADER */
+.irfan-customer-newcustomer-index {
+    .page-header {
+        margin-bottom: 20px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .back-button {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+
+        .el-icon {
+            font-size: 18px;
+        }
+    }
+
+    .page-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--el-text-color-primary);
+    }
+
+    .page-subtitle {
+        margin-top: 4px;
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+    }
+    /* CARDS */
+    .section-card {
+        margin-bottom: 20px;
+        border-radius: 12px;
+    }
+    /* Important: overrides generic global section-header spacing */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+    }
+
+    .section-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 20px;
+        color: var(--el-color-primary);
+        background: var(--el-color-primary-light-9);
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 650;
+        color: var(--el-text-color-primary);
+    }
+
+    .section-description {
+        margin-top: 3px;
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+    }
+    /* CAMERA */
+    .photo-card {
+        height: calc(100% - 20px);
+    }
+
+    .camera-wrapper {
+        margin-top: 20px;
+    }
+
+    .photo-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        color: var(--el-color-success);
+        background: var(--el-color-success-light-9);
+    }
+    /* FORM */
+    .customer-form {
+        margin-top: 6px;
+
+        .el-input__wrapper,
+        .el-date-editor {
+            min-height: 40px;
+        }
+    }
+
+    .status-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 16px;
+        margin-top: 6px;
+        border-radius: 10px;
+        background: var(--el-fill-color-lighter);
+    }
+
+    .status-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+    }
+
+    .status-description {
+        margin-top: 3px;
+        font-size: 11px;
+        color: var(--el-text-color-secondary);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 24px;
+    }
+}
+
+@media (max-width: 767px) {
+    .irfan-customer-newcustomer-index.new-customer-page {
+        padding: 12px;
+    }
+
+    .irfan-customer-newcustomer-index {
+        .page-title {
+            font-size: 20px;
+        }
+
+        .page-subtitle {
+            font-size: 12px;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+
+            .el-button {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    }
+}
+
+
+/* ============================================================
+   NEW CUSTOMER - MODERN PHONE VERIFICATION
+============================================================ */
+.customer-verification-dialog.modern-verification-dialog {
+    max-width: calc(100vw - 24px);
+    border-radius: 18px;
+    overflow: hidden;
+
+    .el-dialog__header,
+    .el-dialog__footer {
+        display: none;
+    }
+
+    .el-dialog__body {
+        padding: 0;
+    }
+
+    .verification-shell {
+        display: grid;
+        grid-template-columns: minmax(250px, 0.9fr) minmax(360px, 1.25fr);
+        min-height: 430px;
+    }
+
+    .verification-visual {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 30px;
+        background: linear-gradient(180deg, var(--el-color-primary-light-9) 0%, var(--el-fill-color-light) 100%);
+        border-right: 1px solid var(--el-border-color-lighter);
+    }
+
+    .verification-illustration {
+        width: 100%;
+        max-width: 310px;
+        margin: 0 auto 22px;
+        border-radius: 18px;
+        object-fit: contain;
+        mix-blend-mode: multiply;
+    }
+
+    .verification-visual-copy {
+        text-align: center;
+    }
+
+    .verification-visual-title {
+        color: var(--el-text-color-primary);
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .verification-visual-text {
+        max-width: 290px;
+        margin: 7px auto 0;
+        color: var(--el-text-color-secondary);
+        font-size: 13px;
+        line-height: 1.55;
+
+        strong {
+            color: var(--el-color-primary);
+        }
+    }
+
+    .verification-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 34px 38px;
+    }
+
+    .verification-panel-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 26px;
+
+        h3 {
+            margin: 0;
+            color: var(--el-text-color-primary);
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 5px 0 0;
+            color: var(--el-text-color-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    }
+
+    .verification-panel-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 42px;
+        border-radius: 12px;
+        color: var(--el-color-primary);
+        background: var(--el-color-primary-light-9);
+        font-size: 20px;
+    }
+
+    .otp-section > label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--el-text-color-primary);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .otp-inputs {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .otp-input {
+        .el-input__wrapper {
+            min-height: 54px;
+            padding: 0;
+            border-radius: 11px;
+            box-shadow: 0 0 0 1px var(--el-border-color) inset;
+            transition: box-shadow .2s ease, background .2s ease;
+        }
+
+            .el-input__wrapper.is-focus {
+                box-shadow: 0 0 0 2px var(--el-color-primary) inset;
+            }
+
+        .el-input__inner {
+            height: 54px;
+            padding: 0;
+            text-align: center;
+            color: var(--el-text-color-primary);
+            font-size: 21px;
+            font-weight: 700;
+        }
+    }
+
+    .verification-resend {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        margin-top: 14px;
+        color: var(--el-text-color-secondary);
+        font-size: 12px;
+    }
+
+    .verification-send-state {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 74px;
+        padding: 16px;
+        border-radius: 12px;
+        color: var(--el-text-color-secondary);
+        background: var(--el-fill-color-light);
+
+        .el-icon {
+            color: var(--el-color-primary);
+            font-size: 22px;
+        }
+    }
+
+    .verification-primary-action {
+        margin-top: 26px;
+
+        .el-button {
+            width: 100%;
+            min-height: 44px;
+            margin-left: 0;
+            font-weight: 600;
+        }
+    }
+
+    .verification-secondary-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+        margin-top: 9px;
+
+        .el-button {
+            width: 100%;
+            margin-left: 0;
+        }
+    }
+}
+
+@media (max-width: 767px) {
+    .customer-verification-dialog.modern-verification-dialog {
+        width: calc(100vw - 20px) !important;
+
+        .verification-shell {
+            grid-template-columns: 1fr;
+            min-height: auto;
+        }
+
+        .verification-visual {
+            padding: 20px 18px;
+            border-right: 0;
+            border-bottom: 1px solid var(--el-border-color-lighter);
+        }
+
+        .verification-illustration {
+            max-width: 180px;
+            max-height: 125px;
+            margin-bottom: 10px;
+            object-fit: cover;
+            object-position: center 45%;
+        }
+
+        .verification-visual-title {
+            font-size: 15px;
+        }
+
+        .verification-visual-text {
+            font-size: 11px;
+        }
+
+        .verification-panel {
+            padding: 22px 18px;
+        }
+
+        .verification-panel-heading {
+            margin-bottom: 18px;
+
+            h3 {
+                font-size: 18px;
+            }
+
+            p {
+                font-size: 12px;
+            }
+        }
+
+        .otp-inputs {
+            gap: 5px;
+        }
+
+        .otp-input {
+            .el-input__wrapper,
+            .el-input__inner {
+                min-height: 46px;
+                height: 46px;
+            }
+
+            .el-input__inner {
+                font-size: 18px;
+            }
+        }
+    }
+}
+
+
+/* Customer list - verification status */
+.irfan-customer-index {
+    .mobile-verification-status {
+        width: fit-content;
+        margin-top: 6px;
+        font-weight: 600;
+    }
+}
+
+
+/* Customer list - verification tag interaction + drawer filter */
+.irfan-customer-index {
+    .verification-tag-clickable {
+        cursor: pointer;
+        transition: transform .15s ease, box-shadow .15s ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+    }
+
+    .verification-status-options {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+
+        .el-radio-button {
+            width: 100%;
+
+            .el-radio-button__inner {
+                width: 100%;
+            }
+        }
+    }
+}
+
+
+/* ============================================================
+   WEEKLY REPORT - SESSION CASH FLOW COLLAPSE
+   Match weekly-report-section-card / Reading Details styling
+============================================================ */
+.weekly-report-page .weekly-session-cashflow-collapse {
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 14px;
+    background: var(--el-bg-color);
+}
+
+    .weekly-report-page .weekly-session-cashflow-collapse.el-collapse {
+        border-top: 1px solid var(--el-border-color-lighter);
+        border-bottom: 1px solid var(--el-border-color-lighter);
+    }
+
+    .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item__header {
+        height: auto;
+        min-height: 0;
+        padding: 13px 16px;
+        border-bottom: 0;
+        background: var(--el-bg-color);
+        color: var(--el-text-color-primary);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+        .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item__header > strong {
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: inherit;
+        }
+
+    .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item__arrow {
+        margin-left: auto;
+        font-size: 16px;
+    }
+
+    .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item__wrap {
+        border-bottom: 0;
+        background: var(--el-bg-color);
+    }
+
+    .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item__content {
+        padding: 0;
+        color: var(--el-text-color-regular);
+    }
+
+    .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item.is-active .el-collapse-item__header {
+        border-bottom: 1px solid var(--el-border-color-lighter);
+    }
+
+@media (max-width: 767px) {
+    .weekly-report-page .weekly-session-cashflow-collapse {
+        border-radius: 14px;
+    }
+
+        .weekly-report-page .weekly-session-cashflow-collapse .el-collapse-item__header {
+            padding: 13px 16px;
+            font-size: 14px;
+        }
+}
+
+
+
+/* ============================================================
+   WEEKLY REPORT - SELECTED READING DAY EMPLOYEE BANNER
+============================================================ */
+.weekly-report-page .weekly-selected-day-banner {
+    background: linear-gradient(135deg, #1e2447, #11162f) !important;
+    border-color: transparent !important;
+    color: #fff;
+}
+
+    .weekly-report-page .weekly-selected-day-banner .el-card__body {
+        background: transparent !important;
+    }
+
+.weekly-report-page .weekly-selected-day-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.weekly-report-page .weekly-selected-day-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255, 255, 255, .10);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, .055);
+    color: #fff;
+}
+
+    .weekly-report-page .weekly-selected-day-icon .el-icon {
+        font-size: 21px;
+    }
+
+.weekly-report-page .weekly-selected-day-copy {
+    min-width: 0;
+}
+
+.weekly-report-page .weekly-selected-day-banner .weekly-report-eyebrow,
+.weekly-report-page .weekly-selected-day-banner .weekly-report-session-row p,
+.weekly-report-page .weekly-selected-day-banner .weekly-report-session-select label {
+    color: #aeb4d6 !important;
+}
+
+.weekly-report-page .weekly-selected-day-banner .weekly-report-session-row h3 {
+    color: #fff !important;
+}
+
+@media (max-width: 767px) {
+    .weekly-report-page .weekly-selected-day-main {
+        align-items: flex-start;
+    }
+
+    .weekly-report-page .weekly-selected-day-icon {
+        flex-basis: 38px;
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* ============================================================
+   WEEKLY REPORT - TABLET WEEK SELECTOR
+   Keep all 7 days in one row only on tablet widths.
+============================================================ */
+@media (min-width: 768px) and (max-width: 1100px) {
+    .weekly-report-page .weekly-report-days {
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        gap: 8px;
+    }
+
+    .weekly-report-page .weekly-report-day {
+        min-width: 0;
+        min-height: 74px;
+        padding: 9px 8px;
+    }
+
+        .weekly-report-page .weekly-report-day span {
+            font-size: 10px;
+        }
+
+        .weekly-report-page .weekly-report-day strong {
+            margin-top: 3px;
+            font-size: 15px;
+        }
+
+        .weekly-report-page .weekly-report-day small {
+            margin-top: 4px;
+            font-size: 9px;
+            line-height: 1.2;
+        }
 }

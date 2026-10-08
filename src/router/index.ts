@@ -160,7 +160,24 @@ export const asyncRoutes: RouteRecordRaw[] = [
       }
     ]
   },
-
+  {
+    path: '/luckybird',
+    component: Layout,
+    redirect: '/luckybird/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/luckybird/index.vue'),
+        name: 'LuckyBird',
+        meta: {
+          title: 'Lucky Bird',
+          icon: 'Money',
+          noCache: true,
+          permission: 'clock.read', roles: ['employee']
+        }
+      }
+    ]
+  },
   {
     path: '/raffle',
     component: Layout,
@@ -311,6 +328,17 @@ export const asyncRoutes: RouteRecordRaw[] = [
         name: 'EmployeeSessionBonusReport',
         meta: {
           title: 'Bonus Report',
+          hidden: true,
+          noCache: true,
+          permission: 'employeesession.read'
+        }
+      },
+      {
+        path: 'employee-sessions/:employeeId/session/:sessionId/lucky-bird',
+        component: () => import('@/views/operation/employeesession/luckybirdreport.vue'),
+        name: 'EmployeeSessionLuckyBirdReport',
+        meta: {
+          title: 'Lucky Bird Report',
           hidden: true,
           noCache: true,
           permission: 'employeesession.read'

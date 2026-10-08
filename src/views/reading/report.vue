@@ -119,7 +119,7 @@
             <!-- ====================================================== -->
 
             <div v-if="selectedSession"
-                 class="ticket-reconcile-overview"
+                 class="ticket-reconcile-overview employee-banner-theme"
                  role="button"
                  tabindex="0"
                  @click="ticketReconcileDialogVisible = true"
@@ -174,6 +174,75 @@
                 Click to view machine reconciliation
               </div>
             </div>
+
+
+            <!-- ====================================================== -->
+            <!-- FINANCIAL POSTING -->
+            <!-- ====================================================== -->
+
+            <el-card v-if="selectedSession && isAdmin && Number(selectedSession.status) === 3"
+                     shadow="never"
+                     class="posting-card">
+              <div class="posting-layout">
+                <div class="posting-content">
+                  <span class="posting-eyebrow">FINANCIAL RECONCILIATION</span>
+
+                  <strong class="posting-total">
+                    ${{ formatNumber(machineCollectionAmount) }}
+                  </strong>
+
+                  <p class="posting-summary-line">
+                    Remaining Amount
+                    <strong>${{ formatNumber(expectedRemainingAmount) }}</strong>
+                    +
+                    Ticket Out
+                    <strong>${{ formatNumber(totalTicketOut) }}</strong>
+                  </p>
+
+                  <p v-if="profitPosting"
+                     class="small-text posting-meta">
+                    Posted by
+                    {{
+                    profitPosting.postedByName ||
+                      `User #${profitPosting.postedBy}`
+                    }}
+                    · {{ formatDateTime(profitPosting.postedAt) }}
+                    · Entry #{{ profitPosting.id }}
+                  </p>
+                </div>
+
+                <div class="posting-action">
+                  <el-tag v-if="profitPosting"
+                          type="success"
+                          effect="light">
+                    Posted to finance
+                  </el-tag>
+
+                  <el-button v-else
+                             type="primary"
+                             :loading="
+                             postingProfit ||
+                               checkingProfitPosting
+                           "
+                             :disabled="
+                             loadingReport ||
+                               checkingProfitPosting ||
+                               !reportRows.length ||
+                               !!postingError
+                           "
+                             @click="postSessionProfit">
+                    Post Remaining to Finance
+                  </el-button>
+                </div>
+              </div>
+
+              <el-alert v-if="postingError"
+                        type="error"
+                        :title="postingError"
+                        :closable="false"
+                        class="posting-error" />
+            </el-card>
+
 
             <el-dialog v-model="ticketReconcileDialogVisible"
                        title="Match Tickets"
@@ -430,71 +499,6 @@
                   </div>
                 </div>
               </div>
-            </el-card>
-
-            <!-- ====================================================== -->
-            <!-- FINANCIAL POSTING -->
-            <!-- ====================================================== -->
-
-            <el-card v-if="selectedSession && isAdmin && Number(selectedSession.status) === 3"
-                     shadow="never"
-                     class="posting-card">
-              <div class="posting-layout">
-                <div>
-                  <strong>
-                    Financial posting
-                  </strong>
-
-                  <p class="small-text">
-                    Post the physical machine collection
-                    ({{ formatNumber(machineCollectionAmount) }})
-                    to the collecting Admin’s cash custody once.
-                    Remaining {{ formatNumber(expectedRemainingAmount) }}
-                    + Daily OUT {{ formatNumber(totalMachineOut) }}.
-                    Search filters do not affect the posted amount.
-                  </p>
-
-                  <p v-if="profitPosting"
-                     class="small-text">
-                    Posted by
-                    {{
-                    profitPosting.postedByName ||
-                      `User #${profitPosting.postedBy}`
-                    }}
-                    on
-                    {{ formatDateTime(profitPosting.postedAt) }}
-                    · Entry #{{ profitPosting.id }}
-                  </p>
-                </div>
-
-                <el-tag v-if="profitPosting"
-                        type="success"
-                        effect="light">
-                  Posted to finance
-                </el-tag>
-
-                <el-button v-else
-                           type="primary"
-                           :loading="
-                           postingProfit ||
-                             checkingProfitPosting
-                         "
-                           :disabled="
-                           loadingReport ||
-                             checkingProfitPosting ||
-                             !reportRows.length ||
-                             !!postingError
-                         "
-                           @click="postSessionProfit">
-                  Post Remaining to Finance
-                </el-button>
-              </div>
-
-              <el-alert v-if="postingError"
-                        type="error"
-                        :title="postingError"
-                        :closable="false"
-                        class="posting-error" />
             </el-card>
 
           </el-tab-pane>
@@ -992,255 +996,255 @@
 
 <script lang="ts" setup>
 import {
-      computed,
-      onMounted,
-      ref,
-      watch
+        computed,
+        onMounted,
+        ref,
+        watch
 } from 'vue';
 
 import {
-      Refresh,
-      Search, Tickets, Clock, CircleCheck, Monitor, Coin, TrendCharts, Download, Wallet
+        Refresh,
+        Search, Tickets, Clock, CircleCheck, Monitor, Coin, TrendCharts, Download, Wallet
 } from '@element-plus/icons-vue';
 
 import {
-      ElMessage,
-      ElMessageBox
+        ElMessage,
+        ElMessageBox
 } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';
 
 import {
-      getCompletedSessions,
-      getSessionReport,
-      endsession
+        getCompletedSessions,
+        getSessionReport,
+        endsession
 } from '@/api/reading';
 
 import {
-      getReadingProfitPosting,
-      postReadingProfit
+        getReadingProfitPosting,
+        postReadingProfit
 } from '@/api/employeefinance';
 
 const userStore =
-            useUserStore();
+              useUserStore();
 
 const appStore =
-            useAppStore();
+              useAppStore();
 
 const locationid =
-            computed(
-              () =>
-                userStore.locationId
-            );
+              computed(
+                () =>
+                  userStore.locationId
+              );
 
 const device =
-            computed(
-              () =>
-                appStore.device
-            );
+              computed(
+                () =>
+                  appStore.device
+              );
 
 const isAdmin =
-            computed(
-              () =>
-                [
-                  'admin',
-                  'owner',
-                  'system admin'
-                ].includes(
-                  String(
-                    userStore.roleName || ''
+              computed(
+                () =>
+                  [
+                    'admin',
+                    'owner',
+                    'system admin'
+                  ].includes(
+                    String(
+                      userStore.roleName || ''
+                    )
+                      .trim()
+                      .toLowerCase()
                   )
-                    .trim()
-                    .toLowerCase()
-                )
-            );
+              );
 
 const completedSessions =
-            ref<any[]>([]);
+              ref<any[]>([]);
 
 const reportRows =
-            ref<any[]>([]);
+              ref<any[]>([]);
 
 const coveredEmployeeSessions =
-            ref<any[]>([]);
+              ref<any[]>([]);
 
 const selectedSession =
-            ref<any>(null);
+              ref<any>(null);
 
 const selectedSessionId =
-            ref<number | null>(null);
+              ref<number | null>(null);
 
 const search =
-            ref('');
+              ref('');
 
 const activeReportTab = ref<'overview' | 'machine' | 'type'>('overview');
 
 const loadingSessions =
-            ref(false);
+              ref(false);
 
 const loadingReport =
-            ref(false);
+              ref(false);
 
 const checkingProfitPosting =
-            ref(false);
+              ref(false);
 
 const postingProfit =
-            ref(false);
+              ref(false);
 
 const profitPosting =
-            ref<any>(null);
+              ref<any>(null);
 
 const postingError =
-            ref('');
+              ref('');
 
 const totalPull =
-            ref(0);
+              ref(0);
 
 const completingReconciliation =
-            ref(false);
+              ref(false);
 
 const ticketReconcileDialogVisible =
-            ref(false);
+              ref(false);
 
 const ticketReconcileFilter =
-            ref<'all' | 'even' | 'short' | 'over'>('all');
+              ref<'all' | 'even' | 'short' | 'over'>('all');
 
 // Backend authenticates and authorizes every posting.
 // The browser never supplies actor or amount.
 
 const filteredRows =
-            computed(
-              () => {
-                const term =
-                        search.value
-                          .trim()
-                          .toLowerCase();
+              computed(
+                () => {
+                  const term =
+                          search.value
+                            .trim()
+                            .toLowerCase();
 
-                if (!term) {
-                  return reportRows.value;
+                  if (!term) {
+                    return reportRows.value;
+                  }
+
+                  return reportRows.value.filter(
+                    row =>
+                      String(
+                        row.machinenumber ?? ''
+                      )
+                        .toLowerCase()
+                        .includes(term)
+                  );
                 }
-
-                return reportRows.value.filter(
-                  row =>
-                    String(
-                      row.machinenumber ?? ''
-                    )
-                      .toLowerCase()
-                      .includes(term)
-                );
-              }
-            );
+              );
 
 // Aggregate the SAME session rows used by the machine-wise report.
 // IN/OUT here are daily deltas, not lifetime meter readings.
 // No bonus field exists in the supplied reading data, so bonus is 0.
 const machineTypeRows = computed(() => {
-      const groups = new Map<string, any>();
-      for (const row of filteredRows.value) {
-        const typeKey = row.machinetypeid == null ? 'unassigned' : String(row.machinetypeid);
-        if (!groups.has(typeKey)) {
-          groups.set(typeKey, {
-            typeKey,
-            typeName: row.machinetypename || 'Unassigned',
-            machineCount: 0, dailyin: 0, dailyout: 0,
-            difference: 0, machinepoints: 0, bonus: 0, net: 0
-          });
+        const groups = new Map<string, any>();
+        for (const row of filteredRows.value) {
+          const typeKey = row.machinetypeid == null ? 'unassigned' : String(row.machinetypeid);
+          if (!groups.has(typeKey)) {
+            groups.set(typeKey, {
+              typeKey,
+              typeName: row.machinetypename || 'Unassigned',
+              machineCount: 0, dailyin: 0, dailyout: 0,
+              difference: 0, machinepoints: 0, bonus: 0, net: 0
+            });
+          }
+          const group = groups.get(typeKey);
+          group.machineCount++;
+          for (const field of ['dailyin', 'dailyout', 'difference', 'machinepoints']) {
+            const value = Number(row[field]);
+            if (Number.isFinite(value)) group[field] += value;
+          }
         }
-        const group = groups.get(typeKey);
-        group.machineCount++;
-        for (const field of ['dailyin', 'dailyout', 'difference', 'machinepoints']) {
-          const value = Number(row[field]);
-          if (Number.isFinite(value)) group[field] += value;
-        }
-      }
-      return Array.from(groups.values())
-        .map(group => ({ ...group, net: group.difference - group.machinepoints - group.bonus }))
-        .sort((a, b) => a.typeName.localeCompare(b.typeName));
+        return Array.from(groups.values())
+          .map(group => ({ ...group, net: group.difference - group.machinepoints - group.bonus }))
+          .sort((a, b) => a.typeName.localeCompare(b.typeName));
 });
 
 function getTypeSummaries({ columns, data }: { columns: any[], data: any[] }) {
-      const fields = ['typeName', 'machineCount', 'dailyin', 'dailyout',
-        'difference', 'machinepoints', 'bonus', 'net'];
-      return columns.map((_column, index) => {
-        if (index === 0) return 'TOTAL';
-        const field = fields[index];
-        if (!field) return '';
-        return formatNumber(data.reduce((sum, row) => sum + (Number(row[field]) || 0), 0));
-      });
+        const fields = ['typeName', 'machineCount', 'dailyin', 'dailyout',
+          'difference', 'machinepoints', 'bonus', 'net'];
+        return columns.map((_column, index) => {
+          if (index === 0) return 'TOTAL';
+          const field = fields[index];
+          if (!field) return '';
+          return formatNumber(data.reduce((sum, row) => sum + (Number(row[field]) || 0), 0));
+        });
 }
 
 function formatDateTime(
-      value:
-                string |
-                Date |
-                null |
-                undefined
+        value:
+                  string |
+                  Date |
+                  null |
+                  undefined
 ) {
-      if (!value) {
-        return '--';
-      }
-
-      const date =
-                new Date(value);
-
-      if (
-        Number.isNaN(
-          date.getTime()
-        )
-      ) {
-        return '--';
-      }
-
-      return new Intl.DateTimeFormat(
-        'en-US',
-        {
-          month: '2-digit',
-          day: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
+        if (!value) {
+          return '--';
         }
-      ).format(date);
+
+        const date =
+                  new Date(value);
+
+        if (
+          Number.isNaN(
+            date.getTime()
+          )
+        ) {
+          return '--';
+        }
+
+        return new Intl.DateTimeFormat(
+          'en-US',
+          {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          }
+        ).format(date);
 }
 
 function formatNumber(
-      value: any
+        value: any
 ) {
-      if (
-        value === null ||
-                value === undefined ||
-                value === ''
-      ) {
-        return '--';
-      }
+        if (
+          value === null ||
+                  value === undefined ||
+                  value === ''
+        ) {
+          return '--';
+        }
 
-      const number =
-                Number(value);
+        const number =
+                  Number(value);
 
-      if (
-        Number.isNaN(number)
-      ) {
-        return '--';
-      }
+        if (
+          Number.isNaN(number)
+        ) {
+          return '--';
+        }
 
-      return new Intl.NumberFormat(
-        'en-US'
-      ).format(number);
+        return new Intl.NumberFormat(
+          'en-US'
+        ).format(number);
 }
 
 function displayValue(
-      value: any
+        value: any
 ) {
-      return formatNumber(value);
+        return formatNumber(value);
 }
 
 const totalCoveredSessionPoints = computed(() =>
-      coveredEmployeeSessions.value.reduce((sum, employeeSession) => {
-        const points = Number(employeeSession.sessionPoints ?? 0);
-        return sum + (Number.isFinite(points) ? points : 0);
-      }, 0)
+        coveredEmployeeSessions.value.reduce((sum, employeeSession) => {
+          const points = Number(employeeSession.sessionPoints ?? 0);
+          return sum + (Number.isFinite(points) ? points : 0);
+        }, 0)
 );
 
 // ============================================================
@@ -1248,84 +1252,84 @@ const totalCoveredSessionPoints = computed(() =>
 // ============================================================
 
 function employeeSessionHours(
-      employeeSession: any
+        employeeSession: any
 ) {
-      if (
-        !employeeSession?.clockIn ||
-                !employeeSession?.clockOut
-      ) {
-        return 0;
-      }
+        if (
+          !employeeSession?.clockIn ||
+                  !employeeSession?.clockOut
+        ) {
+          return 0;
+        }
 
-      const start =
-                new Date(
-                  employeeSession.clockIn
-                ).getTime();
+        const start =
+                  new Date(
+                    employeeSession.clockIn
+                  ).getTime();
 
-      const end =
-                new Date(
-                  employeeSession.clockOut
-                ).getTime();
+        const end =
+                  new Date(
+                    employeeSession.clockOut
+                  ).getTime();
 
-      if (
-        !Number.isFinite(start) ||
-                !Number.isFinite(end) ||
-                end < start
-      ) {
-        return 0;
-      }
+        if (
+          !Number.isFinite(start) ||
+                  !Number.isFinite(end) ||
+                  end < start
+        ) {
+          return 0;
+        }
 
-      return (
-        end -
-                start
-      ) / 3600000;
+        return (
+          end -
+                  start
+        ) / 3600000;
 }
 
 const totalCoveredWorkingHours =
-            computed(
-              () =>
-                coveredEmployeeSessions.value.reduce(
-                  (
-                    sum,
-                    employeeSession
-                  ) =>
-                    sum +
-                            employeeSessionHours(
-                              employeeSession
-                            ),
-                  0
-                )
-            );
+              computed(
+                () =>
+                  coveredEmployeeSessions.value.reduce(
+                    (
+                      sum,
+                      employeeSession
+                    ) =>
+                      sum +
+                              employeeSessionHours(
+                                employeeSession
+                              ),
+                    0
+                  )
+              );
 
 function formatHours(
-      value: any
+        value: any
 ) {
-      const hours =
-                Number(
-                  value || 0
-                );
+        const hours =
+                  Number(
+                    value || 0
+                  );
 
-      if (
-        !Number.isFinite(hours) ||
-                hours < 0
-      ) {
-        return '0h 0m';
-      }
+        if (
+          !Number.isFinite(hours) ||
+                  hours < 0
+        ) {
+          return '0h 0m';
+        }
 
-      const totalMinutes =
-                Math.round(
-                  hours * 60
-                );
+        const totalMinutes =
+                  Math.round(
+                    hours * 60
+                  );
 
-      const wholeHours =
-                Math.floor(
-                  totalMinutes / 60
-                );
+        const wholeHours =
+                  Math.floor(
+                    totalMinutes / 60
+                  );
 
-      const minutes =
-                totalMinutes % 60;
+        const minutes =
+                  totalMinutes % 60;
 
-      return `${wholeHours}h ${minutes}m`;
+        return `${wholeHours}h ${minutes}m`;
 }
 
 // ============================================================
@@ -1336,289 +1340,289 @@ function formatHours(
 // Filtered amount is display-only.
 
 const sessionProfit =
-            computed(
-              () =>
-                reportRows.value.reduce(
-                  (
-                    sum,
-                    row
-                  ) => {
-                    const value =
-                                Number(
-                                  row.difference
-                                );
+              computed(
+                () =>
+                  reportRows.value.reduce(
+                    (
+                      sum,
+                      row
+                    ) => {
+                      const value =
+                                  Number(
+                                    row.difference
+                                  );
 
-                    return (
-                      sum +
-                                (
-                                  Number.isFinite(value)
-                                    ? value
-                                    : 0
-                                )
-                    );
-                  },
-                  0
-                )
-            );
+                      return (
+                        sum +
+                                  (
+                                    Number.isFinite(value)
+                                      ? value
+                                      : 0
+                                  )
+                      );
+                    },
+                    0
+                  )
+              );
 
 const expectedRemainingAmount =
-            computed(
-              () =>
-                Number(sessionProfit.value || 0) -
-                Number(totalPull.value || 0)
-            );
+              computed(
+                () =>
+                  Number(sessionProfit.value || 0) -
+                  Number(totalPull.value || 0)
+              );
 
 const machineCollectionAmount =
-            computed(
-              () =>
-                Number(expectedRemainingAmount.value || 0) +
-                Number(totalMachineOut.value || 0)
-            );
+              computed(
+                () =>
+                  Number(expectedRemainingAmount.value || 0) +
+                  Number(totalMachineOut.value || 0)
+              );
 
 // Points come from customer assignments within the employee
 // sessions explicitly linked to this reading session.
 
 const sessionMachinePoints =
-            computed(
-              () =>
-                reportRows.value.reduce(
-                  (
-                    sum,
-                    row
-                  ) => {
-                    const value =
-                                Number(
-                                  row.machinepoints
-                                );
+              computed(
+                () =>
+                  reportRows.value.reduce(
+                    (
+                      sum,
+                      row
+                    ) => {
+                      const value =
+                                  Number(
+                                    row.machinepoints
+                                  );
 
-                    return (
-                      sum +
-                                (
-                                  Number.isFinite(value)
-                                    ? value
-                                    : 0
-                                )
-                    );
-                  },
-                  0
-                )
-            );
+                      return (
+                        sum +
+                                  (
+                                    Number.isFinite(value)
+                                      ? value
+                                      : 0
+                                  )
+                      );
+                    },
+                    0
+                  )
+              );
 
 const totalMachinePoints =
-            computed(
-              () =>
-                filteredRows.value.reduce(
-                  (
-                    sum,
-                    row
-                  ) => {
-                    const value =
-                                Number(
-                                  row.machinepoints
-                                );
+              computed(
+                () =>
+                  filteredRows.value.reduce(
+                    (
+                      sum,
+                      row
+                    ) => {
+                      const value =
+                                  Number(
+                                    row.machinepoints
+                                  );
 
-                    return (
-                      sum +
-                                (
-                                  Number.isFinite(value)
-                                    ? value
-                                    : 0
-                                )
-                    );
-                  },
-                  0
-                )
-            );
+                      return (
+                        sum +
+                                  (
+                                    Number.isFinite(value)
+                                      ? value
+                                      : 0
+                                  )
+                      );
+                    },
+                    0
+                  )
+              );
 
 const totalMachineOut =
-            computed(
-              () =>
-                filteredRows.value.reduce(
-                  (sum, row) => {
-                    const value = Number(row.dailyout);
-                    return sum + (Number.isFinite(value) ? value : 0);
-                  },
-                  0
-                )
-            );
+              computed(
+                () =>
+                  filteredRows.value.reduce(
+                    (sum, row) => {
+                      const value = Number(row.dailyout);
+                      return sum + (Number.isFinite(value) ? value : 0);
+                    },
+                    0
+                  )
+              );
 
 const totalTicketOut =
-            computed(
-              () =>
-                filteredRows.value.reduce(
-                  (sum, row) => {
-                    const value = Number(row.ticketout);
-                    return sum + (Number.isFinite(value) ? value : 0);
-                  },
-                  0
-                )
-            );
+              computed(
+                () =>
+                  filteredRows.value.reduce(
+                    (sum, row) => {
+                      const value = Number(row.ticketout);
+                      return sum + (Number.isFinite(value) ? value : 0);
+                    },
+                    0
+                  )
+              );
 
 const ticketOutTotalsMatch =
-            computed(
-              () =>
-                Math.abs(
-                  Number(totalMachineOut.value || 0) -
-                  Number(totalTicketOut.value || 0)
-                ) < 0.005
-            );
+              computed(
+                () =>
+                  Math.abs(
+                    Number(totalMachineOut.value || 0) -
+                    Number(totalTicketOut.value || 0)
+                  ) < 0.005
+              );
 
 const totalTicketCount =
-            computed(
-              () =>
-                reportRows.value.reduce(
-                  (sum, row) => sum + (Number(row.ticketcount) || 0),
-                  0
-                )
-            );
+              computed(
+                () =>
+                  reportRows.value.reduce(
+                    (sum, row) => sum + (Number(row.ticketcount) || 0),
+                    0
+                  )
+              );
 
 function ticketMachineVariance(row: any) {
-      return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
+        return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
 }
 
 function ticketReconcileType(row: any): 'even' | 'short' | 'over' {
-      const variance = ticketMachineVariance(row);
+        const variance = ticketMachineVariance(row);
 
-      if (Math.abs(variance) < 0.005) return 'even';
-      return variance > 0 ? 'short' : 'over';
+        if (Math.abs(variance) < 0.005) return 'even';
+        return variance > 0 ? 'short' : 'over';
 }
 
 const ticketShortPayTotal =
-            computed(
-              () =>
-                reportRows.value.reduce(
-                  (sum, row) => {
-                    const variance = ticketMachineVariance(row);
-                    return sum + (variance > 0 ? variance : 0);
-                  },
-                  0
-                )
-            );
+              computed(
+                () =>
+                  reportRows.value.reduce(
+                    (sum, row) => {
+                      const variance = ticketMachineVariance(row);
+                      return sum + (variance > 0 ? variance : 0);
+                    },
+                    0
+                  )
+              );
 
 const ticketOverPaidTotal =
-            computed(
-              () =>
-                reportRows.value.reduce(
-                  (sum, row) => {
-                    const variance = ticketMachineVariance(row);
-                    return sum + (variance < 0 ? Math.abs(variance) : 0);
-                  },
-                  0
-                )
-            );
+              computed(
+                () =>
+                  reportRows.value.reduce(
+                    (sum, row) => {
+                      const variance = ticketMachineVariance(row);
+                      return sum + (variance < 0 ? Math.abs(variance) : 0);
+                    },
+                    0
+                  )
+              );
 
 const ticketVariance =
-            computed(
-              () =>
-                Number(totalMachineOut.value || 0) -
-                Number(totalTicketOut.value || 0)
-            );
+              computed(
+                () =>
+                  Number(totalMachineOut.value || 0) -
+                  Number(totalTicketOut.value || 0)
+              );
 
 const ticketReconcileCounts =
-            computed(
-              () => {
-                const counts = {
-                  all: reportRows.value.length,
-                  even: 0,
-                  short: 0,
-                  over: 0
-                };
+              computed(
+                () => {
+                  const counts = {
+                    all: reportRows.value.length,
+                    even: 0,
+                    short: 0,
+                    over: 0
+                  };
 
-                for (const row of reportRows.value) {
-                  counts[ticketReconcileType(row)]++;
+                  for (const row of reportRows.value) {
+                    counts[ticketReconcileType(row)]++;
+                  }
+
+                  return counts;
                 }
-
-                return counts;
-              }
-            );
+              );
 
 const filteredTicketReconcileRows =
-            computed(
-              () => {
-                if (ticketReconcileFilter.value === 'all') {
-                  return reportRows.value;
-                }
+              computed(
+                () => {
+                  if (ticketReconcileFilter.value === 'all') {
+                    return reportRows.value;
+                  }
 
-                return reportRows.value.filter(
-                  row => ticketReconcileType(row) === ticketReconcileFilter.value
-                );
-              }
-            );
+                  return reportRows.value.filter(
+                    row => ticketReconcileType(row) === ticketReconcileFilter.value
+                  );
+                }
+              );
 
 function formatMoney(value: any) {
-      const number = Number(value || 0);
+        const number = Number(value || 0);
 
-      return new Intl.NumberFormat(
-        'en-US',
-        {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        }
-      ).format(Number.isFinite(number) ? number : 0);
+        return new Intl.NumberFormat(
+          'en-US',
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        ).format(Number.isFinite(number) ? number : 0);
 }
 
 function signedMoney(value: any) {
-      const number = Number(value || 0);
-      const absolute = formatMoney(Math.abs(number));
+        const number = Number(value || 0);
+        const absolute = formatMoney(Math.abs(number));
 
-      if (Math.abs(number) < 0.005) return '$0.00';
-      return number > 0 ? `+$${absolute}` : `-$${absolute}`;
+        if (Math.abs(number) < 0.005) return '$0.00';
+        return number > 0 ? `+$${absolute}` : `-$${absolute}`;
 }
 
 function ticketOutMatches(row: any) {
-      const machineOut = Number(row?.dailyout || 0);
-      const ticketOut = Number(row?.ticketout || 0);
+        const machineOut = Number(row?.dailyout || 0);
+        const ticketOut = Number(row?.ticketout || 0);
 
-      if (
-        !Number.isFinite(machineOut) ||
-        !Number.isFinite(ticketOut)
-      ) {
-        return false;
-      }
+        if (
+          !Number.isFinite(machineOut) ||
+          !Number.isFinite(ticketOut)
+        ) {
+          return false;
+        }
 
-      return Math.abs(machineOut - ticketOut) < 0.005;
+        return Math.abs(machineOut - ticketOut) < 0.005;
 }
 
 // Profit card and table footer use the same filtered rows.
 
 const totalProfit =
-            computed(
-              () =>
-                filteredRows.value.reduce(
-                  (
-                    sum,
-                    row
-                  ) => {
-                    const value =
-                                Number(
-                                  row.difference
-                                );
+              computed(
+                () =>
+                  filteredRows.value.reduce(
+                    (
+                      sum,
+                      row
+                    ) => {
+                      const value =
+                                  Number(
+                                    row.difference
+                                  );
 
-                    return (
-                      sum +
-                                (
-                                  Number.isFinite(value)
-                                    ? value
-                                    : 0
-                                )
-                    );
-                  },
-                  0
-                )
-            );
+                      return (
+                        sum +
+                                  (
+                                    Number.isFinite(value)
+                                      ? value
+                                      : 0
+                                  )
+                      );
+                    },
+                    0
+                  )
+              );
 
 function differenceTextClass(
-      value: number
+        value: number
 ) {
-      if (value > 0) {
-        return 'profit-positive';
-      }
+        if (value > 0) {
+          return 'profit-positive';
+        }
 
-      if (value < 0) {
-        return 'profit-negative';
-      }
+        if (value < 0) {
+          return 'profit-negative';
+        }
 
-      return 'profit-neutral';
+        return 'profit-neutral';
 }
 
 // ============================================================
@@ -1626,95 +1630,95 @@ function differenceTextClass(
 // ============================================================
 
 function getSummaries(
-      {
-        columns,
-        data
-      }:
-                {
-                    columns: any[]
-                    data: any[]
-                }
+        {
+          columns,
+          data
+        }:
+                  {
+                      columns: any[]
+                      data: any[]
+                  }
 ) {
-      const fields = [
-        '',
-        'previousin',
-        'previousout',
-        'currentin',
-        'currentout',
-        'dailyin',
-        'dailyout',
-        'ticketout',
-        '',
-        'difference',
-        'machinepoints'
-      ];
+        const fields = [
+          '',
+          'previousin',
+          'previousout',
+          'currentin',
+          'currentout',
+          'dailyin',
+          'dailyout',
+          'ticketout',
+          '',
+          'difference',
+          'machinepoints'
+        ];
 
-      return columns.map(
-        (
-          _column,
-          index
-        ) => {
-          if (
-            index === 0
-          ) {
-            return 'TOTAL';
-          }
+        return columns.map(
+          (
+            _column,
+            index
+          ) => {
+            if (
+              index === 0
+            ) {
+              return 'TOTAL';
+            }
 
-          if (index === 8) {
-            const machineOut = data.reduce(
-              (sum: number, row: any) => sum + (Number(row.dailyout) || 0),
-              0
-            );
-            const ticketOut = data.reduce(
-              (sum: number, row: any) => sum + (Number(row.ticketout) || 0),
-              0
-            );
+            if (index === 8) {
+              const machineOut = data.reduce(
+                (sum: number, row: any) => sum + (Number(row.dailyout) || 0),
+                0
+              );
+              const ticketOut = data.reduce(
+                (sum: number, row: any) => sum + (Number(row.ticketout) || 0),
+                0
+              );
 
-            return Math.abs(machineOut - ticketOut) < 0.005
-              ? 'MATCH'
-              : 'MISMATCH';
-          }
+              return Math.abs(machineOut - ticketOut) < 0.005
+                ? 'MATCH'
+                : 'MISMATCH';
+            }
 
-          // OUT Check, Life Pay % and Life Hold % are not numeric totals.
+            // OUT Check, Life Pay % and Life Hold % are not numeric totals.
 
-          if (
-            index >=
-                        fields.length
-          ) {
-            return '';
-          }
+            if (
+              index >=
+                          fields.length
+            ) {
+              return '';
+            }
 
-          const field =
-                        fields[index];
+            const field =
+                          fields[index];
 
-          const total =
-                        data.reduce(
-                          (
-                            sum: number,
-                            row: any
-                          ) => {
-                            const value =
-                                    Number(
-                                      row[field]
-                                    );
+            const total =
+                          data.reduce(
+                            (
+                              sum: number,
+                              row: any
+                            ) => {
+                              const value =
+                                      Number(
+                                        row[field]
+                                      );
 
-                            return (
-                              sum +
-                                    (
-                                      Number.isFinite(
-                                        value
+                              return (
+                                sum +
+                                      (
+                                        Number.isFinite(
+                                          value
+                                        )
+                                          ? value
+                                          : 0
                                       )
-                                        ? value
-                                        : 0
-                                    )
-                            );
-                          },
-                          0
-                        );
+                              );
+                            },
+                            0
+                          );
 
-          return formatNumber(total);
-        }
-      );
+            return formatNumber(total);
+          }
+        );
 }
 
 // ============================================================
@@ -1722,95 +1726,95 @@ function getSummaries(
 // ============================================================
 
 function lifePayPercent(
-      row: any
+        row: any
 ) {
-      const currentIn =
-                Number(
-                  row.currentin
-                );
+        const currentIn =
+                  Number(
+                    row.currentin
+                  );
 
-      const currentOut =
-                Number(
-                  row.currentout
-                );
+        const currentOut =
+                  Number(
+                    row.currentout
+                  );
 
-      if (
-        !Number.isFinite(
-          currentIn
-        ) ||
-                currentIn <= 0 ||
-                !Number.isFinite(
-                  currentOut
-                )
-      ) {
-        return '0.00%';
-      }
+        if (
+          !Number.isFinite(
+            currentIn
+          ) ||
+                  currentIn <= 0 ||
+                  !Number.isFinite(
+                    currentOut
+                  )
+        ) {
+          return '0.00%';
+        }
 
-      return `${(
-        (
-          currentOut /
-                        currentIn
-        ) *
-                    100
-      ).toFixed(2)
-      }%`;
+        return `${(
+          (
+            currentOut /
+                          currentIn
+          ) *
+                      100
+        ).toFixed(2)
+        }%`;
 }
 
 function lifeHoldPercent(
-      row: any
+        row: any
 ) {
-      const currentIn =
-                Number(
-                  row.currentin
-                );
+        const currentIn =
+                  Number(
+                    row.currentin
+                  );
 
-      const currentOut =
-                Number(
-                  row.currentout
-                );
+        const currentOut =
+                  Number(
+                    row.currentout
+                  );
 
-      if (
-        !Number.isFinite(
-          currentIn
-        ) ||
-                currentIn <= 0 ||
-                !Number.isFinite(
-                  currentOut
-                )
-      ) {
-        return '0.00%';
-      }
+        if (
+          !Number.isFinite(
+            currentIn
+          ) ||
+                  currentIn <= 0 ||
+                  !Number.isFinite(
+                    currentOut
+                  )
+        ) {
+          return '0.00%';
+        }
 
-      return `${(
-        100 -
-                    (
-                      currentOut /
-                        currentIn
-                    ) *
-                    100
-      ).toFixed(2)
-      }%`;
+        return `${(
+          100 -
+                      (
+                        currentOut /
+                          currentIn
+                      ) *
+                      100
+        ).toFixed(2)
+        }%`;
 }
 
 function differenceType(
-      value: any
+        value: any
 ) {
-      const number =
-                Number(value);
+        const number =
+                  Number(value);
 
-      if (
-        number > 0
-      ) {
-        return 'success';
-      }
+        if (
+          number > 0
+        ) {
+          return 'success';
+        }
 
-      if (
-        number < 0
-      ) {
-        return 'danger';
-      }
+        if (
+          number < 0
+        ) {
+          return 'danger';
+        }
 
-      return 'info';
+        return 'info';
 }
 
 // ============================================================
@@ -1818,35 +1822,35 @@ function differenceType(
 // ============================================================
 
 async function loadCompletedSessions() {
-      if (
-        !locationid.value
-      ) {
-        completedSessions.value = [];
+        if (
+          !locationid.value
+        ) {
+          completedSessions.value = [];
 
-        return;
-      }
+          return;
+        }
 
-      try {
-        loadingSessions.value = true;
+        try {
+          loadingSessions.value = true;
 
-        const response =
-                    await getCompletedSessions(
-                      locationid.value
-                    );
+          const response =
+                      await getCompletedSessions(
+                        locationid.value
+                      );
 
-        completedSessions.value =
-                    response.data ?? [];
-      } catch (error) {
-        console.error(error);
+          completedSessions.value =
+                      response.data ?? [];
+        } catch (error) {
+          console.error(error);
 
-        completedSessions.value = [];
+          completedSessions.value = [];
 
-        ElMessage.error(
-          'Unable to load completed reading sessions.'
-        );
-      } finally {
-        loadingSessions.value = false;
-      }
+          ElMessage.error(
+            'Unable to load completed reading sessions.'
+          );
+        } finally {
+          loadingSessions.value = false;
+        }
 }
 
 // ============================================================
@@ -1854,32 +1858,32 @@ async function loadCompletedSessions() {
 // ============================================================
 
 async function handleSessionChange(
-      value: number | null
+        value: number | null
 ) {
-      activeReportTab.value = 'overview';
-      profitPosting.value = null;
-      postingError.value = '';
-      reportRows.value = [];
-      coveredEmployeeSessions.value = [];
-      totalPull.value = 0;
-      ticketReconcileDialogVisible.value = false;
-      ticketReconcileFilter.value = 'all';
-      selectedSession.value = null;
+        activeReportTab.value = 'overview';
+        profitPosting.value = null;
+        postingError.value = '';
+        reportRows.value = [];
+        coveredEmployeeSessions.value = [];
+        totalPull.value = 0;
+        ticketReconcileDialogVisible.value = false;
+        ticketReconcileFilter.value = 'all';
+        selectedSession.value = null;
 
-      if (!value) {
-        return;
-      }
+        if (!value) {
+          return;
+        }
 
-      selectedSession.value =
-                completedSessions.value.find(
-                  session =>
-                    Number(
-                      session.id
-                    ) ===
-                        Number(value)
-                ) ?? null;
+        selectedSession.value =
+                  completedSessions.value.find(
+                    session =>
+                      Number(
+                        session.id
+                      ) ===
+                          Number(value)
+                  ) ?? null;
 
-      await loadReport();
+        await loadReport();
 }
 
 // ============================================================
@@ -1887,90 +1891,90 @@ async function handleSessionChange(
 // ============================================================
 
 async function loadReport() {
-      if (
-        !selectedSessionId.value ||
-                !locationid.value
-      ) {
-        reportRows.value = [];
-        coveredEmployeeSessions.value = [];
-
-        return;
-      }
-
-      try {
-        loadingReport.value = true;
-
-        const response =
-                    await getSessionReport(
-                      selectedSessionId.value,
-                      locationid.value
-                    );
-
-        reportRows.value =
-                    (response.data?.readings ?? []).map(
-                      (row: any) => {
-                        const previousIn =
-                                Number(row.previousin ?? 0);
-                        const previousOut =
-                                Number(row.previousout ?? 0);
-                        const currentIn =
-                                Number(row.currentin ?? 0);
-                        const currentOut =
-                                Number(row.currentout ?? 0);
-
-                        const dailyIn =
-                                currentIn - previousIn;
-                        const dailyOut =
-                                currentOut - previousOut;
-
-                        return {
-                          ...row,
-                          previousin: previousIn,
-                          previousout: previousOut,
-                          currentin: currentIn,
-                          currentout: currentOut,
-                          dailyin: dailyIn,
-                          dailyout: dailyOut,
-                          difference:
-                                  dailyIn - dailyOut
-                        };
-                      }
-                    );
-
-        coveredEmployeeSessions.value =
-                    response.data?.employeeSessions ?? [];
-
-        totalPull.value =
-                    Number(response.data?.reconciliation?.totalPull || 0);
-
         if (
-          response.data?.session
+          !selectedSessionId.value ||
+                  !locationid.value
         ) {
-          selectedSession.value = {
-            ...selectedSession.value,
-            ...response.data.session
-          };
+          reportRows.value = [];
+          coveredEmployeeSessions.value = [];
+
+          return;
         }
 
-        if (
-          isAdmin.value &&
-          Number(selectedSession.value?.status) === 3
-        ) {
-          await loadProfitPosting();
+        try {
+          loadingReport.value = true;
+
+          const response =
+                      await getSessionReport(
+                        selectedSessionId.value,
+                        locationid.value
+                      );
+
+          reportRows.value =
+                      (response.data?.readings ?? []).map(
+                        (row: any) => {
+                          const previousIn =
+                                  Number(row.previousin ?? 0);
+                          const previousOut =
+                                  Number(row.previousout ?? 0);
+                          const currentIn =
+                                  Number(row.currentin ?? 0);
+                          const currentOut =
+                                  Number(row.currentout ?? 0);
+
+                          const dailyIn =
+                                  currentIn - previousIn;
+                          const dailyOut =
+                                  currentOut - previousOut;
+
+                          return {
+                            ...row,
+                            previousin: previousIn,
+                            previousout: previousOut,
+                            currentin: currentIn,
+                            currentout: currentOut,
+                            dailyin: dailyIn,
+                            dailyout: dailyOut,
+                            difference:
+                                    dailyIn - dailyOut
+                          };
+                        }
+                      );
+
+          coveredEmployeeSessions.value =
+                      response.data?.employeeSessions ?? [];
+
+          totalPull.value =
+                      Number(response.data?.reconciliation?.totalPull || 0);
+
+          if (
+            response.data?.session
+          ) {
+            selectedSession.value = {
+              ...selectedSession.value,
+              ...response.data.session
+            };
+          }
+
+          if (
+            isAdmin.value &&
+            Number(selectedSession.value?.status) === 3
+          ) {
+            await loadProfitPosting();
+          }
+        } catch (error) {
+          console.error(error);
+
+          reportRows.value = [];
+          coveredEmployeeSessions.value = [];
+          totalPull.value = 0;
+
+          ElMessage.error(
+            'Unable to load reading report.'
+          );
+        } finally {
+          loadingReport.value = false;
         }
-      } catch (error) {
-        console.error(error);
-
-        reportRows.value = [];
-        coveredEmployeeSessions.value = [];
-        totalPull.value = 0;
-
-        ElMessage.error(
-          'Unable to load reading report.'
-        );
-      } finally {
-        loadingReport.value = false;
-      }
 }
 
 // ============================================================
@@ -1978,47 +1982,47 @@ async function loadReport() {
 // ============================================================
 
 async function loadProfitPosting() {
-      const sessionId =
-                selectedSessionId.value;
-
-      if (
-        !sessionId ||
-                !locationid.value
-      ) {
-        return;
-      }
-
-      checkingProfitPosting.value = true;
-      postingError.value = '';
-
-      try {
-        const response =
-                    await getReadingProfitPosting(
-                      sessionId,
-                      locationid.value
-                    );
+        const sessionId =
+                  selectedSessionId.value;
 
         if (
-          Number(
-            selectedSessionId.value
-          ) ===
-                    Number(sessionId)
+          !sessionId ||
+                  !locationid.value
         ) {
-          profitPosting.value =
-                        response.data?.posting ??
-                        null;
+          return;
         }
-      } catch (error: any) {
-        postingError.value =
-                    error?.response?.data?.message ||
-                    'Unable to verify financial posting status. Posting is disabled until status can be checked.';
 
-        profitPosting.value =
-                    null;
-      } finally {
-        checkingProfitPosting.value =
-                    false;
-      }
+        checkingProfitPosting.value = true;
+        postingError.value = '';
+
+        try {
+          const response =
+                      await getReadingProfitPosting(
+                        sessionId,
+                        locationid.value
+                      );
+
+          if (
+            Number(
+              selectedSessionId.value
+            ) ===
+                      Number(sessionId)
+          ) {
+            profitPosting.value =
+                          response.data?.posting ??
+                          null;
+          }
+        } catch (error: any) {
+          postingError.value =
+                      error?.response?.data?.message ||
+                      'Unable to verify financial posting status. Posting is disabled until status can be checked.';
+
+          profitPosting.value =
+                      null;
+        } finally {
+          checkingProfitPosting.value =
+                      false;
+        }
 }
 
 // ============================================================
@@ -2026,79 +2030,79 @@ async function loadProfitPosting() {
 // ============================================================
 
 async function postSessionProfit() {
-      const sessionId =
-                selectedSessionId.value;
-
-      if (
-        !sessionId ||
-                !locationid.value ||
-                postingProfit.value ||
-                profitPosting.value ||
-                postingError.value
-      ) {
-        return;
-      }
-
-      try {
-        await ElMessageBox.confirm(
-          `Post machine collection of ${formatNumber(machineCollectionAmount.value)} for reading session #${sessionId} to Admin cash custody? Remaining is ${formatNumber(expectedRemainingAmount.value)} plus Machine Daily OUT ${formatNumber(totalMachineOut.value)}. Profit is ${formatNumber(sessionProfit.value)} and PULL is ${formatNumber(totalPull.value)}. This financial entry is recorded once and cannot be posted twice.`,
-          'Confirm financial posting',
-          {
-            type: 'warning',
-            confirmButtonText:
-                            'Post Profit',
-            cancelButtonText:
-                            'Cancel'
-          }
-        );
-      } catch {
-        return;
-      }
-
-      postingProfit.value =
-                true;
-
-      try {
-        // No amount/user ID is accepted from the browser.
-        // The server recomputes profit and resolves the user.
-
-        const response =
-                    await postReadingProfit(
-                      sessionId,
-                      {
-                        locationid:
-                                locationid.value
-                      }
-                    );
-
-        profitPosting.value =
-                    response.data?.posting ??
-                    null;
+        const sessionId =
+                  selectedSessionId.value;
 
         if (
-          !profitPosting.value
+          !sessionId ||
+                  !locationid.value ||
+                  postingProfit.value ||
+                  profitPosting.value ||
+                  postingError.value
         ) {
-          await loadProfitPosting();
+          return;
         }
 
-        ElMessage.success(
-          'Expected remaining machine cash posted to finance.'
-        );
-      } catch (error: any) {
-        ElMessage.error(
-          error?.response?.data?.message ||
-                    'Unable to post session profit.'
-        );
-
-        if (
-          isAdmin.value
-        ) {
-          await loadProfitPosting();
+        try {
+          await ElMessageBox.confirm(
+            `Post machine collection of ${formatNumber(machineCollectionAmount.value)} for reading session #${sessionId} to Admin cash custody? Remaining is ${formatNumber(expectedRemainingAmount.value)} plus Machine Daily OUT ${formatNumber(totalMachineOut.value)}. Profit is ${formatNumber(sessionProfit.value)} and PULL is ${formatNumber(totalPull.value)}. This financial entry is recorded once and cannot be posted twice.`,
+            'Confirm financial posting',
+            {
+              type: 'warning',
+              confirmButtonText:
+                              'Post Profit',
+              cancelButtonText:
+                              'Cancel'
+            }
+          );
+        } catch {
+          return;
         }
-      } finally {
+
         postingProfit.value =
-                    false;
-      }
+                  true;
+
+        try {
+          // No amount/user ID is accepted from the browser.
+          // The server recomputes profit and resolves the user.
+
+          const response =
+                      await postReadingProfit(
+                        sessionId,
+                        {
+                          locationid:
+                                  locationid.value
+                        }
+                      );
+
+          profitPosting.value =
+                      response.data?.posting ??
+                      null;
+
+          if (
+            !profitPosting.value
+          ) {
+            await loadProfitPosting();
+          }
+
+          ElMessage.success(
+            'Expected remaining machine cash posted to finance.'
+          );
+        } catch (error: any) {
+          ElMessage.error(
+            error?.response?.data?.message ||
+                      'Unable to post session profit.'
+          );
+
+          if (
+            isAdmin.value
+          ) {
+            await loadProfitPosting();
+          }
+        } finally {
+          postingProfit.value =
+                      false;
+        }
 }
 
 // ============================================================
@@ -2106,51 +2110,51 @@ async function postSessionProfit() {
 // ============================================================
 
 async function completeReconciliation() {
-      if (
-        !selectedSessionId.value ||
-        !locationid.value ||
-        Number(selectedSession.value?.status) !== 2 ||
-        completingReconciliation.value
-      ) {
-        return;
-      }
+        if (
+          !selectedSessionId.value ||
+          !locationid.value ||
+          Number(selectedSession.value?.status) !== 2 ||
+          completingReconciliation.value
+        ) {
+          return;
+        }
 
-      try {
-        await ElMessageBox.confirm(
-          `Complete reconciliation for reading session #${selectedSessionId.value}? This locks the session as completed.`,
-          'Complete Reading Reconciliation',
-          {
-            type: 'warning',
-            confirmButtonText: 'Complete Reconciliation',
-            cancelButtonText: 'Cancel'
-          }
-        );
-      } catch {
-        return;
-      }
+        try {
+          await ElMessageBox.confirm(
+            `Complete reconciliation for reading session #${selectedSessionId.value}? This locks the session as completed.`,
+            'Complete Reading Reconciliation',
+            {
+              type: 'warning',
+              confirmButtonText: 'Complete Reconciliation',
+              cancelButtonText: 'Cancel'
+            }
+          );
+        } catch {
+          return;
+        }
 
-      try {
-        completingReconciliation.value = true;
+        try {
+          completingReconciliation.value = true;
 
-        await endsession(
-          selectedSessionId.value,
-          locationid.value
-        );
+          await endsession(
+            selectedSessionId.value,
+            locationid.value
+          );
 
-        ElMessage.success(
-          `Reading session #${selectedSessionId.value} reconciliation completed.`
-        );
+          ElMessage.success(
+            `Reading session #${selectedSessionId.value} reconciliation completed.`
+          );
 
-        await loadCompletedSessions();
-        await loadReport();
-      } catch (error: any) {
-        ElMessage.error(
-          error?.response?.data?.message ||
-          'Unable to complete reading reconciliation.'
-        );
-      } finally {
-        completingReconciliation.value = false;
-      }
+          await loadCompletedSessions();
+          await loadReport();
+        } catch (error: any) {
+          ElMessage.error(
+            error?.response?.data?.message ||
+            'Unable to complete reading reconciliation.'
+          );
+        } finally {
+          completingReconciliation.value = false;
+        }
 }
 
 // ============================================================
@@ -2158,13 +2162,13 @@ async function completeReconciliation() {
 // ============================================================
 
 async function refreshReport() {
-      await loadCompletedSessions();
+        await loadCompletedSessions();
 
-      if (
-        selectedSessionId.value
-      ) {
-        await loadReport();
-      }
+        if (
+          selectedSessionId.value
+        ) {
+          await loadReport();
+        }
 }
 
 // ============================================================
@@ -2172,43 +2176,43 @@ async function refreshReport() {
 // ============================================================
 
 watch(
-      locationid,
-      async newLocation => {
-        selectedSessionId.value =
-                    null;
+        locationid,
+        async newLocation => {
+          selectedSessionId.value =
+                      null;
 
-        selectedSession.value =
-                    null;
+          selectedSession.value =
+                      null;
 
-        reportRows.value =
-                    [];
+          reportRows.value =
+                      [];
 
-        coveredEmployeeSessions.value =
-                    [];
+          coveredEmployeeSessions.value =
+                      [];
 
-        totalPull.value =
-                    0;
+          totalPull.value =
+                      0;
 
-        profitPosting.value =
-                    null;
+          profitPosting.value =
+                      null;
 
-        postingError.value =
-                    '';
+          postingError.value =
+                      '';
 
-        search.value =
-                    '';
+          search.value =
+                      '';
 
-        if (
-          newLocation
-        ) {
-          await loadCompletedSessions();
+          if (
+            newLocation
+          ) {
+            await loadCompletedSessions();
+          }
         }
-      }
 );
 
 onMounted(
-      async () => {
-        await loadCompletedSessions();
-      }
+        async () => {
+          await loadCompletedSessions();
+        }
 );
 </script>

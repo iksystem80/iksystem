@@ -1,8 +1,39 @@
 import request from '@/utils/request';
 
-// ============================================================
-// GET ALL BONUSES
-// ============================================================
+export function getBonusGiveState() {
+  return request({
+    url: '/bonus/give/state',
+    method: 'get'
+  });
+}
+
+export function getBonusGiveMachine(machineNumber) {
+  return request({
+    url: '/bonus/give/machine',
+    method: 'get',
+    params: {
+      machinenumber: machineNumber
+    }
+  });
+}
+
+export function getActiveBonusChoices() {
+  return request({
+    url: '/bonus/give/active/list',
+    method: 'get'
+  });
+}
+
+export function saveBonusAward(data) {
+  return request({
+    url: '/bonus/give/save',
+    method: 'post',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
 
 export function getBonuses(locationId) {
   return request({
@@ -14,20 +45,12 @@ export function getBonuses(locationId) {
   });
 }
 
-// ============================================================
-// GET SINGLE BONUS
-// ============================================================
-
 export function getBonus(id) {
   return request({
     url: `/bonus/${id}`,
     method: 'get'
   });
 }
-
-// ============================================================
-// CREATE BONUS
-// ============================================================
 
 export function createBonus(data) {
   return request({
@@ -37,10 +60,6 @@ export function createBonus(data) {
   });
 }
 
-// ============================================================
-// UPDATE BONUS
-// ============================================================
-
 export function updateBonus(id, data) {
   return request({
     url: `/bonus/${id}`,
@@ -48,10 +67,6 @@ export function updateBonus(id, data) {
     data
   });
 }
-
-// ============================================================
-// ENABLE / DISABLE BONUS
-// ============================================================
 
 export function updateBonusStatus(id, isActive) {
   return request({
@@ -63,27 +78,9 @@ export function updateBonusStatus(id, isActive) {
   });
 }
 
-// ============================================================
-// DELETE BONUS
-// ============================================================
-
 export function deleteBonus(id) {
   return request({
     url: `/bonus/${id}`,
     method: 'delete'
-  });
-}
-
-// ============================================================
-// CURRENT ACTIVE BONUSES
-// ============================================================
-
-export function getCurrentActiveBonuses(locationId) {
-  return request({
-    url: '/bonus/active/current/list',
-    method: 'get',
-    params: {
-      locationid: locationId
-    }
   });
 }

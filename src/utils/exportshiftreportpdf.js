@@ -172,13 +172,14 @@ export function exportShiftReportPdf({
     margin: { left: margin, right: margin },
     tableWidth: contentWidth,
     theme: 'grid',
-    head: [['Match Point', 'Extra Match', 'Raffle', 'Ticket Out', 'Bonus']],
+    head: [['Match Point', 'Extra Match', 'Raffle', 'Ticket Out', 'Bonus', 'Lucky Bird']],
     body: [[
       `-${currency(Math.abs(Number(summary.matchPointExpense || 0)))}`,
       `-${currency(Math.abs(Number(summary.extraMatchExpense || 0)))}`,
       `-${currency(Math.abs(Number(summary.raffleExpense || 0)))}`,
       `-${currency(Math.abs(Number(summary.ticketOutExpense || 0)))}`,
-      `-${currency(Math.abs(Number(summary.bonusExpense || 0)))}`
+      `-${currency(Math.abs(Number(summary.bonusExpense || 0)))}`,
+      `-${currency(Math.abs(Number(summary.luckyBirdExpense || 0)))}`
     ]],
     styles: {
       fontSize: 7.5,

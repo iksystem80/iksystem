@@ -1,0 +1,147 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Ik-Online\\Client-GitHub\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\ticket\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\ticket\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\raffle\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\raffle\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\newcustomer\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\customer\\newcustomer\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\checkin\\tabletcheckin.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\customer\\checkin\\tabletcheckin.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\checkin\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\customer\\checkin\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\components\\assignmachine.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\components\\assignmachine.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Ik-Online\\Client-GitHub\\src\\views\\bonus\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\views\\bonus\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "index.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\ticket\\index.vue",
+              "RelativeDocumentMoniker": "src\\views\\ticket\\index.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\ticket\\index.vue",
+              "RelativeToolTip": "src\\views\\ticket\\index.vue",
+              "ViewState": "AgIAAJsAAAAAAAAAAAArwKgAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:17:53.979Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "index.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\raffle\\index.vue",
+              "RelativeDocumentMoniker": "src\\views\\raffle\\index.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\raffle\\index.vue",
+              "RelativeToolTip": "src\\views\\raffle\\index.vue",
+              "ViewState": "AgIAAN0AAAAAAAAAAAArwOoAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:17:42.146Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "index.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\newcustomer\\index.vue",
+              "RelativeDocumentMoniker": "src\\views\\customer\\newcustomer\\index.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\newcustomer\\index.vue",
+              "RelativeToolTip": "src\\views\\customer\\newcustomer\\index.vue",
+              "ViewState": "AgIAAKgAAAAAAAAAAAArwLUAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:17:34.305Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "tabletcheckin.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\checkin\\tabletcheckin.vue",
+              "RelativeDocumentMoniker": "src\\views\\customer\\checkin\\tabletcheckin.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\checkin\\tabletcheckin.vue",
+              "RelativeToolTip": "src\\views\\customer\\checkin\\tabletcheckin.vue",
+              "ViewState": "AgIAAIoAAAAAAAAAAAArwJQAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:17:23.852Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "index.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\checkin\\index.vue",
+              "RelativeDocumentMoniker": "src\\views\\customer\\checkin\\index.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\customer\\checkin\\index.vue",
+              "RelativeToolTip": "src\\views\\customer\\checkin\\index.vue",
+              "ViewState": "AgIAADEAAAAAAAAAAAArwD4AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:17:16.879Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "assignmachine.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\components\\assignmachine.vue",
+              "RelativeDocumentMoniker": "src\\views\\components\\assignmachine.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\components\\assignmachine.vue",
+              "RelativeToolTip": "src\\views\\components\\assignmachine.vue",
+              "ViewState": "AgIAAA4BAAAAAAAAAAArwBwBAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:16:39.44Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "index.vue",
+              "DocumentMoniker": "D:\\Ik-Online\\Client-GitHub\\src\\views\\bonus\\index.vue",
+              "RelativeDocumentMoniker": "src\\views\\bonus\\index.vue",
+              "ToolTip": "D:\\Ik-Online\\Client-GitHub\\src\\views\\bonus\\index.vue",
+              "RelativeToolTip": "src\\views\\bonus\\index.vue",
+              "ViewState": "AgIAADMBAAAAAAAAAAArwDQBAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2026-10-07T01:16:26.071Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
