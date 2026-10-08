@@ -25,11 +25,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create iOS environment
+        run: |
+          echo "VITE_ENV='production'" > .env.ios
+          echo "VITE_BASE_API='${{ vars.VITE_BASE_API }}'" >> .env.ios
+          echo "VITE_BASE_SERVER='${{ vars.VITE_BASE_SERVER }}'" >> .env.ios
+          echo "VITE_COOKIE=''" >> .env.ios
+
       - name: Build Vue application
-        run: npm run build:prod
-        env:
-          VITE_BASE_API: ${{ vars.VITE_BASE_API }}
-          VITE_BASE_SERVER: ${{ vars.VITE_BASE_SERVER }}
+        run: npm run build:ios
 
       - name: Synchronize Capacitor iOS
         run: npx cap sync ios
