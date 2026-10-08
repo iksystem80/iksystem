@@ -1,4 +1,3 @@
-
 name: IK System iPhone IPA
 
 on:
@@ -9,7 +8,7 @@ permissions:
 
 jobs:
   build-iphone:
-    name: Build iPhone IPA
+    name: Build Signed iPhone IPA
     runs-on: macos-15
 
     steps:
@@ -38,36 +37,143 @@ jobs:
       - name: Synchronize Capacitor iOS
         run: npx cap sync ios
 
+      - name: Decode Apple signing files
+        env:
+          APPLE_CERT_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERT_BASE64 }}
+          APPLE_KEY_BASE64: ${{ secrets.APPLE_DISTRIBUTION_KEY_BASE64 }}
+          APPLE_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+        run: |
+          mkdir -p signing
+
+          echo "$APPLE_CERT_BASE64" | base64 --decode > signing/distribution.cer
+          echo "$APPLE_KEY_BASE64" | base64 --decode > signing/distribution.key
+          echo "$APPLE_PROFILE_BASE64" | base64 --decode > signing/profile.mobileprovision
+
+          openssl x509 \
+            -inform DER \
+            -in signing/distribution.cer \
+            -out signing/distribution.pem
+
+          openssl pkcs12 \
+            -export \
+            -inkey signing/distribution.key \
+            -in signing/distribution.pem \
+            -out signing/distribution.p12 \
+            -password pass:"$P12_PASSWORD"
+
+      - name: Install signing certificate
+        env:
+          P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/iksystem-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security import signing/distribution.p12 \
+            -P "$P12_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Install provisioning profile
+        run: |
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+
+          security cms -D \
+            -i signing/profile.mobileprovision \
+            > "$PROFILE_PLIST"
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy \
+            -c "Print :UUID" \
+            "$PROFILE_PLIST")
+
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy \
+            -c "Print :Name" \
+            "$PROFILE_PLIST")
+
+          TEAM_ID=$(/usr/libexec/PlistBuddy \
+            -c "Print :TeamIdentifier:0" \
+            "$PROFILE_PLIST")
+
+          cp signing/profile.mobileprovision \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+
+          echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "TEAM_ID=$TEAM_ID" >> "$GITHUB_ENV"
+
+          echo "Provisioning Profile: $PROFILE_NAME"
+          echo "Team ID: $TEAM_ID"
+
       - name: Display Xcode version
         run: xcodebuild -version
 
-      - name: Build iPhone application
+      - name: Archive iOS application
         run: |
           xcodebuild \
             -project ios/App/App.xcodeproj \
             -scheme App \
-            -configuration Debug \
-            -sdk iphoneos \
+            -configuration Release \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath build/ios-device \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+            -archivePath "$RUNNER_TEMP/IKSystem.xcarchive" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            clean archive
 
-      - name: Package unsigned IPA
+      - name: Create export options
         run: |
-          mkdir -p ipa/Payload
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store-connect</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>teamID</key>
+              <string>$TEAM_ID</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.iksystem.app</key>
+                  <string>$PROFILE_NAME</string>
+              </dict>
+          </dict>
+          </plist>
+          EOF
 
-          cp -R \
-            build/ios-device/Build/Products/Debug-iphoneos/App.app \
-            ipa/Payload/
+      - name: Export signed IPA
+        run: |
+          mkdir -p ipa
 
-          cd ipa
-          zip -qry IK-System-unsigned.ipa Payload
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/IKSystem.xcarchive" \
+            -exportPath ipa \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
 
-      - name: Upload iPhone IPA
+      - name: Upload signed IPA artifact
         uses: actions/upload-artifact@v6
         with:
-          name: IK-System-iPhone-IPA
-          path: ipa/IK-System-unsigned.ipa
+          name: IK-System-Signed-IPA
+          path: ipa/*.ipa
           if-no-files-found: error
           retention-days: 7
