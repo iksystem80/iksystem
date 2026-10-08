@@ -27,7 +27,7 @@ defineProps<Props>();
 
 const title = 'IK System';
 
-const logo = '/src/assets/logo.png';
+const logo = '@/assets/logo.png';
 </script>
 
 <style lang="scss" scoped>

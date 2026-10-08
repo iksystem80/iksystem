@@ -1,0 +1,20 @@
+name: Create Apple P12
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-p12:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Create working folder
+        run: mkdir apple-p12
+
+      - name: Stop here
+        run: |
+          echo "This workflow needs the certificate and private key supplied securely."
+          exit 1
