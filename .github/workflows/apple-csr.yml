@@ -1,0 +1,25 @@
+name: Generate Apple CSR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-csr:
+    runs-on: macos-15
+
+    steps:
+      - name: Generate private key and CSR
+        run: |
+          mkdir apple-cert
+          openssl genrsa -out apple-cert/distribution.key 2048
+          openssl req -new \
+            -key apple-cert/distribution.key \
+            -out apple-cert/distribution.csr \
+            -subj "/C=US/ST=Texas/L=Austin/O=IK System/OU=Development/CN=IK System Distribution"
+
+      - name: Upload CSR and key
+        uses: actions/upload-artifact@v6
+        with:
+          name: Apple-Certificate-Files
+          path: apple-cert/
+          retention-days: 1
