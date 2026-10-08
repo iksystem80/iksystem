@@ -1861,7 +1861,15 @@ aside {
     color: var(--el-color-danger);
 }
 
+.debit-total {
+    color: var(--el-color-danger);
+}
+
 .credit {
+    color: var(--el-color-success);
+}
+
+.credit-total {
     color: var(--el-color-success);
 }
 
@@ -13961,4 +13969,298 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             font-size: 9px;
             line-height: 1.2;
         }
+}
+
+/* ============================================================
+   WEEKLY REPORT - SESSION CASH FLOW MOBILE TABLE
+   Keep this table visible inside the collapse on mobile.
+============================================================ */
+@media (max-width: 767px) {
+    .weekly-report-page .weekly-session-cashflow-table-wrap {
+        display: block !important;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+        .weekly-report-page .weekly-session-cashflow-table-wrap .el-table {
+            min-width: 980px;
+        }
+}
+
+/* ============================================================
+   CASH FLOW - TOTAL AMOUNT EMPHASIS
+============================================================ */
+.cashflow-total-in {
+    color: var(--el-color-success) !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cashflow-total-out {
+    color: var(--el-color-danger) !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   WEEKLY REPORT - READING SUMMARY MOBILE ONE ROW
+============================================================ */
+@media (max-width: 600px) {
+    .weekly-report-page .weekly-reading-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+        .weekly-report-page .weekly-reading-summary-strip .reading-summary-item,
+        .weekly-report-page .weekly-reading-summary-strip .reading-summary-item:first-child {
+            min-width: 0;
+            padding: 10px 8px;
+            border-bottom: 0;
+            border-right: 1px solid var(--el-border-color-lighter);
+        }
+
+            .weekly-report-page .weekly-reading-summary-strip .reading-summary-item:last-child {
+                border-right: 0;
+            }
+}
+
+/* ============================================================
+   WEEKLY REPORT - READING TABLES ON MOBILE
+   Use desktop tables with horizontal scrolling.
+============================================================ */
+@media (max-width: 767px) {
+    .weekly-report-page .weekly-reading-table-wrap {
+        display: block !important;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .weekly-report-page .weekly-reading-mobile-list {
+        display: none !important;
+    }
+
+    .weekly-report-page .weekly-reading-table-wrap .el-table {
+        width: 100% !important;
+    }
+}
+
+/* ============================================================
+   WEEKLY REPORT - READING DETAILS COMPACT STYLE
+============================================================ */
+.weekly-report-page .weekly-reading-detail-tabs {
+    margin: 15px;
+}
+
+    .weekly-report-page .weekly-reading-detail-tabs .el-tabs__header {
+        margin: 0 0 10px;
+    }
+
+    .weekly-report-page .weekly-reading-detail-tabs .el-tabs__nav-wrap::after {
+        height: 1px;
+    }
+
+    .weekly-report-page .weekly-reading-detail-tabs .el-tabs__item {
+        height: 34px;
+        padding: 0 14px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 34px;
+    }
+
+    .weekly-report-page .weekly-reading-detail-tabs .el-tabs__active-bar {
+        height: 2px;
+    }
+
+.weekly-report-page .weekly-reading-table-wrap .weekly-report-table,
+.weekly-report-page .weekly-reading-table-wrap .weekly-report-table .cell {
+    font-size: 12px !important;
+}
+
+/* ============================================================
+   WEEKLY REPORT - MACHINE NUMBER BADGE
+============================================================ */
+.weekly-report-page .weekly-machine-number-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-primary);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.weekly-report-page .weekly-machine-number-badge-mobile {
+    margin-bottom: 8px;
+}
+
+@media (max-width: 767px) {
+    .weekly-report-page .weekly-reading-detail-tabs .el-tabs__item {
+        height: 32px;
+        padding: 0 10px;
+        font-size: 11px;
+        line-height: 32px;
+    }
+
+    .weekly-report-page .weekly-machine-number-badge {
+        min-width: 42px;
+        height: 38px;
+        padding: 0 10px;
+        border-radius: 11px;
+        font-size: 17px;
+    }
+}
+
+/* ============================================================
+   WEEKLY REPORT - DATA ANALYTICS LIGHT HEADERS
+   Daily Activity + Equation X use white headers.
+============================================================ */
+.weekly-report-page .weekly-analytics-activity-card .el-card__header,
+.weekly-report-page .weekly-analytics-equation-card .el-card__header {
+    background: var(--el-bg-color) !important;
+    border-bottom-color: var(--el-border-color-lighter) !important;
+    color: var(--el-text-color-primary) !important;
+}
+
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-card-title,
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-card-title strong,
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-card-title .el-icon,
+    .weekly-report-page .weekly-analytics-equation-card .el-card__header .weekly-analytics-card-title,
+    .weekly-report-page .weekly-analytics-equation-card .el-card__header .weekly-analytics-card-title strong,
+    .weekly-report-page .weekly-analytics-equation-card .el-card__header .weekly-analytics-card-title .el-icon {
+        color: var(--el-text-color-primary) !important;
+    }
+
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-main-metrics strong,
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-average strong {
+        color: var(--el-text-color-primary) !important;
+    }
+
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-main-metrics span,
+    .weekly-report-page .weekly-analytics-activity-card .el-card__header .weekly-analytics-average span,
+    .weekly-report-page .weekly-analytics-equation-card .weekly-analytics-equation-hero span,
+    .weekly-report-page .weekly-analytics-equation-card .weekly-analytics-equation-hero small {
+        color: var(--el-text-color-secondary) !important;
+    }
+
+.weekly-report-page .weekly-analytics-equation-card .weekly-analytics-equation-hero strong {
+    color: var(--el-text-color-primary);
+}
+
+    /* Preserve Equation X status amount colors */
+    .weekly-report-page .weekly-analytics-equation-card .weekly-analytics-equation-hero strong.is-negative {
+        color: var(--el-color-danger) !important;
+    }
+
+    .weekly-report-page .weekly-analytics-equation-card .weekly-analytics-equation-hero strong.is-positive {
+        color: var(--el-color-success) !important;
+    }
+
+.weekly-report-page .weekly-analytics-progress-divider {
+    background: var(--el-border-color-lighter);
+}
+
+/* Customer Profile - status badge spacing */
+.profile-card .customer-profile-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px !important;
+}
+
+    .profile-card .customer-profile-status-row .el-tag + .el-tag {
+        margin-left: 8px !important;
+    }
+
+/* Reading Report - session selector + refresh fill the complete row */
+.reading-report-page .reading-session-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+    .reading-report-page .reading-session-row .filter-session {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+        .reading-report-page .reading-session-row .filter-session label {
+            display: block !important;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+
+    .reading-report-page .reading-session-row .reading-session-select {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .reading-report-page .reading-session-row .filter-refresh {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: flex-end !important;
+        width: auto !important;
+    }
+
+    .reading-report-page .reading-session-row .reading-report-refresh {
+        flex: 0 0 auto;
+    }
+
+@media (max-width: 767px) {
+    .reading-report-page .reading-session-row {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+    }
+}
+
+/* ============================================================
+   MACHINE SETUP - TABLE CARDS / MACHINE NUMBER BADGE
+============================================================ */
+.machine-setup-page .machine-setup-table-card {
+    margin-top: 12px;
+}
+
+    .machine-setup-page .machine-setup-table-card .el-card__body {
+        padding: 0;
+    }
+
+    .machine-setup-page .machine-setup-table-card .el-table {
+        width: 100%;
+        font-size: 12px;
+    }
+
+.machine-setup-page .machine-setup-number-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-primary);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media (max-width: 767px) {
+    .machine-setup-page .machine-setup-number-badge {
+        min-width: 42px;
+        height: 38px;
+        padding: 0 10px;
+        border-radius: 11px;
+        font-size: 17px;
+    }
 }

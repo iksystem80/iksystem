@@ -149,6 +149,7 @@ import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/mycamera';
 import { checkin } from '@/api/customer';
 import { unformatPhone } from '@/utils/phone';
+
 import logo from '@/assets/logo.png';
 
 const userStore = useUserStore();
@@ -249,11 +250,26 @@ async function submitForm() {
     resetForm();
   } catch (error) {
     if (error?.fields) return;
-    ElMessage.error(
+
+    const status = Number(error?.response?.status || 0);
+    const message =
       error?.response?.data?.message ||
-        error?.message ||
-        'Unable to complete customer verification.'
-    );
+      error?.message ||
+      'Unable to complete customer verification.';
+
+    ElMessage.error(message);
+
+    const blockedCustomer =
+      status === 403 &&
+      (
+        message.toLowerCase().includes('inactive') ||
+        message.toLowerCase().includes('blacklisted') ||
+        message.toLowerCase().includes('verification')
+      );
+
+    if (blockedCustomer) {
+      resetForm();
+    }
   } finally {
     loading.value = false;
   }

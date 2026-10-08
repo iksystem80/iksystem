@@ -105,10 +105,10 @@
           </div>
         </el-collapse-transition>
       </el-card>
-      <RuleToggleCard v-model="form.nfcTicketOutEnabled" title="Enable NFC Ticket Out" accent="#409eff" accent-soft="rgba(64, 158, 255, 0.11)" description="When enabled, employees with NFC access can scan a machine to auto-fill the Ticket Out form. Turn this off to require manual machine entry." />
-      <RuleToggleCard v-model="form.auditVerificationEnabled" title="Enable Audit Verification of Bonuses & Raffles" accent="#e6a23c" accent-soft="rgba(230, 162, 60, 0.11)" description="When enabled, employees cannot close out every bonus and raffle in a session until the session has been audited, approved, or flagged." />
-      <RuleToggleCard v-model="form.phoneVerificationRequired" title="Require Phone Verification" accent="#f56c6c" accent-soft="rgba(245, 108, 108, 0.10)" description="When enabled, a customer must verify their phone with an SMS code before collecting points. Turn this off for locations that do not need phone verification." />
-      <RuleToggleCard v-model="form.nuVueBoostEnabled" title="Enable NuVue Boost" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="When enabled, the NuVue Boost marketing menu is available to permitted staff at this location." />
+      <!--<RuleToggleCard v-model="form.nfcTicketOutEnabled" title="Enable NFC Ticket Out" accent="#409eff" accent-soft="rgba(64, 158, 255, 0.11)" description="When enabled, employees with NFC access can scan a machine to auto-fill the Ticket Out form. Turn this off to require manual machine entry." />-->
+      <RuleToggleCard v-model="form.auditVerificationEnabled" title="Enable Audit Verification of Bonuses & Raffles & Lucky Bird" accent="#e6a23c" accent-soft="rgba(230, 162, 60, 0.11)" description="When enabled, employees cannot close out every bonus and raffle in a session until the session has been audited, approved, or flagged." />
+      <!--<RuleToggleCard v-model="form.phoneVerificationRequired" title="Require Phone Verification" accent="#f56c6c" accent-soft="rgba(245, 108, 108, 0.10)" description="When enabled, a customer must verify their phone with an SMS code before collecting points. Turn this off for locations that do not need phone verification." />-->
+      <RuleToggleCard v-model="form.nuVueBoostEnabled" title="Enable Marketing Promotion" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="When enabled, the NuVue Boost marketing menu is available to permitted staff at this location." />
       <el-card shadow="never" class="rule-card rule-ticket-photo" :class="{ enabled: form.ticketPhotoRequired }">
         <el-checkbox v-model="form.ticketPhotoRequired" size="large">
           <div class="rule-title-wrap">

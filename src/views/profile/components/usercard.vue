@@ -23,13 +23,52 @@
             {{ formatPhone(customer.phone) }}
           </span>
         </div>
+
+        <div class="customer-profile-status-row">
+          <el-tag
+            v-if="customer.isactive"
+            type="success"
+            effect="light"
+            size="small"
+            round
+          >
+            Active
+          </el-tag>
+
+          <el-tag
+            v-else
+            type="info"
+            effect="plain"
+            size="small"
+            round
+          >
+            Inactive
+          </el-tag>
+
+          <el-tag
+            :type="
+              String(customer.verificationmethod || '').toLowerCase() === 'bypass'
+                ? 'warning'
+                : customer.phoneverified === true
+                  ? 'success'
+                  : 'info'
+            "
+            effect="light"
+            size="small"
+            round
+            class="customer-verification-badge"
+          >
+            {{
+              String(customer.verificationmethod || '').toLowerCase() === 'bypass'
+                ? 'Bypass'
+                : customer.phoneverified === true
+                  ? 'Verified'
+                  : 'Unverified'
+            }}
+          </el-tag>
+        </div>
       </div>
-      <el-tag v-if="customer.isactive" type="success" effect="light" size="small" round>
-        Active
-      </el-tag>
-      <el-tag v-else type="info" effect="plain" size="small" round>
-        Inactive
-      </el-tag>
+
     </div>
     <el-divider />
     <!-- QUICK INFO -->

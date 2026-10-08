@@ -9,7 +9,7 @@ interface ISettings {
 }
 
 const settings:ISettings = {
-  title: 'IK System',
+  title: '',
 
   /**
    * @type {boolean} true | false

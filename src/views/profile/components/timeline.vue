@@ -120,6 +120,18 @@ const getTitle = item => {
     return 'Privileged Match Rule Updated';
   }
 
+  if (item.logtype === 'ACCOUNT_STATUS') {
+    return 'Customer Active Status Updated';
+  }
+
+  if (item.logtype === 'VIP_STATUS') {
+    return 'VIP Status Updated';
+  }
+
+  if (item.logtype === 'BLACKLIST_STATUS') {
+    return 'Blacklist Status Updated';
+  }
+
   return 'Customer Updated';
 };
 
@@ -130,6 +142,18 @@ const getTagLabel = type => {
 
   if (type === 'PRIVILEGED_MATCH_RULE') {
     return 'Match Rule';
+  }
+
+  if (type === 'ACCOUNT_STATUS') {
+    return 'Active';
+  }
+
+  if (type === 'VIP_STATUS') {
+    return 'VIP';
+  }
+
+  if (type === 'BLACKLIST_STATUS') {
+    return 'Blacklist';
   }
 
   return 'Update';
@@ -148,7 +172,12 @@ const getTagType = type => {
 };
 
 const formatValue = (type, value) => {
-  if (type === 'PRIVILEGED_MATCH_RULE') {
+  if (
+    type === 'PRIVILEGED_MATCH_RULE' ||
+    type === 'ACCOUNT_STATUS' ||
+    type === 'VIP_STATUS' ||
+    type === 'BLACKLIST_STATUS'
+  ) {
     return String(value) === 'true'
       ? 'Enabled'
       : 'Disabled';

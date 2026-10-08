@@ -109,3 +109,14 @@ export function getcustomeractivity(id, locationid) {
 }
 
 //
+
+export function checkmatcheligibility(customerid, locationid) {
+  return request({
+    url: '/customer/checkmatcheligibility',
+    method: 'get',
+    params: {
+      customerid,
+      locationid
+    }
+  });
+}

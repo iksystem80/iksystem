@@ -123,18 +123,18 @@
 
 <script setup lang="ts">
 import {
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch
+    computed,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    watch
 } from 'vue';
 
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 
 import {
-  WarningFilled
+    WarningFilled
 } from '@element-plus/icons-vue';
 
 import PanThumb from '@/components/panthumb';
@@ -158,148 +158,148 @@ const selectedCustomer = ref(null);
 const checkinData = ref<any[]>([]);
 
 /* ============================================================
-       FILTER
+         FILTER
 ============================================================ */
 
-const statusFilter = ref('all');
+const statusFilter = ref('pending');
 
 const filterOptions = [
-  {
-    label: 'All',
-    value: 'all'
-  },
-  {
-    label: 'Pending',
-    value: 'pending'
-  },
-  {
-    label: 'Matched',
-    value: 'approved'
-  }
+    {
+      label: 'Pending',
+      value: 'pending'
+    },
+    {
+      label: 'Match',
+      value: 'approved'
+    },
+    {
+      label: 'All',
+      value: 'all'
+    }
 ];
 
 const filteredCheckinData = computed(() => {
-  if (statusFilter.value === 'pending') {
-    return checkinData.value.filter(
-      row => !row.status
-    );
-  }
+    if (statusFilter.value === 'pending') {
+      return checkinData.value.filter(
+        row => !row.status
+      );
+    }
 
-  if (statusFilter.value === 'approved') {
-    return checkinData.value.filter(
-      row => Boolean(row.status)
-    );
-  }
+    if (statusFilter.value === 'approved') {
+      return checkinData.value.filter(
+        row => Boolean(row.status)
+      );
+    }
 
-  return checkinData.value;
+    return checkinData.value;
 });
 
 const emptyDescription = computed(() => {
-  if (statusFilter.value === 'pending') {
-    return 'No pending check-ins.';
-  }
+    if (statusFilter.value === 'pending') {
+      return 'No pending check-ins.';
+    }
 
-  if (statusFilter.value === 'approved') {
-    return 'No approved check-ins.';
-  }
+    if (statusFilter.value === 'approved') {
+      return 'No matched check-ins.';
+    }
 
-  return 'No customer check-ins found.';
+    return 'No customer check-ins found.';
 });
 
 /* ============================================================
-       LOAD CHECK-INS
+         LOAD CHECK-INS
 ============================================================ */
 
 async function loadCheckIn() {
-  loading.value = true;
+    loading.value = true;
 
-  try {
-    const locationid =
-                userStore.locationId;
+    try {
+      const locationid =
+                  userStore.locationId;
 
-    const response =
-                await getcheckin(
-                  locationid
-                );
+      const response =
+                  await getcheckin(
+                    locationid
+                  );
 
-    if (response.success) {
-      checkinData.value =
-                    response.data || [];
-    } else {
+      if (response.success) {
+        checkinData.value =
+                      response.data || [];
+      } else {
+        checkinData.value = [];
+      }
+    } catch (error: any) {
+      ElMessage.error(
+        error?.response?.data?.message ||
+                  error?.message ||
+                  'Failed to load check in'
+      );
+
       checkinData.value = [];
+    } finally {
+      loading.value = false;
     }
-  } catch (error: any) {
-    ElMessage.error(
-      error?.response?.data?.message ||
-                error?.message ||
-                'Failed to load check in'
-    );
-
-    checkinData.value = [];
-  } finally {
-    loading.value = false;
-  }
 }
 
 /* ============================================================
-       CUSTOMER DETAIL
+         CUSTOMER DETAIL
 ============================================================ */
 
 function openCustomer(row: any) {
-  router.push({
-    name: 'Profile',
-    params: {
-      id: row.id
-    }
-  });
+    router.push({
+      name: 'Profile',
+      params: {
+        id: row.id
+      }
+    });
 }
 
 /* ============================================================
-       ASSIGN MACHINE
+         ASSIGN MACHINE
 ============================================================ */
 
 function openAssignMachine(row: any) {
-  selectedCustomer.value = {
-    ...row
-  };
+    selectedCustomer.value = {
+      ...row
+    };
 
-  dialogFormVisible.value = true;
+    dialogFormVisible.value = true;
 }
 
 async function handleClick() {
-  dialogFormVisible.value = false;
+    dialogFormVisible.value = false;
 }
 
 function handleClose() {
-  selectedCustomer.value = null;
+    selectedCustomer.value = null;
 
-  loadCheckIn();
+    loadCheckIn();
 }
 
 /* ============================================================
-       LIFECYCLE
+         LIFECYCLE
 ============================================================ */
 
 onMounted(() => {
-  loadCheckIn();
+    loadCheckIn();
 });
 
 onBeforeUnmount(() => {
-  // Socket cleanup can be added here if required.
+    // Socket cleanup can be added here if required.
 });
 
 watch(
-  () => checkinStore.refreshKey,
-  () => {
-    loadCheckIn();
-  }
+    () => checkinStore.refreshKey,
+    () => {
+      loadCheckIn();
+    }
 );
 
 watch(
-  () => userStore.locationId,
-  () => {
-    loadCheckIn();
-  }
+    () => userStore.locationId,
+    () => {
+      loadCheckIn();
+    }
 );
 </script>
 

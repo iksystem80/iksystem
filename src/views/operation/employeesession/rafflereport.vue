@@ -109,7 +109,7 @@
       </div>
 
       <div v-if="report.entries.length" class="report-grid">
-        <el-card shadow="never" class="panel review-panel">
+        <el-card shadow="never" class="panel review-panel" v-if="auditVerificationEnabled">
           <template #header>
             <div class="panel-header">
               <div>
@@ -229,7 +229,7 @@
                :size="drawerSize"
                :with-header="false"
                destroy-on-close
-               class="review-drawer">
+               class="review-drawer" v-if="auditVerificationEnabled">
       <div v-if="selectedEntry" class="audit-shell">
         <div class="audit-header">
           <div>
@@ -371,6 +371,10 @@ const userStore = useUserStore();
 const loading = ref(false);
 const error = ref('');
 const report = ref(null);
+
+const auditVerificationEnabled = computed(
+  () => report.value?.auditVerificationEnabled === true
+);
 const reviewDrawerOpen = ref(false);
 const selectedEntry = ref(null);
 const reviewSaving = ref('');
@@ -497,11 +501,15 @@ function reviewCameraClass(status) {
 }
 
 function openReview(entry) {
+  if (!auditVerificationEnabled.value) return;
+
       selectedEntry.value = entry;
       reviewDrawerOpen.value = true;
 }
 
 function startAudit() {
+  if (!auditVerificationEnabled.value) return;
+
       if (nextPendingEntry.value) {
         openReview(nextPendingEntry.value);
       }
@@ -551,6 +559,8 @@ function updateSummaryAfterReview(previousStatus, newStatus) {
 }
 
 async function saveReview(status) {
+  if (!auditVerificationEnabled.value) return;
+
       if (!selectedEntry.value?.id || !selectedEntry.value?.imageUrl) return;
 
       try {

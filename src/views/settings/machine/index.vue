@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container machine-setup-page">
     <div class="page-header">
       <div>
         <h2 class="page-title">Machine Setup</h2>
@@ -22,58 +22,66 @@
             Refresh
           </el-button>
         </div>
-        <el-table v-loading="loadingMachines" :data="filteredMachines" stripe border>
-          <el-table-column prop="MachineNumber" label="Machine" width="110" />
-          <el-table-column prop="MachineTypeName" label="Machine Type" min-width="150">
-            <template #default="{ row }">
-              {{ row.MachineTypeName || 'Not Assigned' }}
-            </template>
-          </el-table-column>
+        <el-card shadow="never" class="table-card machine-setup-table-card">
+          <el-table v-loading="loadingMachines" :data="filteredMachines" border>
+            <el-table-column prop="MachineNumber" label="Machine" width="110">
+              <template #default="{ row }">
+                <span class="machine-setup-number-badge">
+                  {{ row.MachineNumber }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="MachineTypeName" label="Machine Type" min-width="150">
+              <template #default="{ row }">
+                {{ row.MachineTypeName || 'Not Assigned' }}
+              </template>
+            </el-table-column>
 
-          <el-table-column prop="GameName"
-                           label="Game"
-                           min-width="160">
-            <template #default="{ row }">
-              {{ row.GameName || 'Not Assigned' }}
-            </template>
-          </el-table-column>
+            <el-table-column prop="GameName"
+                             label="Game"
+                             min-width="160">
+              <template #default="{ row }">
+                {{ row.GameName || 'Not Assigned' }}
+              </template>
+            </el-table-column>
 
-          <el-table-column prop="Status"
-                           label="Status"
-                           width="130">
-            <template #default="{ row }">
-              <el-tag :type="statusTag(row.Status)">
-                {{ row.Status || 'Unknown' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+            <el-table-column prop="Status"
+                             label="Status"
+                             width="130">
+              <template #default="{ row }">
+                <el-tag :type="statusTag(row.Status)">
+                  {{ row.Status || 'Unknown' }}
+                </el-tag>
+              </template>
+            </el-table-column>
 
-          <el-table-column prop="StatusReason"
-                           label="Reason"
-                           min-width="220">
-            <template #default="{ row }">
-              {{ row.StatusReason || '-' }}
-            </template>
-          </el-table-column>
+            <el-table-column prop="StatusReason"
+                             label="Reason"
+                             min-width="220">
+              <template #default="{ row }">
+                {{ row.StatusReason || '-' }}
+              </template>
+            </el-table-column>
 
-          <el-table-column label="Actions"
-                           width="185"
-                           fixed="right">
-            <template #default="{ row }">
-              <el-button v-if="canManageMachines"
-                         link
-                         type="primary"
-                         @click="openEditMachine(row)">
-                Edit
-              </el-button>
+            <el-table-column label="Actions"
+                             width="185"
+                             fixed="right">
+              <template #default="{ row }">
+                <el-button v-if="canManageMachines"
+                           link
+                           type="primary"
+                           @click="openEditMachine(row)">
+                  Edit
+                </el-button>
 
-              <el-button link
-                         @click="openHistory(row)">
-                History
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+                <el-button link
+                           @click="openHistory(row)">
+                  History
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
       </el-tab-pane>
 
       <!-- ================================================== -->
@@ -89,37 +97,39 @@
           </el-button>
         </div>
 
-        <el-table :data="machineTypes" border stripe>
-          <el-table-column prop="TypeName"
-                           label="Machine Type" />
+        <el-card shadow="never" class="table-card machine-setup-table-card">
+          <el-table :data="machineTypes" border>
+            <el-table-column prop="TypeName"
+                             label="Machine Type" />
 
-          <el-table-column label="Status"
-                           width="120">
-            <template #default="{ row }">
-              <el-tag :type="row.IsActive ? 'success' : 'info'">
-                {{ row.IsActive ? 'Active' : 'Inactive' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+            <el-table-column label="Status"
+                             width="120">
+              <template #default="{ row }">
+                <el-tag :type="row.IsActive ? 'success' : 'info'">
+                  {{ row.IsActive ? 'Active' : 'Inactive' }}
+                </el-tag>
+              </template>
+            </el-table-column>
 
-          <el-table-column v-if="canManageTypes"
-                           label="Actions"
-                           width="160">
-            <template #default="{ row }">
-              <el-button link
-                         type="primary"
-                         @click="openTypeDialog(row)">
-                Edit
-              </el-button>
+            <el-table-column v-if="canManageTypes"
+                             label="Actions"
+                             width="160">
+              <template #default="{ row }">
+                <el-button link
+                           type="primary"
+                           @click="openTypeDialog(row)">
+                  Edit
+                </el-button>
 
-              <el-button link
-                         type="danger"
-                         @click="removeType(row)">
-                Delete
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+                <el-button link
+                           type="danger"
+                           @click="removeType(row)">
+                  Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
       </el-tab-pane>
 
       <!-- ================================================== -->
@@ -135,40 +145,42 @@
           </el-button>
         </div>
 
-        <el-table :data="games" border stripe>
-          <el-table-column prop="GameName"
-                           label="Game" />
+        <el-card shadow="never" class="table-card machine-setup-table-card">
+          <el-table :data="games" border>
+            <el-table-column prop="GameName"
+                             label="Game" />
 
-          <el-table-column prop="MachineTypeName"
-                           label="Supported Machine Type" />
+            <el-table-column prop="MachineTypeName"
+                             label="Supported Machine Type" />
 
-          <el-table-column label="Status"
-                           width="120">
-            <template #default="{ row }">
-              <el-tag :type="row.IsActive ? 'success' : 'info'">
-                {{ row.IsActive ? 'Active' : 'Inactive' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+            <el-table-column label="Status"
+                             width="120">
+              <template #default="{ row }">
+                <el-tag :type="row.IsActive ? 'success' : 'info'">
+                  {{ row.IsActive ? 'Active' : 'Inactive' }}
+                </el-tag>
+              </template>
+            </el-table-column>
 
-          <el-table-column v-if="canManageGames"
-                           label="Actions"
-                           width="160">
-            <template #default="{ row }">
-              <el-button link
-                         type="primary"
-                         @click="openGameDialog(row)">
-                Edit
-              </el-button>
+            <el-table-column v-if="canManageGames"
+                             label="Actions"
+                             width="160">
+              <template #default="{ row }">
+                <el-button link
+                           type="primary"
+                           @click="openGameDialog(row)">
+                  Edit
+                </el-button>
 
-              <el-button link
-                         type="danger"
-                         @click="removeGame(row)">
-                Delete
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+                <el-button link
+                           type="danger"
+                           @click="removeGame(row)">
+                  Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
       </el-tab-pane>
 
       <!-- ================================================== -->
@@ -194,91 +206,98 @@
           These are setup readings only. Saving them does not create a normal Reading Session or any financial transaction.
         </el-alert>
 
-        <el-table v-loading="loadingInitialReadings"
-                  :data="filteredInitialReadingRows"
-                  stripe
-                  border>
-          <el-table-column prop="MachineNumber"
-                           label="Machine"
-                           width="105" />
+        <el-card shadow="never" class="table-card machine-setup-table-card">
+          <el-table v-loading="loadingInitialReadings"
+                    :data="filteredInitialReadingRows"
+                    border>
+            <el-table-column prop="MachineNumber"
+                             label="Machine"
+                             width="105">
+              <template #default="{ row }">
+                <span class="machine-setup-number-badge">
+                  {{ row.MachineNumber }}
+                </span>
+              </template>
+            </el-table-column>
 
-          <el-table-column label="Previous IN" min-width="145">
-            <template #default="{ row }">
-              <el-input-number v-model="row.PreviousIn"
-                               :min="0"
-                               :controls="false"
-                               :disabled="isInactiveMachine(row)"
-                               style="width: 100%" />
-            </template>
-          </el-table-column>
+            <el-table-column label="Previous IN" min-width="145">
+              <template #default="{ row }">
+                <el-input-number v-model="row.PreviousIn"
+                                 :min="0"
+                                 :controls="false"
+                                 :disabled="isInactiveMachine(row)"
+                                 style="width: 100%" />
+              </template>
+            </el-table-column>
 
-          <el-table-column label="Previous OUT" min-width="145">
-            <template #default="{ row }">
-              <el-input-number v-model="row.PreviousOut"
-                               :min="0"
-                               :controls="false"
-                               :disabled="isInactiveMachine(row)"
-                               style="width: 100%" />
-            </template>
-          </el-table-column>
+            <el-table-column label="Previous OUT" min-width="145">
+              <template #default="{ row }">
+                <el-input-number v-model="row.PreviousOut"
+                                 :min="0"
+                                 :controls="false"
+                                 :disabled="isInactiveMachine(row)"
+                                 style="width: 100%" />
+              </template>
+            </el-table-column>
 
-          <el-table-column label="Current IN" min-width="145">
-            <template #default="{ row }">
-              <el-input-number v-model="row.CurrentIn"
-                               :min="0"
-                               :controls="false"
-                               :disabled="isInactiveMachine(row)"
-                               style="width: 100%" />
-            </template>
-          </el-table-column>
+            <el-table-column label="Current IN" min-width="145">
+              <template #default="{ row }">
+                <el-input-number v-model="row.CurrentIn"
+                                 :min="0"
+                                 :controls="false"
+                                 :disabled="isInactiveMachine(row)"
+                                 style="width: 100%" />
+              </template>
+            </el-table-column>
 
-          <el-table-column label="Current OUT" min-width="145">
-            <template #default="{ row }">
-              <el-input-number v-model="row.CurrentOut"
-                               :min="0"
-                               :controls="false"
-                               :disabled="isInactiveMachine(row)"
-                               style="width: 100%" />
-            </template>
-          </el-table-column>
+            <el-table-column label="Current OUT" min-width="145">
+              <template #default="{ row }">
+                <el-input-number v-model="row.CurrentOut"
+                                 :min="0"
+                                 :controls="false"
+                                 :disabled="isInactiveMachine(row)"
+                                 style="width: 100%" />
+              </template>
+            </el-table-column>
 
-          <el-table-column label="Status" width="115">
-            <template #default="{ row }">
-              <el-tag :type="statusTag(row.Status)">
-                {{ row.Status || 'Unknown' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+            <el-table-column label="Status" width="115">
+              <template #default="{ row }">
+                <el-tag :type="statusTag(row.Status)">
+                  {{ row.Status || 'Unknown' }}
+                </el-tag>
+              </template>
+            </el-table-column>
 
-          <el-table-column v-if="canManageMachines"
-                           label="Actions"
-                           width="235"
-                           fixed="right">
-            <template #default="{ row }">
-              <el-button link
-                         type="primary"
-                         :loading="savingInitialMachineId === row.ID"
-                         :disabled="isInactiveMachine(row)"
-                         @click="saveInitialReading(row)">
-                Save
-              </el-button>
+            <el-table-column v-if="canManageMachines"
+                             label="Actions"
+                             width="235"
+                             fixed="right">
+              <template #default="{ row }">
+                <el-button link
+                           type="primary"
+                           :loading="savingInitialMachineId === row.ID"
+                           :disabled="isInactiveMachine(row)"
+                           @click="saveInitialReading(row)">
+                  Save
+                </el-button>
 
-              <el-button link
-                         type="warning"
-                         :disabled="!row.InitialReadingId"
-                         @click="resetInitialReading(row)">
-                Reset
-              </el-button>
+                <el-button link
+                           type="warning"
+                           :disabled="!row.InitialReadingId"
+                           @click="resetInitialReading(row)">
+                  Reset
+                </el-button>
 
-              <el-button link
-                         type="danger"
-                         :disabled="isInactiveMachine(row)"
-                         @click="deactivateInitialMachine(row)">
-                Delete
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+                <el-button link
+                           type="danger"
+                           :disabled="isInactiveMachine(row)"
+                           @click="deactivateInitialMachine(row)">
+                  Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
       </el-tab-pane>
 
     </el-tabs>
@@ -480,87 +499,89 @@
     <el-drawer v-model="historyVisible"
                title="Machine History"
                size="70%">
-      <el-table v-loading="historyLoading"
-                :data="history" style="font-size:12px;"
-                stripe>
-        <el-table-column prop="DateCreated"
-                         label="Date"
-                         width="145">
-          <template #default="{ row }">
-            {{ formatDateTime(row.DateCreated) }}
-          </template>
-        </el-table-column>
+      <el-card shadow="never" class="table-card machine-setup-table-card">
+        <el-table v-loading="historyLoading"
+                  :data="history"
+                  style="font-size:12px;">
+          <el-table-column prop="DateCreated"
+                           label="Date"
+                           width="145">
+            <template #default="{ row }">
+              {{ formatDateTime(row.DateCreated) }}
+            </template>
+          </el-table-column>
 
-        <el-table-column prop="ActionType"
-                         label="Action"
-                         width="160" />
+          <el-table-column prop="ActionType"
+                           label="Action"
+                           width="160" />
 
-        <el-table-column prop="OldValue"
-                         label="Old"
-                         width="150">
-          <template #default="{ row }">
-            0
-            {{ row.OldValue || '---' }}
-          </template>
-        </el-table-column>
+          <el-table-column prop="OldValue"
+                           label="Old"
+                           width="150">
+            <template #default="{ row }">
+              0
+              {{ row.OldValue || '---' }}
+            </template>
+          </el-table-column>
 
-        <el-table-column prop="NewValue"
-                         label="New"
-                         width="150">
-          <template #default="{ row }">
-            {{ row.NewValue || '---' }}
-          </template>
-        </el-table-column>
+          <el-table-column prop="NewValue"
+                           label="New"
+                           width="150">
+            <template #default="{ row }">
+              {{ row.NewValue || '---' }}
+            </template>
+          </el-table-column>
 
-        <el-table-column prop="Reason"
-                         label="Reason" min-width="160" />
+          <el-table-column prop="Reason"
+                           label="Reason" min-width="160" />
 
-        <el-table-column prop="ChangedByName"
-                         label="Changed By"
-                         width="110" />
-      </el-table>
+          <el-table-column prop="ChangedByName"
+                           label="Changed By"
+                           width="110" />
+        </el-table>
+      </el-card>
     </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import {
-    computed,
-    onMounted,
-    reactive,
-    ref,
-    watch
+      computed,
+      onMounted,
+      reactive,
+      ref,
+      watch
 } from 'vue';
 
 import {
-    ElMessage,
-    ElMessageBox
+      ElMessage,
+      ElMessageBox
 } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
 import { formatDateTime } from '@/utils/date';
 
 import {
-    getMachines,
-    generateMachines,
-    updateMachine,
-    getMachineLogs,
-    getMachineStatuses,
-    getMachineTypes,
-    createMachineType,
-    updateMachineType,
-    deleteMachineType,
-    getGames,
-    createGame,
-    updateGame,
-    deleteGame
+      getMachines,
+      generateMachines,
+      updateMachine,
+      getMachineLogs,
+      getMachineStatuses,
+      getMachineTypes,
+      createMachineType,
+      updateMachineType,
+      deleteMachineType,
+      getGames,
+      createGame,
+      updateGame,
+      deleteGame
 } from '@/api/machine';
 
 import {
-    getInitialMachineReadings,
-    saveInitialMachineReading,
-    resetInitialMachineReading,
-    deactivateMachine
+      getInitialMachineReadings,
+      saveInitialMachineReading,
+      resetInitialMachineReading,
+      deactivateMachine
 } from '@/api/machineinitialreading';
 
 const userStore = useUserStore();
@@ -589,601 +610,601 @@ const gameVisible = ref(false);
 const historyVisible = ref(false);
 
 const canManageMachines = computed(() =>
-    userStore.isOwner ||
-        userStore.isAdmin ||
-        userStore.hasPermission('machines.update')
+      userStore.isOwner ||
+          userStore.isAdmin ||
+          userStore.hasPermission('machines.update')
 );
 
 const canManageTypes = computed(() =>
-    userStore.isOwner ||
-        userStore.isAdmin ||
-        userStore.hasPermission('machinetypes.update')
+      userStore.isOwner ||
+          userStore.isAdmin ||
+          userStore.hasPermission('machinetypes.update')
 );
 
 const canManageGames = computed(() =>
-    userStore.isOwner ||
-        userStore.isAdmin ||
-        userStore.hasPermission('games.update')
+      userStore.isOwner ||
+          userStore.isAdmin ||
+          userStore.hasPermission('games.update')
 );
 
 const generateForm = reactive({
-    startNumber: 1,
-    endNumber: 10,
-    machineTypeId: null as number | null
+      startNumber: 1,
+      endNumber: 10,
+      machineTypeId: null as number | null
 });
 
 const machineForm = reactive<any>({
-    ID: null,
-    MachineNumber: null,
-    MachineTypeId: null,
-    GameId: null,
-    StatusId: null,
-    StatusReason: ''
+      ID: null,
+      MachineNumber: null,
+      MachineTypeId: null,
+      GameId: null,
+      StatusId: null,
+      StatusReason: ''
 });
 
 const typeForm = reactive<any>({
-    ID: null,
-    TypeName: '',
-    IsActive: true
+      ID: null,
+      TypeName: '',
+      IsActive: true
 });
 
 const gameForm = reactive<any>({
-    ID: null,
-    GameName: '',
-    MachineTypeId: null,
-    IsActive: true
+      ID: null,
+      GameName: '',
+      MachineTypeId: null,
+      IsActive: true
 });
 
 const activeMachineTypes = computed(() =>
-    machineTypes.value.filter(x => x.IsActive)
+      machineTypes.value.filter(x => x.IsActive)
 );
 
 const compatibleGames = computed(() =>
-    games.value.filter(
-      x =>
-        x.IsActive &&
-            Number(x.MachineTypeId) ===
-              Number(machineForm.MachineTypeId)
-    )
+      games.value.filter(
+        x =>
+          x.IsActive &&
+              Number(x.MachineTypeId) ===
+                Number(machineForm.MachineTypeId)
+      )
 );
 
 const selectedStatusIsNotWorking = computed(() => {
-    const item = statuses.value.find(
-      x => Number(x.ID) === Number(machineForm.StatusId)
-    );
+      const item = statuses.value.find(
+        x => Number(x.ID) === Number(machineForm.StatusId)
+      );
 
-    return (
-      String(item?.Description || '')
-        .trim()
-        .toLowerCase() === 'not working'
-    );
+      return (
+        String(item?.Description || '')
+          .trim()
+          .toLowerCase() === 'not working'
+      );
 });
 
 const filteredMachines = computed(() => {
-    const text = machineSearch.value
-      .trim()
-      .toLowerCase();
+      const text = machineSearch.value
+        .trim()
+        .toLowerCase();
 
-    if (!text) return machines.value;
+      if (!text) return machines.value;
 
-    return machines.value.filter(item =>
-      [
-        item.MachineNumber,
-        item.MachineTypeName,
-        item.GameName,
-        item.Status,
-        item.StatusReason
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(text)
-    );
+      return machines.value.filter(item =>
+        [
+          item.MachineNumber,
+          item.MachineTypeName,
+          item.GameName,
+          item.Status,
+          item.StatusReason
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(text)
+      );
 });
 
 
 const filteredInitialReadingRows = computed(() => {
-    const text = initialReadingSearch.value.trim().toLowerCase();
+      const text = initialReadingSearch.value.trim().toLowerCase();
 
-    if (!text) return initialReadingRows.value;
+      if (!text) return initialReadingRows.value;
 
-    return initialReadingRows.value.filter(row =>
-      [
-        row.MachineNumber,
-        row.Status
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(text)
-    );
+      return initialReadingRows.value.filter(row =>
+        [
+          row.MachineNumber,
+          row.Status
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(text)
+      );
 });
 
 function isInactiveMachine(row: any) {
-    return String(row?.Status || '')
-      .trim()
-      .toLowerCase() === 'inactive';
+      return String(row?.Status || '')
+        .trim()
+        .toLowerCase() === 'inactive';
 }
 
 function normalizeInitialReadingRow(row: any) {
-    return {
-      ...row,
-      PreviousIn: row.PreviousIn == null ? 0 : Number(row.PreviousIn),
-      PreviousOut: row.PreviousOut == null ? 0 : Number(row.PreviousOut),
-      CurrentIn: row.CurrentIn == null ? 0 : Number(row.CurrentIn),
-      CurrentOut: row.CurrentOut == null ? 0 : Number(row.CurrentOut)
-    };
+      return {
+        ...row,
+        PreviousIn: row.PreviousIn == null ? 0 : Number(row.PreviousIn),
+        PreviousOut: row.PreviousOut == null ? 0 : Number(row.PreviousOut),
+        CurrentIn: row.CurrentIn == null ? 0 : Number(row.CurrentIn),
+        CurrentOut: row.CurrentOut == null ? 0 : Number(row.CurrentOut)
+      };
 }
 
 async function loadInitialReadings() {
-    if (!userStore.locationId) {
-      initialReadingRows.value = [];
-      return;
-    }
+      if (!userStore.locationId) {
+        initialReadingRows.value = [];
+        return;
+      }
 
-    loadingInitialReadings.value = true;
+      loadingInitialReadings.value = true;
 
-    try {
-      const result = await getInitialMachineReadings(
-        userStore.locationId
-      );
+      try {
+        const result = await getInitialMachineReadings(
+          userStore.locationId
+        );
 
-      initialReadingRows.value =
-        (result.data || []).map(normalizeInitialReadingRow);
-    } finally {
-      loadingInitialReadings.value = false;
-    }
+        initialReadingRows.value =
+          (result.data || []).map(normalizeInitialReadingRow);
+      } finally {
+        loadingInitialReadings.value = false;
+      }
 }
 
 async function saveInitialReading(row: any) {
-    if (!userStore.locationId || !row?.ID) return;
+      if (!userStore.locationId || !row?.ID) return;
 
-    const values = [
-      row.PreviousIn,
-      row.PreviousOut,
-      row.CurrentIn,
-      row.CurrentOut
-    ];
+      const values = [
+        row.PreviousIn,
+        row.PreviousOut,
+        row.CurrentIn,
+        row.CurrentOut
+      ];
 
-    if (
-      values.some(
-        value =>
-          value === null ||
-          value === undefined ||
-          !Number.isFinite(Number(value)) ||
-          Number(value) < 0
-      )
-    ) {
-      return ElMessage.error(
-        'All four readings must be valid non-negative numbers.'
-      );
-    }
+      if (
+        values.some(
+          value =>
+            value === null ||
+            value === undefined ||
+            !Number.isFinite(Number(value)) ||
+            Number(value) < 0
+        )
+      ) {
+        return ElMessage.error(
+          'All four readings must be valid non-negative numbers.'
+        );
+      }
 
-    savingInitialMachineId.value = Number(row.ID);
+      savingInitialMachineId.value = Number(row.ID);
 
-    try {
-      await saveInitialMachineReading(
-        row.ID,
-        {
-          locationId: Number(userStore.locationId),
-          previousIn: Number(row.PreviousIn),
-          previousOut: Number(row.PreviousOut),
-          currentIn: Number(row.CurrentIn),
-          currentOut: Number(row.CurrentOut)
-        }
-      );
+      try {
+        await saveInitialMachineReading(
+          row.ID,
+          {
+            locationId: Number(userStore.locationId),
+            previousIn: Number(row.PreviousIn),
+            previousOut: Number(row.PreviousOut),
+            currentIn: Number(row.CurrentIn),
+            currentOut: Number(row.CurrentOut)
+          }
+        );
 
-      ElMessage.success(
-        `Initial reading saved for Machine #${row.MachineNumber}.`
-      );
+        ElMessage.success(
+          `Initial reading saved for Machine #${row.MachineNumber}.`
+        );
 
-      await loadInitialReadings();
-    } finally {
-      savingInitialMachineId.value = null;
-    }
+        await loadInitialReadings();
+      } finally {
+        savingInitialMachineId.value = null;
+      }
 }
 
 async function resetInitialReading(row: any) {
-    if (
-      !row?.InitialReadingId ||
-      !userStore.locationId
-    ) {
-      return;
-    }
-
-    await ElMessageBox.confirm(
-      `Reset the initial reading for Machine #${row.MachineNumber}? Only the INITIAL MachineReadings row will be removed.`,
-      'Reset Initial Reading',
-      {
-        type: 'warning',
-        confirmButtonText: 'Reset'
+      if (
+        !row?.InitialReadingId ||
+        !userStore.locationId
+      ) {
+        return;
       }
-    );
 
-    await resetInitialMachineReading(
-      row.ID,
-      Number(userStore.locationId)
-    );
+      await ElMessageBox.confirm(
+        `Reset the initial reading for Machine #${row.MachineNumber}? Only the INITIAL MachineReadings row will be removed.`,
+        'Reset Initial Reading',
+        {
+          type: 'warning',
+          confirmButtonText: 'Reset'
+        }
+      );
 
-    ElMessage.success(
-      `Initial reading reset for Machine #${row.MachineNumber}.`
-    );
+      await resetInitialMachineReading(
+        row.ID,
+        Number(userStore.locationId)
+      );
 
-    await loadInitialReadings();
+      ElMessage.success(
+        `Initial reading reset for Machine #${row.MachineNumber}.`
+      );
+
+      await loadInitialReadings();
 }
 
 async function deactivateInitialMachine(row: any) {
-    if (!row?.ID || !userStore.locationId) return;
+      if (!row?.ID || !userStore.locationId) return;
 
-    await ElMessageBox.confirm(
-      `Delete Machine #${row.MachineNumber}? The machine will remain in the database and its StatusId will be changed to Inactive.`,
-      'Deactivate Machine',
-      {
-        type: 'warning',
-        confirmButtonText: 'Delete'
-      }
-    );
+      await ElMessageBox.confirm(
+        `Delete Machine #${row.MachineNumber}? The machine will remain in the database and its StatusId will be changed to Inactive.`,
+        'Deactivate Machine',
+        {
+          type: 'warning',
+          confirmButtonText: 'Delete'
+        }
+      );
 
-    await deactivateMachine(
-      row.ID,
-      Number(userStore.locationId)
-    );
+      await deactivateMachine(
+        row.ID,
+        Number(userStore.locationId)
+      );
 
-    ElMessage.success(
-      `Machine #${row.MachineNumber} is now inactive.`
-    );
+      ElMessage.success(
+        `Machine #${row.MachineNumber} is now inactive.`
+      );
 
-    await Promise.all([
-      loadMachines(),
-      loadInitialReadings()
-    ]);
+      await Promise.all([
+        loadMachines(),
+        loadInitialReadings()
+      ]);
 }
 
 function statusTag(status: string) {
-    switch (String(status || '').toLowerCase()) {
-      case 'working':
-      case 'active':
-        return 'success';
+      switch (String(status || '').toLowerCase()) {
+        case 'working':
+        case 'active':
+          return 'success';
 
-      case 'not working':
-        return 'danger';
+        case 'not working':
+          return 'danger';
 
-      case 'inactive':
-        return 'info';
+        case 'inactive':
+          return 'info';
 
-      default:
-        return 'warning';
-    }
+        default:
+          return 'warning';
+      }
 }
 
 async function loadMachines() {
-    if (!userStore.locationId) return;
+      if (!userStore.locationId) return;
 
-    loadingMachines.value = true;
+      loadingMachines.value = true;
 
-    try {
-      const result = await getMachines(
-        userStore.locationId
-      );
+      try {
+        const result = await getMachines(
+          userStore.locationId
+        );
 
-      machines.value = result.data || [];
-    } finally {
-      loadingMachines.value = false;
-    }
+        machines.value = result.data || [];
+      } finally {
+        loadingMachines.value = false;
+      }
 }
 
 async function loadReferenceData() {
-    try {
-      const results = await Promise.allSettled([
-        getMachineTypes(),
-        getMachineStatuses(),
-        getGames()
-      ]);
+      try {
+        const results = await Promise.allSettled([
+          getMachineTypes(),
+          getMachineStatuses(),
+          getGames()
+        ]);
 
-      const [typesResult, statusResult, gamesResult] = results;
+        const [typesResult, statusResult, gamesResult] = results;
 
-      // Machine Types
-      if (typesResult.status === 'fulfilled') {
-        machineTypes.value = typesResult.value?.data || [];
-      } else {
-        machineTypes.value = [];
+        // Machine Types
+        if (typesResult.status === 'fulfilled') {
+          machineTypes.value = typesResult.value?.data || [];
+        } else {
+          machineTypes.value = [];
+          console.error(
+            'Failed loading machine types:',
+            typesResult.reason
+          );
+        }
+
+        // Machine Statuses
+        if (statusResult.status === 'fulfilled') {
+          statuses.value = statusResult.value?.data || [];
+        } else {
+          statuses.value = [];
+          console.error(
+            'Failed loading machine statuses:',
+            statusResult.reason
+          );
+        }
+
+        // Games
+        if (gamesResult.status === 'fulfilled') {
+          games.value = gamesResult.value?.data || [];
+        } else {
+          games.value = [];
+          console.error(
+            'Failed loading games:',
+            gamesResult.reason
+          );
+        }
+      } catch (error) {
         console.error(
-          'Failed loading machine types:',
-          typesResult.reason
+          'Error loading machine setup reference data:',
+          error
         );
       }
-
-      // Machine Statuses
-      if (statusResult.status === 'fulfilled') {
-        statuses.value = statusResult.value?.data || [];
-      } else {
-        statuses.value = [];
-        console.error(
-          'Failed loading machine statuses:',
-          statusResult.reason
-        );
-      }
-
-      // Games
-      if (gamesResult.status === 'fulfilled') {
-        games.value = gamesResult.value?.data || [];
-      } else {
-        games.value = [];
-        console.error(
-          'Failed loading games:',
-          gamesResult.reason
-        );
-      }
-    } catch (error) {
-      console.error(
-        'Error loading machine setup reference data:',
-        error
-      );
-    }
 }
 
 function openGenerateDialog() {
-    generateForm.startNumber = 1;
-    generateForm.endNumber = 10;
-    generateForm.machineTypeId = null;
+      generateForm.startNumber = 1;
+      generateForm.endNumber = 10;
+      generateForm.machineTypeId = null;
 
-    generateVisible.value = true;
+      generateVisible.value = true;
 }
 
 async function submitGenerate() {
-    if (!userStore.locationId) {
-      return ElMessage.error(
-        'Please select a location first.'
-      );
-    }
+      if (!userStore.locationId) {
+        return ElMessage.error(
+          'Please select a location first.'
+        );
+      }
 
-    saving.value = true;
+      saving.value = true;
 
-    try {
-      const result = await generateMachines({
-        locationId: Number(userStore.locationId),
-        startNumber: generateForm.startNumber,
-        endNumber: generateForm.endNumber,
-        machineTypeId: generateForm.machineTypeId
-      });
+      try {
+        const result = await generateMachines({
+          locationId: Number(userStore.locationId),
+          startNumber: generateForm.startNumber,
+          endNumber: generateForm.endNumber,
+          machineTypeId: generateForm.machineTypeId
+        });
 
-      ElMessage.success(
-        result.message || 'Machines generated.'
-      );
+        ElMessage.success(
+          result.message || 'Machines generated.'
+        );
 
-      generateVisible.value = false;
+        generateVisible.value = false;
 
-      await loadMachines();
-    } finally {
-      saving.value = false;
-    }
+        await loadMachines();
+      } finally {
+        saving.value = false;
+      }
 }
 
 function openEditMachine(row: any) {
-    Object.assign(machineForm, {
-      ID: row.ID,
-      MachineNumber: row.MachineNumber,
-      MachineTypeId: row.MachineTypeId,
-      GameId: row.GameId,
-      StatusId: row.StatusId,
-      StatusReason: row.StatusReason || ''
-    });
+      Object.assign(machineForm, {
+        ID: row.ID,
+        MachineNumber: row.MachineNumber,
+        MachineTypeId: row.MachineTypeId,
+        GameId: row.GameId,
+        StatusId: row.StatusId,
+        StatusReason: row.StatusReason || ''
+      });
 
-    machineVisible.value = true;
+      machineVisible.value = true;
 }
 
 function machineTypeChanged() {
-    const game = games.value.find(
-      x =>
-        Number(x.ID) === Number(machineForm.GameId)
-    );
+      const game = games.value.find(
+        x =>
+          Number(x.ID) === Number(machineForm.GameId)
+      );
 
-    if (
-      game &&
-          Number(game.MachineTypeId) !==
-            Number(machineForm.MachineTypeId)
-    ) {
-      machineForm.GameId = null;
-    }
+      if (
+        game &&
+            Number(game.MachineTypeId) !==
+              Number(machineForm.MachineTypeId)
+      ) {
+        machineForm.GameId = null;
+      }
 }
 
 function statusChanged() {
-    if (!selectedStatusIsNotWorking.value) {
-      machineForm.StatusReason = '';
-    }
+      if (!selectedStatusIsNotWorking.value) {
+        machineForm.StatusReason = '';
+      }
 }
 
 async function saveMachine() {
-    if (
-      selectedStatusIsNotWorking.value &&
-          !String(machineForm.StatusReason || '').trim()
-    ) {
-      return ElMessage.error(
-        'Please enter the reason why the machine is not working.'
-      );
-    }
+      if (
+        selectedStatusIsNotWorking.value &&
+            !String(machineForm.StatusReason || '').trim()
+      ) {
+        return ElMessage.error(
+          'Please enter the reason why the machine is not working.'
+        );
+      }
 
-    saving.value = true;
+      saving.value = true;
 
-    try {
-      await updateMachine(
-        machineForm.ID,
-        {
-          machineTypeId: machineForm.MachineTypeId,
-          gameId: machineForm.GameId,
-          statusId: machineForm.StatusId,
-          statusReason: machineForm.StatusReason
-        }
-      );
+      try {
+        await updateMachine(
+          machineForm.ID,
+          {
+            machineTypeId: machineForm.MachineTypeId,
+            gameId: machineForm.GameId,
+            statusId: machineForm.StatusId,
+            statusReason: machineForm.StatusReason
+          }
+        );
 
-      ElMessage.success(
-        'Machine updated successfully.'
-      );
+        ElMessage.success(
+          'Machine updated successfully.'
+        );
 
-      machineVisible.value = false;
+        machineVisible.value = false;
 
-      await loadMachines();
-    } finally {
-      saving.value = false;
-    }
+        await loadMachines();
+      } finally {
+        saving.value = false;
+      }
 }
 
 async function openHistory(row: any) {
-    historyVisible.value = true;
-    historyLoading.value = true;
+      historyVisible.value = true;
+      historyLoading.value = true;
 
-    try {
-      const result = await getMachineLogs(row.ID);
-      history.value = result.data || [];
-    } finally {
-      historyLoading.value = false;
-    }
+      try {
+        const result = await getMachineLogs(row.ID);
+        history.value = result.data || [];
+      } finally {
+        historyLoading.value = false;
+      }
 }
 
 function openTypeDialog(row?: any) {
-    Object.assign(typeForm, {
-      ID: row?.ID || null,
-      TypeName: row?.TypeName || '',
-      IsActive: row?.IsActive ?? true
-    });
+      Object.assign(typeForm, {
+        ID: row?.ID || null,
+        TypeName: row?.TypeName || '',
+        IsActive: row?.IsActive ?? true
+      });
 
-    typeVisible.value = true;
+      typeVisible.value = true;
 }
 
 async function saveType() {
-    if (!typeForm.TypeName.trim()) {
-      return ElMessage.error(
-        'Machine type name is required.'
-      );
-    }
-
-    saving.value = true;
-
-    try {
-      if (typeForm.ID) {
-        await updateMachineType(
-          typeForm.ID,
-          {
-            typeName: typeForm.TypeName,
-            isActive: typeForm.IsActive
-          }
+      if (!typeForm.TypeName.trim()) {
+        return ElMessage.error(
+          'Machine type name is required.'
         );
-      } else {
-        await createMachineType({
-          typeName: typeForm.TypeName
-        });
       }
 
-      ElMessage.success('Machine type saved.');
+      saving.value = true;
 
-      typeVisible.value = false;
+      try {
+        if (typeForm.ID) {
+          await updateMachineType(
+            typeForm.ID,
+            {
+              typeName: typeForm.TypeName,
+              isActive: typeForm.IsActive
+            }
+          );
+        } else {
+          await createMachineType({
+            typeName: typeForm.TypeName
+          });
+        }
 
-      await loadReferenceData();
-    } finally {
-      saving.value = false;
-    }
+        ElMessage.success('Machine type saved.');
+
+        typeVisible.value = false;
+
+        await loadReferenceData();
+      } finally {
+        saving.value = false;
+      }
 }
 
 async function removeType(row: any) {
-    await ElMessageBox.confirm(
-      `Delete machine type "${row.TypeName}"?`,
-      'Confirm',
-      { type: 'warning' }
-    );
+      await ElMessageBox.confirm(
+        `Delete machine type "${row.TypeName}"?`,
+        'Confirm',
+        { type: 'warning' }
+      );
 
-    await deleteMachineType(row.ID);
+      await deleteMachineType(row.ID);
 
-    ElMessage.success('Machine type deleted.');
+      ElMessage.success('Machine type deleted.');
 
-    await loadReferenceData();
+      await loadReferenceData();
 }
 
 function openGameDialog(row?: any) {
-    Object.assign(gameForm, {
-      ID: row?.ID || null,
-      GameName: row?.GameName || '',
-      MachineTypeId: row?.MachineTypeId || null,
-      IsActive: row?.IsActive ?? true
-    });
+      Object.assign(gameForm, {
+        ID: row?.ID || null,
+        GameName: row?.GameName || '',
+        MachineTypeId: row?.MachineTypeId || null,
+        IsActive: row?.IsActive ?? true
+      });
 
-    gameVisible.value = true;
+      gameVisible.value = true;
 }
 
 async function saveGame() {
-    if (
-      !gameForm.GameName.trim() ||
-          !gameForm.MachineTypeId
-    ) {
-      return ElMessage.error(
-        'Game name and machine type are required.'
-      );
-    }
-
-    saving.value = true;
-
-    try {
-      const payload = {
-        gameName: gameForm.GameName,
-        machineTypeId: gameForm.MachineTypeId,
-        isActive: gameForm.IsActive
-      };
-
-      if (gameForm.ID) {
-        await updateGame(
-          gameForm.ID,
-          payload
+      if (
+        !gameForm.GameName.trim() ||
+            !gameForm.MachineTypeId
+      ) {
+        return ElMessage.error(
+          'Game name and machine type are required.'
         );
-      } else {
-        await createGame(payload);
       }
 
-      ElMessage.success('Game saved.');
+      saving.value = true;
 
-      gameVisible.value = false;
+      try {
+        const payload = {
+          gameName: gameForm.GameName,
+          machineTypeId: gameForm.MachineTypeId,
+          isActive: gameForm.IsActive
+        };
 
-      await loadReferenceData();
-    } finally {
-      saving.value = false;
-    }
+        if (gameForm.ID) {
+          await updateGame(
+            gameForm.ID,
+            payload
+          );
+        } else {
+          await createGame(payload);
+        }
+
+        ElMessage.success('Game saved.');
+
+        gameVisible.value = false;
+
+        await loadReferenceData();
+      } finally {
+        saving.value = false;
+      }
 }
 
 async function removeGame(row: any) {
-    await ElMessageBox.confirm(
-      `Delete game "${row.GameName}"?`,
-      'Confirm',
-      { type: 'warning' }
-    );
+      await ElMessageBox.confirm(
+        `Delete game "${row.GameName}"?`,
+        'Confirm',
+        { type: 'warning' }
+      );
 
-    await deleteGame(row.ID);
+      await deleteGame(row.ID);
 
-    ElMessage.success('Game deleted.');
+      ElMessage.success('Game deleted.');
 
-    await loadReferenceData();
+      await loadReferenceData();
 }
 
 watch(
-    () => userStore.locationId,
-    async newLocation => {
-      if (newLocation) {
-        await loadMachines();
+      () => userStore.locationId,
+      async newLocation => {
+        if (newLocation) {
+          await loadMachines();
 
-        if (activeTab.value === 'initial-readings') {
-          await loadInitialReadings();
+          if (activeTab.value === 'initial-readings') {
+            await loadInitialReadings();
+          }
+        } else {
+          machines.value = [];
+          initialReadingRows.value = [];
         }
-      } else {
-        machines.value = [];
-        initialReadingRows.value = [];
       }
-    }
 );
 
 watch(activeTab, async tab => {
-    if (tab === 'initial-readings') {
-      await loadInitialReadings();
-    }
+      if (tab === 'initial-readings') {
+        await loadInitialReadings();
+      }
 });
 
 onMounted(async () => {
-    await loadReferenceData();
-    await loadMachines();
+      await loadReferenceData();
+      await loadMachines();
 });
 </script>
 

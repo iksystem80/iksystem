@@ -64,7 +64,8 @@ const activeTab = ref('account');
 const customer = ref(null);
 const timelineRef = ref(null);
 
-const handleAccountUpdated = () => {
+const handleAccountUpdated = async () => {
+  await getCustomer();
   timelineRef.value?.reloadTimeline();
 };
 

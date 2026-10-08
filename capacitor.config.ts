@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.iksystem.app',
-  appName: 'IK System',
+  appId: 'com.iklogy.app',
+  appName: 'IKlogy',
   webDir: 'dist',
   server: {
     androidScheme: 'http',

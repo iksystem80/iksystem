@@ -25,9 +25,9 @@
 
 defineProps<Props>();
 
-const title = 'IK System';
-
+const title = 'IKlogy - Business Made Simple';
 import logo from '@/assets/logo.png';
+
 </script>
 
 <style lang="scss" scoped>

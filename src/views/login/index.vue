@@ -136,11 +136,11 @@ import type { FormInstance, FormRules } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { Lock, User } from '@element-plus/icons-vue';
 
-import logo from '@/assets/logo.png';
-
 defineOptions({
       name: 'Login'
-}); 
+});
+
+import logo from '@/assets/logo.png';
 
 interface LoginForm {
         username: string

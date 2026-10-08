@@ -15,7 +15,7 @@
                 <el-avatar :size="26" :src="item.avatar">
                   {{ getInitial(item.name) }}
                 </el-avatar>
-                <span>
+                <span style="margin-left:10px">
                   {{ item.name }}
                 </span>
               </div>
