@@ -149,8 +149,8 @@ import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/mycamera';
 import { checkin } from '@/api/customer';
 import { unformatPhone } from '@/utils/phone';
+import logo from '@/assets/logo.png';
 
-const logo = '/src/assets/logo.png';
 const userStore = useUserStore();
 const checkInFormRef = ref(null);
 const cameraAppRef = ref(null);
