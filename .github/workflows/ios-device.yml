@@ -9,7 +9,7 @@ permissions:
 jobs:
   build-iphone:
     name: Build Signed iPhone IPA
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
       - name: Checkout repository
@@ -133,8 +133,14 @@ jobs:
           echo "Provisioning Profile: $PROFILE_NAME"
           echo "Team ID: $TEAM_ID"
 
+      - name: Select Xcode 26
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+
       - name: Display Xcode version
-        run: xcodebuild -version
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
 
       - name: Archive iOS application
         run: |
