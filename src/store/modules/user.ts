@@ -183,7 +183,6 @@ export const useUserStore = defineStore('user', () => {
     locations.value = Array.isArray(response.locations) ? response.locations : [];
 
     infoLoaded.value = true;
-   
     return data;
   }
 
@@ -306,10 +305,7 @@ export const useUserStore = defineStore('user', () => {
           userId.value
         );
 
-      isClocked.value =
-        Boolean(
-          response?.data?.clockedIn
-        );
+      isClocked.value =Boolean(response?.data?.clockedIn);
 
       activeClockSession.value =
         response?.data?.session || null;

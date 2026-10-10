@@ -1,6 +1,6 @@
 import defaultSettings from '@/settings';
 
-const title = defaultSettings.title || 'IKlogy - Business Made Simple';
+const title = defaultSettings.title || 'IK - Business Made Simple';
 
 export default function getPageTitle(pageTitle) {
   if (pageTitle) {

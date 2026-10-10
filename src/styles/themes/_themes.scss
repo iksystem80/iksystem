@@ -1,0 +1,495 @@
+/* ============================================================
+   IK APP THEMES
+   ------------------------------------------------------------
+   Light keeps the current project appearance.
+   Blue / Orange change the accent + supporting surfaces.
+   Dark switches both the application surfaces and Element Plus
+   CSS variables without requiring a separate Vite build.
+   ============================================================ */
+
+:root,
+html[data-theme='light'] {
+    color-scheme: light;
+    /* Element Plus + legacy palette */
+    --el-color-white: #ffffff;
+    --el-color-primary-light: #b1a8cc;
+    --el-color-danger: #cd5c5c;
+    --el-color-success: #4c902a;
+    --darkgray: #666666;
+    --blue: #324157;
+    --light-blue: #3a71a8;
+    --red: #c03639;
+    --pink: #e65d6e;
+    --green: #30b08f;
+    --tiffany: #4ab7bd;
+    --yellow: #fec171;
+    --pan-green: #30b08f;
+    --sub-menu-active-text: #f4f4f5;
+    --app-bg: #f0f2f5;
+    --app-surface: #ffffff;
+    --app-surface-soft: #f7f8fb;
+    --app-navbar-bg: #887baf;
+    --app-navbar-text: #ffffff;
+    --app-navbar-hover: rgba(255, 255, 255, 0.12);
+    --app-border: #ebeef5;
+    --app-shadow: rgba(0, 0, 0, 0.06);
+    --employee-banner-gradient-start: #1e2447;
+    --employee-banner-gradient-end: #11162f;
+    --employee-banner-text-primary: #ffffff;
+    --employee-banner-text-secondary: #c7cbea;
+    --employee-banner-text-muted: #aeb4d6;
+    /* Dashboard panel-group cards */
+    --stat-card-bg-start: #ffffff;
+    --stat-card-bg-end: #fbfcff;
+    --stat-card-border: var(--el-border-color-lighter);
+    --stat-card-shadow: 0 3px 12px rgba(0, 0, 0, 0.035);
+    --stat-card-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    --stat-customers-accent: #40c9c6;
+    --stat-customers-accent-soft: rgba(64, 201, 198, 0.11);
+    --stat-visits-accent: #887baf;
+    --stat-visits-accent-soft: rgba(136, 123, 175, 0.11);
+    --stat-current-accent: #f56c6c;
+    --stat-current-accent-soft: rgba(245, 108, 108, 0.10);
+    --stat-amount-accent: #67c23a;
+    --stat-amount-accent-soft: rgba(103, 194, 58, 0.11);
+    --el-color-primary: #887baf;
+    --el-color-primary-light-3: #9f8bdd;
+    --el-color-primary-light-5: #c4b5fd;
+    --el-color-primary-light-7: #ddd6fe;
+    --el-color-primary-light-8: #ede9fe;
+    --el-color-primary-light-9: #f5f3ff;
+    --el-color-primary-dark-2: #5b21b6;
+    --el-bg-color: #ffffff;
+    --el-bg-color-page: #f0f2f5;
+    --el-fill-color: #f0f2f5;
+    --el-fill-color-light: #f5f7fa;
+    --el-fill-color-lighter: #fafafa;
+    --el-fill-color-extra-light: #fafcff;
+    --el-fill-color-dark: #ebedf0;
+    --el-fill-color-blank: #ffffff;
+    --el-text-color-primary: #303133;
+    --el-text-color-regular: #606266;
+    --el-text-color-secondary: #909399;
+    --el-text-color-placeholder: #a8abb2;
+    --el-border-color: #dcdfe6;
+    --el-border-color-light: #e4e7ed;
+    --el-border-color-lighter: #ebeef5;
+    --menu-text: #bfcbd9;
+    --menu-active-text: #887baf;
+    --menu-bg: #304156;
+    --menu-hover: #263445;
+    --sub-menu-bg: #1f2d3d;
+    --sub-menu-hover: #001528;
+}
+
+html[data-theme='blue'] {
+    color-scheme: light;
+    /* Element Plus + legacy palette */
+    --el-color-white: #ffffff;
+    --el-color-primary-light: #7ca3f4;
+    --el-color-danger: #dc5f5f;
+    --el-color-success: #3f8f55;
+    --darkgray: #5f6f82;
+    --blue: #2563eb;
+    --light-blue: #60a5fa;
+    --red: #dc4c4c;
+    --pink: #e96d90;
+    --green: #2fa47c;
+    --tiffany: #3faeb5;
+    --yellow: #e9ad4f;
+    --pan-green: #2fa47c;
+    --sub-menu-active-text: #ffffff;
+    --app-bg: #f2f6fc;
+    --app-surface: #ffffff;
+    --app-surface-soft: #edf5ff;
+    --app-navbar-bg: #2563eb;
+    --app-navbar-text: #ffffff;
+    --app-navbar-hover: rgba(255, 255, 255, 0.12);
+    --app-border: #dbeafe;
+    --app-shadow: rgba(37, 99, 235, 0.08);
+    --employee-banner-gradient-start: #1e40af;
+    --employee-banner-gradient-end: #172554;
+    --employee-banner-text-primary: #ffffff;
+    --employee-banner-text-secondary: #c7cbea;
+    --employee-banner-text-muted: #aeb4d6;
+    /* Dashboard panel-group cards */
+    --stat-card-bg-start: #f8fbff;
+    --stat-card-bg-end: #edf4ff;
+    --stat-card-border: #cbdcff;
+    --stat-card-shadow: 0 3px 12px rgba(37, 99, 235, 0.055);
+    --stat-card-hover-shadow: 0 10px 28px rgba(37, 99, 235, 0.13);
+    --stat-customers-accent: #0891b2;
+    --stat-customers-accent-soft: rgba(8, 145, 178, 0.11);
+    --stat-visits-accent: #2563eb;
+    --stat-visits-accent-soft: rgba(37, 99, 235, 0.11);
+    --stat-current-accent: #e05252;
+    --stat-current-accent-soft: rgba(224, 82, 82, 0.10);
+    --stat-amount-accent: #3f9d55;
+    --stat-amount-accent-soft: rgba(63, 157, 85, 0.11);
+    --el-color-primary: #2563eb;
+    --el-color-primary-light-3: #6390f2;
+    --el-color-primary-light-5: #92b1f6;
+    --el-color-primary-light-7: #c2d4fa;
+    --el-color-primary-light-8: #d8e4fc;
+    --el-color-primary-light-9: #eef4ff;
+    --el-color-primary-dark-2: #1d4ed8;
+    --el-bg-color: #ffffff;
+    --el-bg-color-page: #f2f6fc;
+    --el-fill-color: #edf3fb;
+    --el-fill-color-light: #f3f7fc;
+    --el-fill-color-lighter: #f8fbff;
+    --el-fill-color-extra-light: #fbfdff;
+    --el-fill-color-dark: #e2eaf5;
+    --el-fill-color-blank: #ffffff;
+    --el-text-color-primary: #1f2f46;
+    --el-text-color-regular: #52647a;
+    --el-text-color-secondary: #7a8ba0;
+    --el-text-color-placeholder: #a3b0c0;
+    --el-border-color: #cbd8e8;
+    --el-border-color-light: #d9e4f0;
+    --el-border-color-lighter: #e6eef7;
+    --menu-text: #dbeafe;
+    --menu-active-text: #93c5fd;
+    --menu-bg: #17365d;
+    --menu-hover: #214a7b;
+    --sub-menu-bg: #102a49;
+    --sub-menu-hover: #1b416d;
+}
+
+html[data-theme='orange'] {
+    color-scheme: light;
+    /* Element Plus + legacy palette */
+    --el-color-white: #ffffff;
+    --el-color-primary-light: #f39b70;
+    --el-color-danger: #c95151;
+    --el-color-success: #4b8d45;
+    --darkgray: #705d52;
+    --blue: #3f5d7d;
+    --light-blue: #5f86ad;
+    --red: #c94e3f;
+    --pink: #df6a7b;
+    --green: #3d9b72;
+    --tiffany: #4ba5a8;
+    --yellow: #e9ad4f;
+    --pan-green: #3d9b72;
+    --sub-menu-active-text: #ffffff;
+    --app-bg: #fff8f1;
+    --app-surface: #ffffff;
+    --app-surface-soft: #fff3e6;
+    --app-navbar-bg: #ea580c;
+    --app-navbar-text: #ffffff;
+    --app-navbar-hover: rgba(255, 255, 255, 0.14);
+    --app-border: #fed7aa;
+    --app-shadow: rgba(234, 88, 12, 0.08);
+    --employee-banner-gradient-start: #c2410c;
+    --employee-banner-gradient-end: #7c2d12;
+    --employee-banner-text-primary: #ffffff;
+    --employee-banner-text-secondary: #c7cbea;
+    --employee-banner-text-muted: #aeb4d6;
+    /* Dashboard panel-group cards */
+    --stat-card-bg-start: #fffdfa;
+    --stat-card-bg-end: #fff2e7;
+    --stat-card-border: #f5d2b7;
+    --stat-card-shadow: 0 3px 12px rgba(234, 88, 12, 0.05);
+    --stat-card-hover-shadow: 0 10px 28px rgba(234, 88, 12, 0.12);
+    --stat-customers-accent: #0f9f9a;
+    --stat-customers-accent-soft: rgba(15, 159, 154, 0.11);
+    --stat-visits-accent: #ea580c;
+    --stat-visits-accent-soft: rgba(234, 88, 12, 0.11);
+    --stat-current-accent: #d95757;
+    --stat-current-accent-soft: rgba(217, 87, 87, 0.10);
+    --stat-amount-accent: #5b9b3f;
+    --stat-amount-accent-soft: rgba(91, 155, 63, 0.11);
+    --el-color-primary: #ea580c;
+    --el-color-primary-light-3: #f1844f;
+    --el-color-primary-light-5: #f5ab85;
+    --el-color-primary-light-7: #f9d0bb;
+    --el-color-primary-light-8: #fbe0d1;
+    --el-color-primary-light-9: #fff1e8;
+    --el-color-primary-dark-2: #c2410c;
+    --el-bg-color: #ffffff;
+    --el-bg-color-page: #fff8f1;
+    --el-fill-color: #fff1e6;
+    --el-fill-color-light: #fff6ef;
+    --el-fill-color-lighter: #fffaf6;
+    --el-fill-color-extra-light: #fffcfa;
+    --el-fill-color-dark: #f9e8d9;
+    --el-fill-color-blank: #ffffff;
+    --el-text-color-primary: #3d2a20;
+    --el-text-color-regular: #695346;
+    --el-text-color-secondary: #92786a;
+    --el-text-color-placeholder: #b9a497;
+    --el-border-color: #ead4c5;
+    --el-border-color-light: #f1dfd2;
+    --el-border-color-lighter: #f6e9df;
+    --menu-text: #ffedd5;
+    --menu-active-text: #fdba74;
+    --menu-bg: #5b2b12;
+    --menu-hover: #743719;
+    --sub-menu-bg: #45200d;
+    --sub-menu-hover: #663016;
+}
+
+html[data-theme='dark'] {
+    color-scheme: dark;
+    /* Element Plus + legacy palette */
+    --el-color-white: #ffffff;
+    --el-color-primary-light: #927bdc;
+    --el-color-danger: #e06b6b;
+    --el-color-success: #69a94c;
+    --darkgray: #a0a7b2;
+    --blue: #6f91b8;
+    --light-blue: #78a7d6;
+    --red: #df6a6d;
+    --pink: #ea7c8d;
+    --green: #52b99a;
+    --tiffany: #65c0c5;
+    --yellow: #e8bd72;
+    --pan-green: #52b99a;
+    --sub-menu-active-text: #f4f4f5;
+    --app-bg: #0f1115;
+    --app-surface: #181b20;
+    --app-surface-soft: #20242b;
+    --app-navbar-bg: #181b20;
+    --app-navbar-text: #e5e7eb;
+    --app-navbar-hover: rgba(255, 255, 255, 0.08);
+    --app-border: #333842;
+    --app-shadow: rgba(0, 0, 0, 0.35);
+    --employee-banner-gradient-start: #242936;
+    --employee-banner-gradient-end: #111318;
+    --employee-banner-text-primary: #ffffff;
+    --employee-banner-text-secondary: #c7cbea;
+    --employee-banner-text-muted: #aeb4d6;
+    /* Dashboard panel-group cards */
+    --stat-card-bg-start: #060606;
+    --stat-card-bg-end: #313131;
+    --stat-card-border: #373b43;
+    --stat-card-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+    --stat-card-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+    --stat-customers-accent: #4fd1c5;
+    --stat-customers-accent-soft: rgba(79, 209, 197, 0.13);
+    --stat-visits-accent: #a78bfa;
+    --stat-visits-accent-soft: rgba(167, 139, 250, 0.14);
+    --stat-current-accent: #f87171;
+    --stat-current-accent-soft: rgba(248, 113, 113, 0.13);
+    --stat-amount-accent: #86d35b;
+    --stat-amount-accent-soft: rgba(134, 211, 91, 0.13);
+    --el-color-primary: #63579b;
+    --el-color-primary-light-3: #8d76d5;
+    --el-color-primary-light-5: #705faa;
+    --el-color-primary-light-7: #504579;
+    --el-color-primary-light-8: #403863;
+    --el-color-primary-light-9: #302b48;
+    --el-color-primary-dark-2: #c4b5fd;
+    --el-bg-color: #181b20;
+    --el-bg-color-page: #0f1115;
+    --el-fill-color: #252a31;
+    --el-fill-color-light: #20242b;
+    --el-fill-color-lighter: #1d2127;
+    --el-fill-color-extra-light: #1b1f24;
+    --el-fill-color-dark: #303640;
+    --el-fill-color-blank: #181b20;
+    --el-text-color-primary: #ffffff;
+    --el-text-color-regular: #ffffff;
+    --el-text-color-secondary: #ffffff;
+    --el-text-color-placeholder: #ffffff;
+    --el-border-color: #3b414c;
+    --el-border-color-light: #333944;
+    --el-border-color-lighter: #2b3038;
+    --el-border-color-extra-light: #252a31;
+    --el-mask-color: rgba(0, 0, 0, 0.8);
+    --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+    --menu-text: #cbd5e1;
+    --menu-active-text: #c4b5fd;
+    --menu-bg: #12151a;
+    --menu-hover: #20252d;
+    --sub-menu-bg: #0d1014;
+    --sub-menu-hover: #1a1f26;
+
+    .el-card,
+    .el-dialog,
+    .el-drawer,
+    .el-dropdown-menu,
+    .el-popper,
+    .el-table,
+    .el-table__expanded-cell,
+    .el-descriptions,
+    .el-collapse-item__header,
+    .el-collapse-item__wrap {
+        background-color: var(--el-bg-color);
+        color: var(--el-text-color-primary);
+        border-color: var(--el-border-color-lighter);
+    }
+
+        .el-table th.el-table__cell,
+        .el-table tr,
+        .el-table td.el-table__cell {
+            background-color: var(--el-bg-color);
+            color: var(--el-text-color-primary);
+            border-color: var(--el-border-color-lighter);
+        }
+}
+
+html[data-theme='coffee'] {
+    color-scheme: dark;
+    /* Element Plus + legacy palette */
+    --el-color-white: #ffffff;
+    --el-color-primary-light: #927bdc;
+    --el-color-danger: #e06b6b;
+    --el-color-success: #69a94c;
+    --darkgray: #a0a7b2;
+    --blue: #6f91b8;
+    --light-blue: #78a7d6;
+    --red: #df6a6d;
+    --pink: #ea7c8d;
+    --green: #52b99a;
+    --tiffany: #65c0c5;
+    --yellow: #e8bd72;
+    --pan-green: #52b99a;
+    --sub-menu-active-text: #a47148;
+    --app-bg: #0f1115;
+    --app-surface: #181b20;
+    --app-surface-soft: #20242b;
+    --app-navbar-bg: #181b20;
+    --app-navbar-text: #a47148;
+    --app-navbar-hover: rgba(255, 255, 255, 0.08);
+    --app-border: #333842;
+    --app-shadow: rgba(0, 0, 0, 0.35);
+    --employee-banner-gradient-start: #242936;
+    --employee-banner-gradient-end: #111318;
+    --employee-banner-text-primary: #a47148;
+    --employee-banner-text-secondary: #a47148;
+    --employee-banner-text-muted: #a47148;
+    /* Dashboard panel-group cards */
+    --stat-card-bg-start: #060606;
+    --stat-card-bg-end: #24211d;
+    --stat-card-border: #373b43;
+    --stat-card-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+    --stat-card-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+    --stat-customers-accent: #4fd1c5;
+    --stat-customers-accent-soft: rgba(79, 209, 197, 0.13);
+    --stat-visits-accent: #a47148;
+    --stat-visits-accent-soft: rgba(167, 139, 250, 0.14);
+    --stat-current-accent: #f87171;
+    --stat-current-accent-soft: *rgba(248, 113, 113, 0.13);
+    --stat-amount-accent: #86d35b;
+    --stat-amount-accent-soft: rgba(134, 211, 91, 0.13);
+    --el-color-primary: #a47148;
+    --el-color-primary-light-3: #8d76d5;
+    --el-color-primary-light-5: #705faa;
+    --el-color-primary-light-7: #504579;
+    --el-color-primary-light-8: #403863;
+    /* --el-color-primary-light-9: #302b48;*/
+    --el-color-primary-light-9: #2c251d;
+    --el-color-primary-dark-2: #c4b5fd;
+    --el-bg-color: #181b20;
+    --el-bg-color-page: #0f1115;
+    --el-fill-color: #252a31;
+    --el-fill-color-light: #20242b;
+    --el-fill-color-lighter: #1d2127;
+    --el-fill-color-extra-light: #1b1f24;
+    --el-fill-color-dark: #303640;
+    --el-fill-color-blank: #181b20;
+    --el-text-color-primary: #a47148;
+    --el-text-color-regular: #a47148;
+    --el-text-color-secondary: #a47148;
+    --el-text-color-placeholder: #a47148;
+    --el-border-color: #3b414c;
+    --el-border-color-light: #333944;
+    --el-border-color-lighter: #2b3038;
+    --el-border-color-extra-light: #252a31;
+    --el-mask-color: rgba(0, 0, 0, 0.8);
+    --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+    --menu-text: #a47148;
+    --menu-active-text: #a47148;
+    --menu-bg: #12151a;
+    --menu-hover: #20252d;
+    --sub-menu-bg: #0d1014;
+    --sub-menu-hover: #1a1f26;
+}
+
+
+/* Application surfaces shared by all themes. */
+html,
+body,
+#app {
+    background-color: var(--app-bg);
+    color: var(--el-text-color-primary);
+}
+
+    #app .main-container {
+        background-color: var(--app-bg);
+    }
+
+.navbar {
+    background-color: var(--app-navbar-bg);
+    color: var(--app-navbar-text);
+    border-color: color-mix(in srgb, var(--app-navbar-text) 15%, transparent);
+}
+
+    .navbar .hamburger-container,
+    .navbar .breadcrumb-container,
+    .navbar .right-menu .right-menu-item,
+    .navbar .el-icon-caret-bottom {
+        color: var(--app-navbar-text) !important;
+    }
+
+        .navbar .hamburger-container:hover,
+        .navbar .right-menu .right-menu-item.hover-effect:hover,
+        .navbar .clock-menu-item:hover {
+            background: var(--app-navbar-hover) !important;
+        }
+
+    .navbar .location-pill {
+        color: var(--app-navbar-text);
+        background: color-mix(in srgb, var(--app-navbar-text) 11%, transparent);
+        border-color: color-mix(in srgb, var(--app-navbar-text) 22%, transparent);
+        box-shadow: none;
+    }
+
+        .navbar .location-pill:hover {
+            background: color-mix(in srgb, var(--app-navbar-text) 16%, transparent);
+            border-color: color-mix(in srgb, var(--app-navbar-text) 32%, transparent);
+        }
+
+    .navbar .location-pill-icon {
+        color: var(--app-navbar-text);
+    }
+
+.rightPanel {
+    background-color: var(--app-surface);
+    color: var(--el-text-color-primary);
+}
+
+/* A few legacy project styles still use fixed white backgrounds. Keep the
+   selectors targeted so Light remains visually unchanged. */
+/*html[data-theme='dark'] {
+    .el-card,
+    .el-dialog,
+    .el-drawer,
+    .el-dropdown-menu,
+    .el-popper,
+    .el-table,
+    .el-table__expanded-cell,
+    .el-descriptions,
+    .el-collapse-item__header,
+    .el-collapse-item__wrap {
+        background-color: var(--el-bg-color);
+        color: var(--el-text-color-primary);
+        border-color: var(--el-border-color-lighter);
+    }
+
+    .el-table th.el-table__cell,
+    .el-table tr,
+    .el-table td.el-table__cell {
+        background-color: var(--el-bg-color);
+        color: var(--el-text-color-primary);
+        border-color: var(--el-border-color-lighter);
+    }
+  }
+*/
+
+/* Dark theme: page titles use the primary accent; all other text stays white. */
+html[data-theme='dark'] .page-title {
+    color: var(--el-color-primary) !important;
+}

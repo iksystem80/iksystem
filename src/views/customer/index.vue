@@ -79,7 +79,7 @@
         <!-- First Name -->
         <el-table-column prop="firstname"
                          label="Name"
-                         width="160">
+                         min-width="160">
           <template #default="{ row }">
             {{ row.firstname }} {{ row.lastname }}
           </template>
@@ -87,7 +87,7 @@
         <!-- Phone -->
         <el-table-column prop="phone"
                          label="Phone"
-                         width="140">
+                         min-width="120">
           <template #default="{ row }">
             {{ formatPhone(row.phone) || 'No phone' }}
           </template>
@@ -96,49 +96,43 @@
         <!-- Date of Birth -->
         <el-table-column prop="dob"
                          label="Date of Birth"
-                         width="140" />
+                         min-width="120" />
 
         <!-- Date Registered -->
         <el-table-column prop="datecreated"
                          label="Registered On"
-                         width="140" />
+                         min-width="120" />
 
         <!-- Last Visit -->
         <el-table-column prop="lastvisited"
                          label="Last Visit On"
-                         width="140" />
+                         min-width="120" />
 
         <!-- Points -->
         <el-table-column prop="points"
                          label="Points"
-                         min-width="90">
+                         min-width="110">
           <template #default="{ row }">
-            <el-tag style="font-weight: bold;"
-                    type="warning"
-                    effect="light">
-              {{ row.points }} PTS
-            </el-tag>
+            <PointsBadge :points="row.points" />
           </template>
         </el-table-column>
 
         <!-- Verification Status -->
         <el-table-column label="Verification"
-                         min-width="120">
+                         min-width="125">
           <template #default="{ row }">
-            <el-tag :type="verificationStatusType(row)"
-                    effect="light"
-                    round
-                    :class="{ 'verification-tag-clickable': verificationStatusLabel(row) === 'Unverified' }"
-                    @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)">
-              {{ verificationStatusLabel(row) }}
-            </el-tag>
+            <VerificationBadge
+              :status="verificationStatusLabel(row)"
+              :clickable="verificationStatusLabel(row) === 'Unverified'"
+              @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)"
+            />
           </template>
         </el-table-column>
 
         <!-- Operations -->
         <el-table-column label="" width="130" align="right">
           <template #default="{ row }">
-            <el-button-group>
+            <div class="customer-row-actions">
               <el-tooltip :content="row.isactive ? 'Active' : 'Inactive'"
                           placement="top">
                 <el-button v-if="row.isactive"
@@ -176,7 +170,7 @@
 
 
 
-            </el-button-group>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -215,33 +209,14 @@
                 {{ formatPhone(row.phone) || 'No phone' }}
               </div>
 
-              <el-tag class="mobile-points"
-                      type="warning"
-                      effect="light">
-                <el-icon><Coin /></el-icon>
-                <span>{{ row.points }} PTS</span>
-              </el-tag>
-
-              <el-tag class="mobile-verification-status"
-                      :type="verificationStatusType(row)"
-                      effect="light"
-                      round
-                      :class="{ 'verification-tag-clickable': verificationStatusLabel(row) === 'Unverified' }"
-                      @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)">
-                {{ verificationStatusLabel(row) }}
-              </el-tag>
+              <div class="mobile-badges">
+                <PointsBadge :points="row.points" />
+              </div>
             </div>
           </div>
 
           <!-- RIGHT SIDE -->
           <div class="mobile-right">
-            <div class="mobile-detail">
-              <span class="detail-label">DOB</span>
-              <span class="detail-value">
-                {{ row.dob || '---' }}
-              </span>
-            </div>
-
             <div class="mobile-detail">
               <span class="detail-label">Registered</span>
               <span class="detail-value">
@@ -260,41 +235,54 @@
 
         <!-- ACTIONS -->
         <div class="mobile-actions">
-          <el-tooltip :content="row.isactive ? 'Active' : 'Inactive'"
-                      placement="top">
-            <el-button v-if="row.isactive"
-                       link
-                       type="success"
-                       class="mobile-action-button"
-                       @click="handleStatus(row)">
-              <el-icon><CircleCheck /></el-icon>
-            </el-button>
+          <div class="mobile-verification-action">
+            <el-tooltip :content="verificationStatusLabel(row)" placement="top">
+              <VerificationBadge
+                :status="verificationStatusLabel(row)"
+                :clickable="verificationStatusLabel(row) === 'Unverified'"
+                icon-only
+                @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)"
+              />
+            </el-tooltip>
+          </div>
 
-            <el-button v-else
-                       link
-                       type="danger"
-                       class="mobile-action-button"
-                       @click="handleStatus(row)">
-              <el-icon><CircleClose /></el-icon>
-            </el-button>
-          </el-tooltip>
+          <div class="mobile-action-buttons">
+            <el-tooltip :content="row.isactive ? 'Active' : 'Inactive'"
+                        placement="top">
+              <el-button v-if="row.isactive"
+                         link
+                         type="success"
+                         class="mobile-action-button"
+                         @click="handleStatus(row)">
+                <el-icon><CircleCheck /></el-icon>
+              </el-button>
 
-          <el-tooltip content="Edit" placement="top">
-            <el-button link
-                       class="mobile-action-button"
-                       @click="handleEdit(row)">
-              <el-icon><Edit /></el-icon>
-            </el-button>
-          </el-tooltip>
+              <el-button v-else
+                         link
+                         type="danger"
+                         class="mobile-action-button"
+                         @click="handleStatus(row)">
+                <el-icon><CircleClose /></el-icon>
+              </el-button>
+            </el-tooltip>
 
-          <el-tooltip content="Delete" placement="top">
-            <el-button link
-                       type="danger"
-                       class="mobile-action-button"
-                       @click="handleDelete(row)">
-              <el-icon><Delete /></el-icon>
-            </el-button>
-          </el-tooltip>
+            <el-tooltip content="Edit" placement="top">
+              <el-button link
+                         class="mobile-action-button"
+                         @click="handleEdit(row)">
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip content="Delete" placement="top">
+              <el-button link
+                         type="danger"
+                         class="mobile-action-button"
+                         @click="handleDelete(row)">
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </el-tooltip>
+          </div>
         </div>
       </el-card>
 
@@ -530,7 +518,6 @@ import {
         Edit,
         Delete,
         User,
-        Coin,
         Search,
         Refresh,
         Lock,
@@ -554,6 +541,8 @@ import {
 } from '@/api/customerverification';
 import { formatPhone } from '@/utils/phone';
 import verificationIllustration from '@/assets/phone-verification.png';
+import PointsBadge from '@/components/pointsbadge/index.vue';
+import VerificationBadge from '@/components/verificationbadge/index.vue';
 
 // ============================================================
 // STORES / ROUTER
@@ -610,19 +599,6 @@ function verificationStatusLabel(row) {
         return 'Unverified';
 }
 
-function verificationStatusType(row) {
-        const status = verificationStatusLabel(row);
-
-        if (status === 'Verified') {
-          return 'success';
-        }
-
-        if (status === 'Bypass') {
-          return 'warning';
-        }
-
-        return 'danger';
-}
 
 // ============================================================
 // FILTERED CUSTOMERS

@@ -9,9 +9,7 @@
             Update the customer's current point balance.
           </p>
         </div>
-        <div class="points-badge">
-          {{ customer.points }} pts
-        </div>
+        <PointsBadge :points="customer.points" />
       </div>
       <el-divider />
       <el-form label-position="top">
@@ -46,6 +44,7 @@
             Manage the customer's account, VIP and blacklist status.
           </p>
         </div>
+        <VerificationBadge :status="verificationStatusLabel(customer)" />
       </div>
 
       <el-divider />
@@ -141,6 +140,8 @@ import { InfoFilled } from '@element-plus/icons-vue';
 
 import { updateCustomerAccount } from '@/api/customer';
 import { useUserStore } from '@/store/modules/user';
+import PointsBadge from '@/components/pointsbadge/index.vue';
+import VerificationBadge from '@/components/verificationbadge/index.vue';
 
 const userStore = useUserStore();
 
@@ -186,6 +187,20 @@ watch(
     }
 );
 
+const verificationStatusLabel = customer => {
+    if (customer?.phoneverified === true) return 'Verified';
+
+    if (
+      String(customer?.verificationmethod || '')
+        .trim()
+        .toLowerCase() === 'bypass'
+    ) {
+      return 'Bypass';
+    }
+
+    return 'Unverified';
+};
+
 const addPoints = amount => {
     form.points = amount;
 };
@@ -224,19 +239,23 @@ const saveAccount = async () => {
 <style scoped lang="scss">
 
   .account-tab {
-    padding: 10px 4px;
+    padding: 0px 0px;
     max-width: 100%;
   }
 
   .settings-card {
-    margin-bottom: 22px;
+    margin-bottom: 14px;
     border-radius: 14px;
-    border: 1px solid var(--el-border-color-lighter);
-    background: #fff;
+    border: 1px solid var(--stat-card-border);
+    background: linear-gradient(
+      145deg,
+      var(--stat-card-bg-start) 0%,
+      var(--stat-card-bg-end) 100%
+    );
   }
 
     .settings-card :deep(.el-card__body) {
-      padding: 22px;
+      padding: 20px 20px;
     }
 
   /* =========================
@@ -248,6 +267,7 @@ const saveAccount = async () => {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    padding-top: 4px;
   }
 
     .section-header h3 {
@@ -263,20 +283,14 @@ const saveAccount = async () => {
       font-size: 14px;
     }
 
-  /* =========================
-       POINTS BADGE
-    ========================= */
-
-  .points-badge {
-    flex-shrink: 0;
-    padding: 8px 14px;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 20px;
-    background: #fff;
-    color: var(--el-color-primary);
-    font-size: 14px;
-    font-weight: 600;
+  .settings-card :deep(.el-divider--horizontal) {
+    margin: 14px 0;
   }
+
+  .settings-card :deep(.el-form-item) {
+    margin-bottom: 12px;
+  }
+
 
   .points-input {
     width: 220px;
@@ -289,7 +303,7 @@ const saveAccount = async () => {
   .quick-points {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
 
     .quick-points .el-button:hover {
@@ -306,7 +320,8 @@ const saveAccount = async () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 30px;
+    gap: 24px;
+    min-height: 44px;
   }
 
   .setting-info {
@@ -314,7 +329,7 @@ const saveAccount = async () => {
   }
 
   .setting-title {
-    margin-bottom: 6px;
+    margin-bottom: 3px;
     color: var(--el-text-color-primary);
     font-size: 17px;
     font-weight: 600;
@@ -323,7 +338,7 @@ const saveAccount = async () => {
   .setting-description {
     color: var(--el-text-color-secondary);
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.35;
   }
 
   /* =========================
@@ -334,8 +349,8 @@ const saveAccount = async () => {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 18px;
-    padding: 12px 14px;
+    margin-top: 12px;
+    padding: 10px 12px;
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
     background: var(--el-fill-color-extra-light);
@@ -363,7 +378,7 @@ const saveAccount = async () => {
   .save-section {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
+    margin-top: 12px;
   }
 
     .save-section .el-button {
@@ -381,7 +396,7 @@ const saveAccount = async () => {
     }
 
     .setting-row {
-      gap: 16px;
+      gap: 12px;
     }
 
     .points-input {

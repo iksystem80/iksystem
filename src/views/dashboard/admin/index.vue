@@ -57,8 +57,12 @@ function handleSetLineChartData(type) {
 }
 
 onMounted(() => {
-  console.log('Check here')
+  // console.log('Check here')
+  // console.log('isEmployee: ' + userStore.isEmployee)
+  // console.log('isClockedIn ' + userStore.isClockedIn)
+
   if (userStore.isEmployee && !userStore.isClockedIn) {
+    // console.log('Check here 2')
     router.push('/clock/index');
   }
 });

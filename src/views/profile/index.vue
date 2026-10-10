@@ -22,7 +22,7 @@
         </el-col>
 
         <el-col :span="18" :xs="24" class="customer-content-column">
-          <el-card shadow="never" class="customer-content-card">
+          <!--<el-card shadow="never" class="customer-content-card">-->
             <el-tabs v-model="activeTab" class="customer-tabs">
               <el-tab-pane label="Account" name="account">
                 <Account :customer="customer" @updated="handleAccountUpdated" />
@@ -36,7 +36,7 @@
                 <Timeline ref="timelineRef" :customer="customer" />
               </el-tab-pane>
             </el-tabs>
-          </el-card>
+          <!--</el-card>-->
         </el-col>
       </el-row>
     </div>
@@ -101,7 +101,7 @@ onMounted(() => {
     }
 
         .customer-content-card :deep(.el-card__body) {
-            padding: 0 20px 20px;
+            padding: 10px 10px 20px 20px;
         }
 
     .customer-tabs {
@@ -112,9 +112,11 @@ onMounted(() => {
             margin-bottom: 20px;
         }
 
+  .setting-row {
+    margin-top: 0px;
+  }
+
     @media (max-width: 1024px) {
-
-
 
         .customer-detail-row {
             row-gap: 16px;

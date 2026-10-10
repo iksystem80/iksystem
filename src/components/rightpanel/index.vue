@@ -2,7 +2,7 @@
   <div ref="rightPanel" :class="{ show: show }" class="rightPanel-container">
     <div class="rightPanel-background" />
     <div class="rightPanel">
-      <div class="handle-button" :style="{ 'top': buttonTop + 'px', 'background-color': theme }" @click="handleClick">
+      <div class="handle-button" :style="{ 'top': buttonTop + 'px' }" @click="handleClick">
         <el-icon>
           <Close v-if="show" class="svg-icon disabled" />
           <Setting v-else class="svg-icon disabled" />
@@ -18,7 +18,6 @@
 <script>
 import { addClass, removeClass } from '@/utils';
 import { defineComponent } from 'vue';
-import store from '@/store';
 import { Close, Setting } from '@element-plus/icons-vue';
 
 export default defineComponent({
@@ -41,11 +40,6 @@ export default defineComponent({
     return {
       show: false
     };
-  },
-  computed: {
-    theme() {
-      return store.settings().theme;
-    }
   },
   watch: {
     show(value) {
@@ -118,7 +112,8 @@ export default defineComponent({
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, .05);
   transition: all .25s cubic-bezier(.7, .3, .1, 1);
   transform: translate(100%);
-  background: #fff;
+  background: var(--app-surface);
+  color: var(--el-text-color-primary);
   z-index: 40000;
 }
 
@@ -138,6 +133,7 @@ export default defineComponent({
 }
 
 .handle-button {
+  background-color: var(--el-color-primary);
   width: 48px;
   height: 48px;
   position: absolute;

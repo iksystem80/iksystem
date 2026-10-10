@@ -1,149 +1,151 @@
 <template>
-  <div class="activity-tab" v-loading="loading" element-loading-text="Loading customer activity...">
-    <el-empty v-if="!loading && activities.length === 0 && recentMatchImages.length === 0" description="No customer activity found." class="small-empty" />
-    <template v-else>
-      <!-- ACTIVITY HISTORY -->
-      <div v-if="activities.length" class="activity-section">
-        <div class="section-heading">
-          <div>
-            <h3>Activity History</h3>
-            <p>
-              Check-ins, check-outs and match points for this customer.
-            </p>
-          </div>
-          <el-button text :loading="loading" @click="loadActivity">
-            <el-icon>
-              <Refresh />
-            </el-icon>
-            Refresh
-          </el-button>
-        </div>
-        <el-timeline class="activity-timeline">
-          <el-timeline-item v-for="item in activities" :key="item.id" :timestamp="formatDateTime(item.date)" placement="top" :type="timelineType(item.type)">
-            <div class="activity-entry">
-              <div class="activity-row">
-                <div class="activity-icon" :class="activityIconClass(item.type)">
-                  <el-icon>
-                    <component :is="activityIcon(item.type)" />
-                  </el-icon>
-                </div>
-                <div class="activity-main">
-                  <div class="activity-heading">
-                    <div class="activity-title">
-                      <h4>
-                        {{ item.title }}
-                      </h4>
-                      <el-tag :type="tagType(item.type)" size="small" effect="light" round>
-                        {{ tagLabel(item.type) }}
-                      </el-tag>
-                    </div>
+  <el-card shadow="never">
+    <div class="activity-tab" v-loading="loading" element-loading-text="Loading customer activity...">
+      <el-empty v-if="!loading && activities.length === 0 && recentMatchImages.length === 0" description="No customer activity found." class="small-empty" />
+      <template v-else>
+        <!-- ACTIVITY HISTORY -->
+        <div v-if="activities.length" class="activity-section">
+          <!--<div class="section-heading">
+            <div>
+              <h3>Activity History</h3>
+              <p>
+                Check-ins, check-outs and match points for this customer.
+              </p>
+            </div>
+            <el-button text :loading="loading" @click="loadActivity">
+              <el-icon>
+                <Refresh />
+              </el-icon>
+              Refresh
+            </el-button>
+          </div>-->
+          <el-timeline class="activity-timeline">
+            <el-timeline-item v-for="item in activities" :key="item.id" :timestamp="formatDateTime(item.date)" placement="top" :type="timelineType(item.type)">
+              <div class="activity-entry">
+                <div class="activity-row">
+                  <div class="activity-icon" :class="activityIconClass(item.type)">
+                    <el-icon>
+                      <component :is="activityIcon(item.type)" />
+                    </el-icon>
                   </div>
-                  <p class="activity-description">
-                    {{ item.description }}
-                  </p>
-                  <div v-if="item.type === 'MATCH_POINTS'" class="match-meta">
-                    <div class="meta-item">
-                      <el-icon>
-                        <Coin />
-                      </el-icon>
-                      <span>
-                        <strong>
-                          {{ Number(item.points || 0).toLocaleString() }}
-                        </strong>
-                        points
-                      </span>
+                  <div class="activity-main">
+                    <div class="activity-heading">
+                      <div class="activity-title">
+                        <h4>
+                          {{ item.title }}
+                        </h4>
+                        <el-tag :type="tagType(item.type)" size="small" effect="light" round>
+                          {{ tagLabel(item.type) }}
+                        </el-tag>
+                      </div>
                     </div>
-                    <div v-if="item.machineNumber" class="meta-item">
-                      <el-icon>
-                        <Monitor />
-                      </el-icon>
-                      <span>
-                        Machine {{ item.machineNumber }}
-                      </span>
-                    </div>
-                    <div v-if="item.assignedBy" class="meta-item">
-                      <el-icon>
-                        <User />
-                      </el-icon>
-                      <span>
-                        {{ item.assignedBy }}
-                      </span>
+                    <p class="activity-description">
+                      {{ item.description }}
+                    </p>
+                    <div v-if="item.type === 'MATCH_POINTS'" class="match-meta">
+                      <div class="meta-item">
+                        <el-icon>
+                          <Coin />
+                        </el-icon>
+                        <span>
+                          <strong>
+                            {{ Number(item.points || 0).toLocaleString() }}
+                          </strong>
+                          points
+                        </span>
+                      </div>
+                      <div v-if="item.machineNumber" class="meta-item">
+                        <el-icon>
+                          <Monitor />
+                        </el-icon>
+                        <span>
+                          Machine {{ item.machineNumber }}
+                        </span>
+                      </div>
+                      <div v-if="item.assignedBy" class="meta-item">
+                        <el-icon>
+                          <User />
+                        </el-icon>
+                        <span>
+                          {{ item.assignedBy }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </el-timeline-item>
-        </el-timeline>
-      </div>
-      <!-- LAST 7 MATCH IMAGES -->
-      <div v-if="recentMatchImages.length" class="recent-matches">
-        <el-divider />
-        <div class="section-heading match-section-heading">
-          <div>
-            <h3>Recent Match Images</h3>
-            <p>
-              Last {{ recentMatchImages.length }} match point
-              {{ recentMatchImages.length === 1 ? 'image' : 'images' }}.
-            </p>
-          </div>
-          <el-tag type="primary" effect="light" round>
-            Last 7
-          </el-tag>
+            </el-timeline-item>
+          </el-timeline>
         </div>
-        <el-carousel :interval="5000" :type="carouselType" :height="carouselHeight" indicator-position="outside" arrow="always" class="match-carousel">
-          <el-carousel-item v-for="(item, index) in recentMatchImages" :key="item.id">
-            <div class="match-slide">
-              <el-image :src="item.imageUrl" fit="cover" class="match-image" :preview-src-list="previewImages" :initial-index="index" preview-teleported>
-                <template #error>
-                  <div class="image-error">
-                    <el-icon>
-                      <Picture />
-                    </el-icon>
+        <!-- LAST 7 MATCH IMAGES -->
+        <div v-if="recentMatchImages.length" class="recent-matches">
+          <el-divider />
+          <div class="section-heading match-section-heading">
+            <div>
+              <h3>Recent Match Images</h3>
+              <p>
+                Last {{ recentMatchImages.length }} match point
+                {{ recentMatchImages.length === 1 ? 'image' : 'images' }}.
+              </p>
+            </div>
+            <el-tag type="primary" effect="light" round>
+              Last 7
+            </el-tag>
+          </div>
+          <el-carousel :interval="5000" :type="carouselType" :height="carouselHeight" indicator-position="outside" arrow="always" class="match-carousel">
+            <el-carousel-item v-for="(item, index) in recentMatchImages" :key="item.id">
+              <div class="match-slide">
+                <el-image :src="item.imageUrl" fit="cover" class="match-image" :preview-src-list="previewImages" :initial-index="index" preview-teleported>
+                  <template #error>
+                    <div class="image-error">
+                      <el-icon>
+                        <Picture />
+                      </el-icon>
+                      <span>
+                        Image unavailable
+                      </span>
+                    </div>
+                  </template>
+                </el-image>
+
+                <div class="match-info">
+
+                  <div class="match-points">
+                    <strong>
+                      {{ Number(item.points || 0).toLocaleString() }}
+                    </strong>
+
                     <span>
-                      Image unavailable
+                      points
                     </span>
                   </div>
-                </template>
-              </el-image>
 
-              <div class="match-info">
+                  <div class="match-details">
 
-                <div class="match-points">
-                  <strong>
-                    {{ Number(item.points || 0).toLocaleString() }}
-                  </strong>
+                    <span>
+                      {{ formatDateTime(item.date) }}
+                    </span>
 
-                  <span>
-                    points
-                  </span>
-                </div>
+                    <span v-if="item.machineNumber">
+                      Machine {{ item.machineNumber }}
+                    </span>
 
-                <div class="match-details">
+                    <span v-if="item.assignedBy">
+                      Assigned by {{ item.assignedBy }}
+                    </span>
 
-                  <span>
-                    {{ formatDateTime(item.date) }}
-                  </span>
-
-                  <span v-if="item.machineNumber">
-                    Machine {{ item.machineNumber }}
-                  </span>
-
-                  <span v-if="item.assignedBy">
-                    Assigned by {{ item.assignedBy }}
-                  </span>
+                  </div>
 
                 </div>
 
               </div>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
 
-            </div>
-          </el-carousel-item>
-        </el-carousel>
-      </div>
-
-    </template>
-  </div>
+      </template>
+    </div>
+    </el-card>
 </template>
 
 <script setup>
@@ -340,7 +342,7 @@ onMounted(loadActivity);
 <style scoped lang="scss">
         .activity-tab {
             min-height: 220px;
-            padding: 8px 2px 4px;
+            padding: 10px;
         }
 
         .section-heading {

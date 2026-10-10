@@ -80,11 +80,17 @@ export default defineComponent({
   margin-left: 8px;
 
   .no-redirect {
-    color: #97a8be;
+    color: var(--app-navbar-text) !important;
     cursor: text;
   }
 
   .el-breadcrumb__item {
+    :deep(.el-breadcrumb__inner),
+    :deep(.el-breadcrumb__inner a),
+    :deep(.el-breadcrumb__separator) {
+      color: var(--app-navbar-text) !important;
+    }
+
     :deep(.el-breadcrumb__inner a) {
       font-weight: 400 !important;
     }

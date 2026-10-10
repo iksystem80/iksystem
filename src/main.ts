@@ -4,22 +4,22 @@ import router from './router';
 import { setupStore } from './store';
 import SvgIcon from './icons';
 import './permission';
-import vPermission from './directive/permission/index';
 import { checkEnableLogs } from './utils/error-log';
 import ElementPlus from 'element-plus';
-import 'element-plus/dist/index.css';
+// import 'element-plus/dist/index.css';
 import '@/styles/index.scss';
-// import '@/styles/ik.scss';
-// import '@/styles/my.scss';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { Capacitor } from '@capacitor/core';
+import { applyTheme, getStoredTheme } from '@/utils/theme';
+
+// Apply the saved theme before Vue mounts to avoid a light-theme flash.
+applyTheme(getStoredTheme(), false);
 
 const app = createApp(App);
 
 setupStore(app);
 
 app.component('svg-icon', SvgIcon);
-app.directive('permission', vPermission);
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);

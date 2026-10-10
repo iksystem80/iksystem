@@ -1,6 +1,11 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { ref } from 'vue';
 import defaultSettings from '@/settings';
+import {
+  applyTheme,
+  getStoredTheme,
+  type AppTheme
+} from '@/utils/theme';
 
 const {
   showSettings,
@@ -11,7 +16,7 @@ const {
 } = defaultSettings;
 
 export interface ISettingsState {
-    theme: string
+    theme: AppTheme
     showSettings: boolean
     tagsView: boolean
     fixedHeader: boolean
@@ -20,12 +25,15 @@ export interface ISettingsState {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  const theme = ref<string>('#1890ff');
+  const theme = ref<AppTheme>(getStoredTheme());
   const showSettingsRef = ref<boolean>(showSettings);
   const tagsViewRef = ref<boolean>(tagsView);
   const fixedHeaderRef = ref<boolean>(fixedHeader);
   const sidebarLogoRef = ref<boolean>(sidebarLogo);
   const secondMenuPopupRef = ref<boolean>(secondMenuPopup);
+
+  // Keep the DOM in sync when the store is first created.
+  applyTheme(theme.value, false);
 
   function changeSetting<K extends keyof ISettingsState>({
     key,
@@ -36,7 +44,8 @@ export const useSettingsStore = defineStore('settings', () => {
     }) {
     switch (key) {
       case 'theme':
-        theme.value = value as string;
+        theme.value = value as AppTheme;
+        applyTheme(theme.value);
         break;
 
       case 'showSettings':

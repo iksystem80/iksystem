@@ -23,50 +23,6 @@
             {{ formatPhone(customer.phone) }}
           </span>
         </div>
-
-        <div class="customer-profile-status-row">
-          <el-tag
-            v-if="customer.isactive"
-            type="success"
-            effect="light"
-            size="small"
-            round
-          >
-            Active
-          </el-tag>
-
-          <el-tag
-            v-else
-            type="info"
-            effect="plain"
-            size="small"
-            round
-          >
-            Inactive
-          </el-tag>
-
-          <el-tag
-            :type="
-              String(customer.verificationmethod || '').toLowerCase() === 'bypass'
-                ? 'warning'
-                : customer.phoneverified === true
-                  ? 'success'
-                  : 'info'
-            "
-            effect="light"
-            size="small"
-            round
-            class="customer-verification-badge"
-          >
-            {{
-              String(customer.verificationmethod || '').toLowerCase() === 'bypass'
-                ? 'Bypass'
-                : customer.phoneverified === true
-                  ? 'Verified'
-                  : 'Unverified'
-            }}
-          </el-tag>
-        </div>
       </div>
 
     </div>
@@ -82,8 +38,9 @@
         <div class="info-content">
           <span>Points</span>
           <strong>
-            {{ Number(customer.points || 0).toLocaleString() }}
-          </strong>
+            {{customer.points}}
+            </strong>
+            <!--<PointsBadge :points="customer.points" />-->
         </div>
       </div>
       <div class="info-item">
@@ -169,10 +126,10 @@
 
 <script setup>
 import { formatPhone } from '@/utils/phone';
+import PointsBadge from '@/components/pointsbadge/index.vue';
 
 import {
   Calendar,
-  Coin,
   Document,
   Phone,
   StarFilled,
@@ -185,6 +142,7 @@ defineProps({
     required: true
   }
 });
+
 </script>
 
 <style lang="scss" scoped>
@@ -192,8 +150,12 @@ defineProps({
         .profile-card {
             margin-bottom: 20px;
             border-radius: 16px;
-            border: 1px solid var(--el-border-color-lighter);
-            background: #fff;
+            border: 1px solid var(--stat-card-border);
+            background: linear-gradient(
+                145deg,
+                var(--stat-card-bg-start) 0%,
+                var(--stat-card-bg-end) 100%
+            );
         }
 
             .profile-card :deep(.el-card__body) {
@@ -284,9 +246,13 @@ defineProps({
             gap: 10px;
             min-width: 0;
             padding: 11px 10px;
-            border: 1px solid var(--el-border-color-lighter);
+            border: 1px solid var(--stat-card-border);
             border-radius: 12px;
-            background: #fff;
+            background: linear-gradient(
+                145deg,
+                var(--stat-card-bg-start) 0%,
+                var(--stat-card-bg-end) 100%
+            );
         }
 
         .info-icon {
@@ -304,6 +270,10 @@ defineProps({
 
         .info-content {
             min-width: 0;
+        }
+
+        .info-content .points-badge {
+            margin-top: 4px;
         }
 
         .info-item span,

@@ -94,6 +94,7 @@ declare module 'vue' {
     Pagination: typeof import('./src/components/pagination/index.vue')['default']
     Panthumb: typeof import('./src/components/panthumb/index.vue')['default']
     Photopreviewicon: typeof import('./src/components/photopreviewicon/index.vue')['default']
+    Pointsbadge: typeof import('./src/components/pointsbadge/index.vue')['default']
     Rightpanel: typeof import('./src/components/rightpanel/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -106,6 +107,7 @@ declare module 'vue' {
     Svgicon: typeof import('./src/components/svgicon/index.vue')['default']
     Tinymce: typeof import('./src/components/tinymce/index.vue')['default']
     Uploadexcel: typeof import('./src/components/uploadexcel/index.vue')['default']
+    Verificationbadge: typeof import('./src/components/verificationbadge/index.vue')['default']
     VueCountto: typeof import('./src/components/vue-count-to/vue-countto.vue')['default']
   }
   export interface GlobalDirectives {

@@ -1,41 +1,43 @@
 <template>
-  <div class="timeline-container">
-    <div v-if="loading" class="timeline-loading">
-      Loading history...
+  <el-card shadow="never">
+    <div class="timeline-container">
+      <div v-if="loading" class="timeline-loading">
+        Loading history...
+      </div>
+      <el-empty v-else-if="groupedTimeline.length === 0" description="No customer activity found." />
+      <el-timeline v-else>
+        <el-timeline-item v-for="group in groupedTimeline" :key="group.key" :timestamp="group.displayDateTime" placement="top" type="primary">
+          <el-card class="timeline-card" shadow="hover">
+            <div v-for="(item, index) in group.items" :key="item.id" class="timeline-log">
+              <div class="timeline-header">
+                <h4>
+                  {{ getTitle(item) }}
+                </h4>
+                <el-tag :type="getTagType(item.logtype)" size="small" effect="light">
+                  {{ getTagLabel(item.logtype) }}
+                </el-tag>
+              </div>
+              <p class="timeline-description">
+                {{ item.description }}
+              </p>
+              <div v-if="item.oldvalue !== null && item.newvalue !== null" class="change-values">
+                <span class="old-value">
+                  {{ formatValue(item.logtype, item.oldvalue) }}
+                </span>
+                <span class="arrow">
+                  →
+                </span>
+                <span class="new-value">
+                  {{ formatValue(item.logtype, item.newvalue) }}
+                </span>
+              </div>
+              <el-divider v-if="index < group.items.length - 1" class="log-divider" />
+            </div>
+          </el-card>
+        </el-timeline-item>
+      </el-timeline>
     </div>
-    <el-empty v-else-if="groupedTimeline.length === 0" description="No customer activity found." />
-    <el-timeline v-else>
-      <el-timeline-item v-for="group in groupedTimeline" :key="group.key" :timestamp="group.displayDateTime" placement="top" type="primary">
-        <el-card class="timeline-card" shadow="hover">
-          <div v-for="(item, index) in group.items" :key="item.id" class="timeline-log">
-            <div class="timeline-header">
-              <h4>
-                {{ getTitle(item) }}
-              </h4>
-              <el-tag :type="getTagType(item.logtype)" size="small" effect="light">
-                {{ getTagLabel(item.logtype) }}
-              </el-tag>
-            </div>
-            <p class="timeline-description">
-              {{ item.description }}
-            </p>
-            <div v-if="item.oldvalue !== null && item.newvalue !== null" class="change-values">
-              <span class="old-value">
-                {{ formatValue(item.logtype, item.oldvalue) }}
-              </span>
-              <span class="arrow">
-                →
-              </span>
-              <span class="new-value">
-                {{ formatValue(item.logtype, item.newvalue) }}
-              </span>
-            </div>
-            <el-divider v-if="index < group.items.length - 1" class="log-divider" />
-          </div>
-        </el-card>
-      </el-timeline-item>
-    </el-timeline>
-  </div>
+    </el-card>
 </template>
 
 <script setup>
@@ -201,7 +203,7 @@ onMounted(() => {
     }
 
     .timeline-container {
-        padding: 20px 10px;
+        padding: 10px;
     }
 
     .timeline-loading {

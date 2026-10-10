@@ -24,31 +24,24 @@
 
     <div class="right-menu">
 
-      <span class="right-menu-item clock-menu-item"
-            style="cursor: pointer; height: 50px; align-items: center; justify-content: center; "
-            @click="openClockPage">
-        <el-icon v-if="userStore.isClockedIn" size="24" style="color:forestgreen;margin-top:13px;"><Clock /></el-icon>
-        <el-icon v-else size="24" style="color:indianred;margin-top:13px;"><Clock /></el-icon>
-      </span>
+      <div class="right-menu-item hover-effect navbar-circle-control"
+           @click="openClockPage">
+        <el-icon size="24" class="clock-status-icon" :class="userStore.isClockedIn ? 'is-clocked-in' : 'is-clocked-out'"><Clock /></el-icon>
+     </div>
 
       <template v-if="device !== 'mobile'">
-
-        <!--<Search id="header-search"
-                  class="right-menu-item" />-->
-
-
 
         <ErrorLog v-if="userStore.isSystemAdmin"
                   class="errLog-container right-menu-item hover-effect" />
 
         <Screenfull id="screenfull"
-                    class="right-menu-item hover-effect" />
+                    class="right-menu-item hover-effect navbar-circle-control" />
 
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect"
                    trigger="click">
-        <div class="avatar-wrapper">
+        <div class="avatar-wrapper ">
 
           <!-- REAL AVATAR -->
           <img v-if="avatar && !avatarLoadFailed"
@@ -152,6 +145,28 @@
 
             </template>
 
+            <!-- THEME -->
+            <el-dropdown-item disabled class="section-title">
+              Theme
+            </el-dropdown-item>
+
+            <el-dropdown-item v-for="item in themeOptions"
+                              :key="item.value"
+                              @click="changeTheme(item.value)">
+
+              <span class="theme-dot" :style="{ backgroundColor: item.color }" />
+
+              <span style="font-size:12px;">
+                {{ item.label }}
+              </span>
+
+              <el-icon v-if="settingsStore.theme === item.value"
+                       class="selected-location-icon">
+                <Check />
+              </el-icon>
+
+            </el-dropdown-item>
+
             <!-- LOGOUT -->
             <el-dropdown-item divided
                               @click="logout">
@@ -194,6 +209,8 @@ import ErrorLog from '@/components/errorlog';
 import Screenfull from '@/components/screenfull';
 import { useAppStore } from '@/store/modules/app';
 import { useUserStore } from '@/store/modules/user';
+import { useSettingsStore } from '@/store/modules/settings';
+import type { AppTheme } from '@/utils/theme';
 
 defineOptions({
   name: 'Navbar'
@@ -207,6 +224,7 @@ interface LocationItem {
 
 const appStore = useAppStore();
 const userStore = useUserStore();
+const settingsStore = useSettingsStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -221,6 +239,21 @@ const {
   locations,
   location
 } = storeToRefs(userStore);
+
+const themeOptions: Array<{ label: string; value: AppTheme; color: string }> = [
+  { label: 'Light', value: 'light', color: '#887baf' },
+  { label: 'Dark', value: 'dark', color: '#181b20' },
+  { label: 'Coffee', value: 'coffee', color: '#6f4e37' },
+  { label: 'Blue', value: 'blue', color: '#2563eb' },
+  { label: 'Orange', value: 'orange', color: '#ea580c' }
+];
+
+function changeTheme(theme: AppTheme) {
+  settingsStore.changeSetting({
+    key: 'theme',
+    value: theme
+  });
+}
 
 function openClockPage() {
   router.push({
@@ -273,4 +306,15 @@ async function selectedLocation(item: LocationItem) {
 }
 </script>
 
+<style scoped lang="scss">
+.theme-dot {
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--el-border-color);
+  flex: 0 0 auto;
+}
 
+
+</style>

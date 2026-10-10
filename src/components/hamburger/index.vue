@@ -33,6 +33,8 @@ export default defineComponent({
   vertical-align: middle;
   width: 20px;
   height: 20px;
+  fill: currentColor;
+  color: var(--app-navbar-text);
 }
 
 .hamburger.is-active {

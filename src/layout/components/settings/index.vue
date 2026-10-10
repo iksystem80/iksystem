@@ -3,10 +3,15 @@
     <div>
       <h3 class="drawer-title">系统设置</h3>
 
-      <!-- <div class="drawer-item">
-              <span>Theme Color</span>
-              <theme-picker style="float: right;height: 26px;margin: -3px 8px 0 0;" @change="themeChange" />
-            </div> -->
+      <div class="drawer-item">
+        <span>Theme</span>
+        <el-select v-model="theme" size="small" style="width: 110px; float: right;">
+          <el-option label="Light" value="light" />
+          <el-option label="Dark" value="dark" />
+          <el-option label="Blue" value="blue" />
+          <el-option label="Orange" value="orange" />
+        </el-select>
+      </div>
 
       <div class="drawer-item">
         <span>开启 Tags-View</span>
@@ -45,6 +50,17 @@ export default defineComponent({
     return {};
   },
   computed: {
+    theme: {
+      get() {
+        return store.settings().theme;
+      },
+      set(val) {
+        store.settings().changeSetting({
+          key: 'theme',
+          value: val
+        });
+      }
+    },
     fixedHeader: {
       get() {
         return store.settings().fixedHeader;
@@ -88,14 +104,6 @@ export default defineComponent({
           value: val
         });
       }
-    }
-  },
-  methods: {
-    themeChange(val) {
-      store.settings().changeSetting({
-        key: 'theme',
-        value: val
-      });
     }
   }
 });
