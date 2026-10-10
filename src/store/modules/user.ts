@@ -306,9 +306,7 @@ export const useUserStore = defineStore('user', () => {
         );
 
       isClocked.value =Boolean(response?.data?.clockedIn);
-
-      activeClockSession.value =
-        response?.data?.session || null;
+      activeClockSession.value = response?.data?.session || null;
     } catch (error) {
       console.error(
         'Unable to load clock status:',

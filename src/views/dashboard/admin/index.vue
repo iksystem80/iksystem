@@ -37,6 +37,7 @@ import PieChart from '../components/piechart';
 import BarChart from '../components/barchart';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
+import { getClockStatus } from '@/api/employeesession';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -56,14 +57,24 @@ function handleSetLineChartData(type) {
   // }
 }
 
-onMounted(() => {
-  // console.log('Check here')
-  // console.log('isEmployee: ' + userStore.isEmployee)
-  // console.log('isClockedIn ' + userStore.isClockedIn)
+onMounted(async() => {
+  if (userStore.isEmployee) {
+    try {
+      const response = await getClockStatus(userStore.userId);
 
-  if (userStore.isEmployee && !userStore.isClockedIn) {
-    // console.log('Check here 2')
-    router.push('/clock/index');
+      const isClockedIn = response.data?.clockedIn === true;
+
+      userStore.setClockedIn(isClockedIn);
+
+      // console.log('isEmployee: ' + userStore.isEmployee);
+      // console.log('isClockedIn: ' + userStore.isClockedIn);
+
+      if (!isClockedIn) {
+        router.push('/clock/index');
+      }
+    } catch (error) {
+      console.error('Unable to check clock status:', error);
+    }
   }
 });
 </script>

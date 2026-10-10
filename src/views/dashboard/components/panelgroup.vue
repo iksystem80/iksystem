@@ -134,10 +134,10 @@ async function loadDash() {
     // Get location ID from Pinia
     const locationid = userStore.locationId;
 
-    console.log('loc:' + locationid);
+    //console.log('loc:' + locationid);
     const response = await getdashboard(locationid);
 
-    console.log(response);
+    //console.log(response);
 
     dashData.value = response.data;
   } catch (error) {
@@ -160,7 +160,7 @@ onMounted(() => {
 watch(
   () => checkinStore.refreshKey,
   () => {
-    console.log('New check-in detected on Dashboard');
+    //console.log('New check-in detected on Dashboard');
     isFirstLoad.value = false;
     loadDash();
   }

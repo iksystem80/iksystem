@@ -59,14 +59,20 @@
             <div class="session-info">
               <el-row :gutter="10">
                 <el-col :span="12">
-                  <el-statistic title="Clocked In" :value="
-                    formatTime(
-                      session?.clockIn
-                    )
-                  " />
+                  <div class="session-stat">
+                    <div class="session-stat-title">Clocked In</div>
+                    <div class="session-stat-value">
+                      {{ formatTime(session?.clockIn) }}
+                    </div>
+                  </div>
                 </el-col>
                 <el-col :span="12">
-                  <el-statistic title="Working Time" :value="elapsedDisplay" />
+                  <div class="session-stat">
+                    <div class="session-stat-title">Working Time</div>
+                    <div class="session-stat-value">
+                      {{ elapsedDisplay }}
+                    </div>
+                  </div>
                 </el-col>
               </el-row>
             </div>
@@ -234,21 +240,21 @@
 
 <script setup>
 import {
-      ref,
-      computed,
-      onMounted,
-      onBeforeUnmount
+        ref,
+        computed,
+        onMounted,
+        onBeforeUnmount
 } from 'vue';
 
 import {
-      VideoPlay,
-      SwitchButton,
-      Refresh
+        VideoPlay,
+        SwitchButton,
+        Refresh
 } from '@element-plus/icons-vue';
 
 import {
-      ElMessage,
-      ElMessageBox
+        ElMessage,
+        ElMessageBox
 } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
@@ -256,14 +262,14 @@ import { useRouter } from 'vue-router';
 import { getEmployeeFinance } from '@/api/employeefinance';
 
 import {
-      clockIn,
-      clockOut,
-      getClockStatus,
-      getEmployeeSessions
+        clockIn,
+        clockOut,
+        getClockStatus,
+        getEmployeeSessions
 } from '@/api/employeesession';
 
 const userStore =
-            useUserStore();
+              useUserStore();
 
 const router = useRouter();
 // Match this path to your existing Employee Transactions router entry.
@@ -275,51 +281,51 @@ const cashCheckError = ref('');
 const goToEmployeeFinance = () => router.push(employeeFinancePath);
 
 async function checkSessionCash() {
-      if (!clockedIn.value || !session.value?.id || !userStore.locationId) {
-        cashCloseRequired.value = false;
+        if (!clockedIn.value || !session.value?.id || !userStore.locationId) {
+          cashCloseRequired.value = false;
+          cashCheckError.value = '';
+          return { requiresFinance: false };
+        }
+        cashChecking.value = true;
         cashCheckError.value = '';
-        return { requiresFinance: false };
-      }
-      cashChecking.value = true;
-      cashCheckError.value = '';
-      try {
-        const response = await getEmployeeFinance(userStore.locationId);
-        const data = response.data || {};
-        // A finance session must never bypass its handover just because its
-        // balance happens to be zero at this moment.
-        const sameSession = Number(data.session?.id) === Number(session.value.id);
-        if (!sameSession) throw new Error('Unable to verify the active cash session.');
-        const requiresFinance = Number(data.summary?.entry_count || 0) > 0 ||
-                Number(data.summary?.pointsCount || 0) > 0;
-        cashCloseRequired.value = requiresFinance;
-        return { requiresFinance, balance: Number(data.summary?.balance || 0) };
-      } catch (error) {
-        cashCheckError.value = error?.response?.data?.message || error?.message || 'Unable to verify your cash balance.';
-        // Fail closed: a network error must not allow bypassing cash handover.
-        cashCloseRequired.value = true;
-        return { requiresFinance: true, checkFailed: true };
-      } finally {
-        cashChecking.value = false;
-      }
+        try {
+          const response = await getEmployeeFinance(userStore.locationId);
+          const data = response.data || {};
+          // A finance session must never bypass its handover just because its
+          // balance happens to be zero at this moment.
+          const sameSession = Number(data.session?.id) === Number(session.value.id);
+          if (!sameSession) throw new Error('Unable to verify the active cash session.');
+          const requiresFinance = Number(data.summary?.entry_count || 0) > 0 ||
+                  Number(data.summary?.pointsCount || 0) > 0;
+          cashCloseRequired.value = requiresFinance;
+          return { requiresFinance, balance: Number(data.summary?.balance || 0) };
+        } catch (error) {
+          cashCheckError.value = error?.response?.data?.message || error?.message || 'Unable to verify your cash balance.';
+          // Fail closed: a network error must not allow bypassing cash handover.
+          cashCloseRequired.value = true;
+          return { requiresFinance: true, checkFailed: true };
+        } finally {
+          cashChecking.value = false;
+        }
 }
 
 const loading =
-            ref(false);
+              ref(false);
 
 const historyLoading =
-            ref(false);
+              ref(false);
 
 const clockedIn =
-            ref(false);
+              ref(false);
 
 const session =
-            ref(null);
+              ref(null);
 
 const sessions =
-            ref([]);
+              ref([]);
 
 const now =
-            ref(new Date());
+              ref(new Date());
 
 let timer = null;
 
@@ -328,128 +334,128 @@ let timer = null;
 // ============================================================
 
 const userInitial =
-            computed(() => {
-              const value =
-                userStore.name || '';
+              computed(() => {
+                const value =
+                  userStore.name || '';
 
-              return value
-                ? value.charAt(0).toUpperCase()
-                : '?';
-            });
+                return value
+                  ? value.charAt(0).toUpperCase()
+                  : '?';
+              });
 
 // ============================================================
 // CURRENT TIME
 // ============================================================
 
 const currentTime =
-            computed(() => {
-              return now.value
-                .toLocaleTimeString(
-                  'en-US',
-                  {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit'
-                  }
-                );
-            });
+              computed(() => {
+                return now.value
+                  .toLocaleTimeString(
+                    'en-US',
+                    {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    }
+                  );
+              });
 
 const currentDate =
-            computed(() => {
-              return now.value
-                .toLocaleDateString(
-                  'en-US',
-                  {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                  }
-                );
-            });
+              computed(() => {
+                return now.value
+                  .toLocaleDateString(
+                    'en-US',
+                    {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }
+                  );
+              });
 
 // ============================================================
 // ELAPSED WORK TIME
 // ============================================================
 
 const elapsedSeconds =
-            computed(() => {
-              if (
-                !clockedIn.value ||
-                !session.value?.clockIn
-              ) {
-                return 0;
-              }
+              computed(() => {
+                if (
+                  !clockedIn.value ||
+                  !session.value?.clockIn
+                ) {
+                  return 0;
+                }
 
-              const start =
-                new Date(
-                  session.value.clockIn
-                ).getTime();
+                const start =
+                  new Date(
+                    session.value.clockIn
+                  ).getTime();
 
-              const current =
-                now.value.getTime();
+                const current =
+                  now.value.getTime();
 
-              return Math.max(
-                0,
-                Math.floor(
-                  (current - start) / 1000
-                )
-              );
-            });
+                return Math.max(
+                  0,
+                  Math.floor(
+                    (current - start) / 1000
+                  )
+                );
+              });
 
 const elapsedDisplay =
-            computed(() => {
-              const seconds =
-                elapsedSeconds.value;
+              computed(() => {
+                const seconds =
+                  elapsedSeconds.value;
 
-              const hours =
-                Math.floor(
-                  seconds / 3600
-                );
+                const hours =
+                  Math.floor(
+                    seconds / 3600
+                  );
 
-              const minutes =
-                Math.floor(
-                  (seconds % 3600) / 60
-                );
+                const minutes =
+                  Math.floor(
+                    (seconds % 3600) / 60
+                  );
 
-              const remainingSeconds =
-                seconds % 60;
+                const remainingSeconds =
+                  seconds % 60;
 
-              return [
-                hours,
-                minutes,
-                remainingSeconds
-              ]
-                .map(value =>
-                  String(value)
-                    .padStart(2, '0')
-                )
-                .join(':');
-            });
+                return [
+                  hours,
+                  minutes,
+                  remainingSeconds
+                ]
+                  .map(value =>
+                    String(value)
+                      .padStart(2, '0')
+                  )
+                  .join(':');
+              });
 
 // ============================================================
 // STATUS
 // ============================================================
 
 const loadStatus = async () => {
-      try {
-        const response =
-                  await getClockStatus(
-                    userStore.userId
-                  );
+        try {
+          const response =
+                    await getClockStatus(
+                      userStore.userId
+                    );
 
-        clockedIn.value = response.data.clockedIn;
-        userStore.setClockedIn(response.data.clockedIn);
+          clockedIn.value = response.data.clockedIn;
+          userStore.setClockedIn(response.data.clockedIn);
 
-        session.value = response.data.session;
-        if (clockedIn.value) await checkSessionCash();
-        else cashCloseRequired.value = false;
-      } catch (error) {
-        ElMessage.error(
-          error.response?.data?.message ||
-                  'Unable to load clock status.'
-        );
-      }
+          session.value = response.data.session;
+          if (clockedIn.value) await checkSessionCash();
+          else cashCloseRequired.value = false;
+        } catch (error) {
+          ElMessage.error(
+            error.response?.data?.message ||
+                    'Unable to load clock status.'
+          );
+        }
 };
 
 // ============================================================
@@ -457,83 +463,83 @@ const loadStatus = async () => {
 // ============================================================
 
 const handleClockIn =
-            async () => {
-              try {
-                loading.value = true;
+              async () => {
+                try {
+                  loading.value = true;
 
-                const payload = {
-                  userid:
-                    userStore.userId,
+                  const payload = {
+                    userid:
+                      userStore.userId,
 
-                  locationid:
-                    userStore.locationId
-                };
+                    locationid:
+                      userStore.locationId
+                  };
 
-                const response =
-                  await clockIn(payload);
+                  const response =
+                    await clockIn(payload);
 
-                ElMessage.success(
-                  response.message
-                );
+                  ElMessage.success(
+                    response.message
+                  );
 
-                await loadStatus();
-                await loadSessions();
+                  await loadStatus();
+                  await loadSessions();
 
-                if (
-                  userStore.isEmployee &&
-                  userStore.isClockedIn
-                ) {
-                  await router.replace('/');
+                  if (
+                    userStore.isEmployee &&
+                    userStore.isClockedIn
+                  ) {
+                    await router.replace('/');
+                  }
+                } catch (error) {
+                  ElMessage.error(
+                    error.response?.data?.message ||
+                    'Unable to clock in.'
+                  );
+                } finally {
+                  loading.value = false;
                 }
-              } catch (error) {
-                ElMessage.error(
-                  error.response?.data?.message ||
-                  'Unable to clock in.'
-                );
-              } finally {
-                loading.value = false;
-              }
-            };
+              };
 
 // ============================================================
 // CLOCK OUT
 // ============================================================
 
 const handleClockOut = async () => {
-      if (loading.value || cashChecking.value) return;
-      try {
-        loading.value = true;
-        // Recheck immediately before submission; old page state is not trusted.
-        const cash = await checkSessionCash();
-        if (cash.requiresFinance) {
-          if (cash.checkFailed) {
-            ElMessage.error(`${cashCheckError.value} Clock-out is blocked until finance can be verified.`);
-          } else {
-            ElMessage.warning('This session has cash activity. Use Employee Transactions to hand over cash and clock out.');
-          }
-          await ElMessageBox.confirm(
-            'Your session has cash activity. Go to Employee Transactions to complete the cash handover and clock out.',
-            'Cash handover required',
-            { type: 'warning', confirmButtonText: 'Go to Employee Transactions', cancelButtonText: 'Stay here' }
-          ).then(goToEmployeeFinance).catch(() => {});
-          return;
-        }
+        if (loading.value || cashChecking.value) return;
         try {
-          await ElMessageBox.confirm(
-            'Are you sure you want to clock out?',
-            'Clock Out',
-            { confirmButtonText: 'Clock Out', cancelButtonText: 'Cancel', type: 'warning' }
-          );
-        } catch { return; }
-        const response = await clockOut({ userid: userStore.userId });
-        ElMessage.success(response.message);
-        await loadStatus();
-        await loadSessions();
-      } catch (error) {
-        ElMessage.error(error?.response?.data?.message || 'Unable to clock out.');
-      } finally {
-        loading.value = false;
-      }
+          loading.value = true;
+          // Recheck immediately before submission; old page state is not trusted.
+          const cash = await checkSessionCash();
+          if (cash.requiresFinance) {
+            if (cash.checkFailed) {
+              ElMessage.error(`${cashCheckError.value} Clock-out is blocked until finance can be verified.`);
+            } else {
+              ElMessage.warning('This session has cash activity. Use Employee Transactions to hand over cash and clock out.');
+            }
+            await ElMessageBox.confirm(
+              'Your session has cash activity. Go to Employee Transactions to complete the cash handover and clock out.',
+              'Cash handover required',
+              { type: 'warning', confirmButtonText: 'Go to Employee Transactions', cancelButtonText: 'Stay here' }
+            ).then(goToEmployeeFinance).catch(() => {});
+            return;
+          }
+          try {
+            await ElMessageBox.confirm(
+              'Are you sure you want to clock out?',
+              'Clock Out',
+              { confirmButtonText: 'Clock Out', cancelButtonText: 'Cancel', type: 'warning' }
+            );
+          } catch { return; }
+          const response = await clockOut({ userid: userStore.userId });
+          ElMessage.success(response.message);
+          await loadStatus();
+          await loadSessions();
+        } catch (error) {
+          ElMessage.error(error?.response?.data?.message || 'Unable to clock out.');
+        } finally {
+          loading.value = false;
+        }
 };
 
 // ============================================================
@@ -541,83 +547,83 @@ const handleClockOut = async () => {
 // ============================================================
 
 const loadSessions =
-            async () => {
-              try {
-                historyLoading.value =
-                  true;
+              async () => {
+                try {
+                  historyLoading.value =
+                    true;
 
-                const response =
-                  await getEmployeeSessions(
-                    userStore.userId,
-                    userStore.locationId,
-                    14
+                  const response =
+                    await getEmployeeSessions(
+                      userStore.userId,
+                      userStore.locationId,
+                      14
+                    );
+
+                  sessions.value =
+                    response.data ?? [];
+                } catch (error) {
+                  ElMessage.error(
+                    error.response?.data?.message ||
+                    'Unable to load sessions.'
                   );
-
-                sessions.value =
-                  response.data ?? [];
-              } catch (error) {
-                ElMessage.error(
-                  error.response?.data?.message ||
-                  'Unable to load sessions.'
-                );
-              } finally {
-                historyLoading.value =
-                  false;
-              }
-            };
+                } finally {
+                  historyLoading.value =
+                    false;
+                }
+              };
 
 // ============================================================
 // FORMATTERS
 // ============================================================
 
 const formatTime =
-            value => {
-              if (!value) return '-';
+              value => {
+                if (!value) return '-';
 
-              return new Date(value)
-                .toLocaleTimeString(
-                  'en-US',
-                  {
-                    hour: 'numeric',
-                    minute: '2-digit'
-                  }
-                );
-            };
+                return new Date(value)
+                  .toLocaleTimeString(
+                    'en-US',
+                    {
+                      hour: 'numeric',
+                      minute: '2-digit'
+                    }
+                  );
+              };
 
 const formatDate =
-            value => {
-              if (!value) return '-';
+              value => {
+                if (!value) return '-';
 
-              return new Date(value)
-                .toLocaleDateString(
-                  'en-US',
-                  {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  }
-                );
-            };
+                return new Date(value)
+                  .toLocaleDateString(
+                    'en-US',
+                    {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }
+                  );
+              };
 
 // ============================================================
 // LIFECYCLE
 // ============================================================
 
 onMounted(async () => {
-      await loadStatus();
-      await loadSessions();
+        await loadStatus();
+        await loadSessions();
 
-      timer =
-              setInterval(() => {
-                now.value =
-                  new Date();
-              }, 1000);
+        timer =
+                setInterval(() => {
+                  now.value =
+                    new Date();
+                }, 1000);
 });
 
 onBeforeUnmount(() => {
-      if (timer) {
-        clearInterval(timer);
-      }
+        if (timer) {
+          clearInterval(timer);
+        }
 });
 </script>
 

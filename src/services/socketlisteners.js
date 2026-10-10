@@ -42,9 +42,15 @@ function NotifyCheckin(data) {
 
   if (Number(data.locationId) === Number(userStore.locationId)) {
     console.log('Refreshing check-in list...: ' + data);
-
+    console.log(data);
     // Tell the application that a new check-in happened
     checkinStore.notifyNewCheckin();
+
+    // ElNotification.success({
+    //   title: `${data.firstname} ${data.lastname}`,
+    //   message: `checked-in at ${new Date().toLocaleTimeString()}`,
+    //   duration: 5000
+    // });
 
     ElNotification({
       title: `${data.firstname} ${data.lastname}`,
@@ -52,7 +58,8 @@ function NotifyCheckin(data) {
       duration: 5000,
       type: 'success',
       progress: true,
-      pauseOnHover: false
+      pauseOnHover: false,
+      position: 'bottom-right'
     });
   }
 }

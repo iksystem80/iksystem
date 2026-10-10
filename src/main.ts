@@ -6,7 +6,7 @@ import SvgIcon from './icons';
 import './permission';
 import { checkEnableLogs } from './utils/error-log';
 import ElementPlus from 'element-plus';
-// import 'element-plus/dist/index.css';
+import 'element-plus/dist/index.css';
 import '@/styles/index.scss';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { Capacitor } from '@capacitor/core';
