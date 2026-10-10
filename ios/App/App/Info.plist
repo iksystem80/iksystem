@@ -66,5 +66,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+<string>IK uses the camera to capture customer photos.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>IK uses the photo library only when selecting or processing customer photos.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>IK may save captured customer photos to the photo library when requested.</string>
 </dict>
 </plist>
