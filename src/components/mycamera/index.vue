@@ -35,6 +35,13 @@
 
 <script setup>
 import { ref, onBeforeUnmount, computed } from 'vue';
+import { Capacitor } from '@capacitor/core';
+import {
+  Camera as NativeCamera,
+  CameraResultType,
+  CameraSource,
+  CameraDirection
+} from '@capacitor/camera';
 
 const videoRef = ref(null);
 const canvasRef = ref(null);
@@ -94,31 +101,141 @@ function reset() {
   capturedImage.value = null;
 }
 
-const startCamera = async() => {
-// Always stop existing stream tracks before opening a new one
-  stopCamera();
 
-  console.log('mode on:' + currentFacingMode.value);
+
+const addTimestamp = (context, canvas) => {
+  const now = new Date();
+
+  const dateTime = now.toLocaleString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+
+  const fontSize = Math.max(16, Math.round(canvas.width * 0.025));
+  const padding = Math.round(fontSize * 0.6);
+
+  context.save();
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
+  context.font = `600 ${fontSize}px Arial`;
+  context.textAlign = 'right';
+  context.textBaseline = 'bottom';
+
+  const textWidth = context.measureText(dateTime).width;
+
+  context.fillStyle = 'rgba(0, 0, 0, 0.55)';
+  context.fillRect(
+    canvas.width - textWidth - padding * 2,
+    canvas.height - fontSize - padding * 2,
+    textWidth + padding * 2,
+    fontSize + padding * 2
+  );
+
+  context.fillStyle = '#ffffff';
+  context.fillText(
+    dateTime,
+    canvas.width - padding,
+    canvas.height - padding
+  );
+
+  context.restore();
+};
+
+const startNativeCamera = async () => {
+  try {
+    const permission = await NativeCamera.requestPermissions({
+      permissions: ['camera']
+    });
+
+    if (permission.camera !== 'granted') {
+      alert('Camera permission is required.');
+      return;
+    }
+
+    const photo = await NativeCamera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri,
+      source: CameraSource.Camera,
+      direction:
+        currentFacingMode.value === 'user'
+          ? CameraDirection.Front
+          : CameraDirection.Rear
+    });
+
+    if (!photo.webPath) return;
+
+    const image = new Image();
+
+    image.onload = () => {
+      const canvas = canvasRef.value;
+      if (!canvas) return;
+
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      addTimestamp(context, canvas);
+
+      capturedImage.value = canvas.toDataURL('image/jpeg', 0.92);
+
+      const fileName = `capture-${Date.now()}.jpg`;
+      const imageFile = dataURLtoFile(capturedImage.value, fileName);
+
+      emit('captured', imageFile);
+
+      isCameraOpen.value = false;
+      isStreamActive.value = false;
+    };
+
+    image.onerror = () => {
+      alert('Unable to process captured photo.');
+    };
+
+    image.src = photo.webPath;
+  } catch (error) {
+    console.error('Native Camera Error:', error);
+
+    const message = String(error?.message || error || '').toLowerCase();
+    if (message.includes('cancel')) return;
+
+    alert(
+      `Camera Error
+` +
+      `Name: ${error?.name || 'Unknown'}
+` +
+      `Message: ${error?.message || error}`
+    );
+  }
+};
+
+const startCamera = async () => {
+  if (
+    Capacitor.isNativePlatform() &&
+    Capacitor.getPlatform() === 'ios'
+  ) {
+    await startNativeCamera();
+    return;
+  }
+
+  stopCamera();
 
   try {
     const constraints = {
       video: {
-        // ideal allows fallback if the exact mode isn't supported
         facingMode: { ideal: currentFacingMode.value },
         width: { ideal: 1280 },
         height: { ideal: 720 }
       },
       audio: false
     };
-
-    // console.log('Camera diagnostics', {
-    //   href: window.location.href,
-    //   protocol: window.location.protocol,
-    //   hostname: window.location.hostname,
-    //   isSecureContext: window.isSecureContext,
-    //   mediaDevices: !!navigator.mediaDevices,
-    //   getUserMedia: !!navigator.mediaDevices?.getUserMedia
-    // });
 
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -129,19 +246,15 @@ const startCamera = async() => {
       isStreamActive.value = true;
     }
   } catch (error) {
+    console.error('Camera Error:', error);
 
     alert(
-      `Camera Error\n` +
-      `Name: ${error?.name}\n` +
-      `Message: ${error?.message}\n` +
-      `Protocol: ${window.location.protocol}\n` +
-      `Hostname: ${window.location.hostname}\n` +
-      `Secure: ${window.isSecureContext}\n` +
-      `MediaDevices: ${!!navigator.mediaDevices}`
+      `Camera Error
+` +
+      `Name: ${error?.name || 'Unknown'}
+` +
+      `Message: ${error?.message || error}`
     );
-
-    //alert('Camera access denied or unavailable. Ensure you are using HTTPS and granted permissions.');
-    console.error('Camera Error:', error);
   }
 };
 
@@ -184,19 +297,21 @@ const takePhoto = async () => {
 
   const context = canvas.getContext('2d');
 
-  // Mobile Fix: If using the front camera, mirror the canvas image to match the screen preview
   if (currentFacingMode.value === 'user') {
     context.translate(canvas.width, 0);
     context.scale(-1, 1);
   }
 
   context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  addTimestamp(context, canvas);
+
   capturedImage.value = canvas.toDataURL('image/png');
 
   const fileName = `capture-${Date.now()}.png`;
   const imageFile = dataURLtoFile(capturedImage.value, fileName);
 
-  // Send captured image to parent
   emit('captured', imageFile);
 
   stopCamera();
