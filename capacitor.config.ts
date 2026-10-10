@@ -4,9 +4,11 @@ const config: CapacitorConfig = {
   appId: 'com.iklogy.app',
   appName: 'IKlogy',
   webDir: 'dist',
+
   server: {
-    androidScheme: 'http',
-    cleartext: true
+    hostname: 'localhost',
+    androidScheme: 'https',
+    cleartext: false
   }
 };
 

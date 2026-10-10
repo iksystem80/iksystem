@@ -111,6 +111,15 @@ const startCamera = async() => {
       audio: false
     };
 
+    console.log('Camera diagnostics', {
+      href: window.location.href,
+      protocol: window.location.protocol,
+      hostname: window.location.hostname,
+      isSecureContext: window.isSecureContext,
+      mediaDevices: !!navigator.mediaDevices,
+      getUserMedia: !!navigator.mediaDevices?.getUserMedia
+    });
+
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
     if (videoRef.value) {
