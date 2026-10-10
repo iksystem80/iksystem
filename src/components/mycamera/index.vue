@@ -111,14 +111,14 @@ const startCamera = async() => {
       audio: false
     };
 
-    console.log('Camera diagnostics', {
-      href: window.location.href,
-      protocol: window.location.protocol,
-      hostname: window.location.hostname,
-      isSecureContext: window.isSecureContext,
-      mediaDevices: !!navigator.mediaDevices,
-      getUserMedia: !!navigator.mediaDevices?.getUserMedia
-    });
+    // console.log('Camera diagnostics', {
+    //   href: window.location.href,
+    //   protocol: window.location.protocol,
+    //   hostname: window.location.hostname,
+    //   isSecureContext: window.isSecureContext,
+    //   mediaDevices: !!navigator.mediaDevices,
+    //   getUserMedia: !!navigator.mediaDevices?.getUserMedia
+    // });
 
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -129,7 +129,18 @@ const startCamera = async() => {
       isStreamActive.value = true;
     }
   } catch (error) {
-    alert('Camera access denied or unavailable. Ensure you are using HTTPS and granted permissions.');
+
+    alert(
+      `Camera Error\n` +
+      `Name: ${error?.name}\n` +
+      `Message: ${error?.message}\n` +
+      `Protocol: ${window.location.protocol}\n` +
+      `Hostname: ${window.location.hostname}\n` +
+      `Secure: ${window.isSecureContext}\n` +
+      `MediaDevices: ${!!navigator.mediaDevices}`
+    );
+
+    //alert('Camera access denied or unavailable. Ensure you are using HTTPS and granted permissions.');
     console.error('Camera Error:', error);
   }
 };
