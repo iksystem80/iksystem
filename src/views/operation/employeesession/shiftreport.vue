@@ -309,6 +309,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
+import { useRefreshStore } from '@/store/modules/refresh';
 import ExportPdfButton from '@/components/exportpdfbutton.vue';
 import { exportShiftReportPdf } from '@/utils/exportshiftreportpdf';
 import { getEmployeeSessionShiftReport } from '@/api/employeesession';
@@ -316,6 +317,7 @@ import { getEmployeeSessionShiftReport } from '@/api/employeesession';
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const refreshStore = useRefreshStore();
 
 const loading = ref(false);
 const pdfExporting = ref(false);
@@ -462,6 +464,11 @@ async function loadReport() {
 watch(
       () => [route.params.sessionId, userStore.locationId],
       loadReport
+);
+
+watch(
+      () => refreshStore.key('employeeSessions'),
+      () => loadReport()
 );
 
 onMounted(loadReport);

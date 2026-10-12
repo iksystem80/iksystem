@@ -9,7 +9,7 @@
       </div>
 
       <div class="header-actions">
-        <el-button type="primary" @click="openWeekFilter">
+        <el-button class="action-button" @click="openWeekFilter">
           <el-icon><Filter /></el-icon>
           <span>Filter</span>
         </el-button>
@@ -18,7 +18,7 @@
 
     <el-drawer v-model="filterDrawerVisible"
                direction="rtl"
-               size="360px"
+               size="380px"
                :with-header="false">
       <div class="drawer-header">
         <div class="drawer-icon">
@@ -150,14 +150,22 @@
         </div>
       </el-card>
 
-      <el-tabs v-model="activeTab" class="weekly-report-tabs">
+      <el-tabs
+        v-model="activeTab"
+        class="weekly-report-tabs"
+        :before-leave="beforeWeeklyTabLeave"
+        :style="{ '--weekly-tab-min-height': `${weeklyTabMinHeight}px` }"
+      >
         <el-tab-pane label="Cash Flow" name="cashflow">
           <div v-loading="dayLoading" class="weekly-report-tab-body">
             <template v-if="report">
               <div class="session-ledger-grid">
                 <el-card shadow="never" class="ledger-card credit-ledger">
                   <template #header>
-                    <strong>Money In</strong>
+                    <div class="weekly-analytics-card-title">
+                      <el-icon><Wallet /></el-icon>
+                      <strong>Money In</strong>
+                    </div>
                   </template>
                   <div class="ledger-list">
                     <div class="ledger-item">
@@ -169,14 +177,6 @@
                       <strong class="credit">+{{ money(report.cashFlow.dailyIn ?? report.cashFlow.readingTotalIn) }}</strong>
                     </div>
                     <div class="ledger-item">
-                      <div><strong>Employee Short Payment</strong></div>
-                      <strong class="credit">+{{ money(report.cashFlow.employeeShortPayment) }}</strong>
-                    </div>
-                    <div class="ledger-item" v-if="Number(report.cashFlow.adminCredits || 0) !== 0">
-                      <div><strong>Admin Reading Credit</strong></div>
-                      <strong class="credit">+{{ money(report.cashFlow.adminCredits) }}</strong>
-                    </div>
-                    <div class="ledger-item">
                       <div><strong>Total IN</strong></div>
                       <strong class="credit-total">+{{ money(report.cashFlow.totalIn) }}</strong>
                     </div>
@@ -185,7 +185,10 @@
 
                 <el-card shadow="never" class="ledger-card expense-ledger">
                   <template #header>
-                    <strong>Money Out</strong>
+                    <div class="weekly-analytics-card-title">
+                      <el-icon><TrendCharts /></el-icon>
+                      <strong>Money Out</strong>
+                    </div>
                   </template>
                   <div class="ledger-list">
                     <div class="ledger-item">
@@ -271,7 +274,10 @@
                            class="weekly-session-cashflow-collapse weekly-report-section-card space-top">
                 <el-collapse-item name="session-cash-flow">
                   <template #title>
-                    <strong style="font-size:14px; font-weight:600">Session Cash Flow</strong>
+                    <div class="weekly-analytics-card-title">
+                      <el-icon><UserFilled /></el-icon>
+                      <strong style="font-size:14px; font-weight:600">Session Cash Flow</strong>
+                    </div>
                   </template>
 
                   <div class="weekly-report-table-wrap weekly-session-cashflow-table-wrap">
@@ -339,7 +345,7 @@
                       <span>Total OUT</span>
                     </div>
                     <div class="reading-summary-item">
-                      <strong>{{ money(report.reading.totals.grossProfit) }}</strong>
+                      <strong>{{ number(report.reading.totals.grossProfit) }}</strong>
                       <span>Gross Profit</span>
                     </div>
                   </div>
@@ -348,9 +354,12 @@
 
               <el-card shadow="never" class="weekly-report-section-card">
                 <template #header>
-                  <div>
-                    <strong>Reading Details</strong>
-                    <div class="small-text">Selected Reading Session only.</div>
+                  <div class="weekly-analytics-card-title">
+                    <el-icon><Reading /></el-icon>
+                    <div>
+                      <strong>Reading Details</strong>
+                      <div class="small-text">Selected Reading Session only.</div>
+                    </div>
                   </div>
                 </template>
 
@@ -368,54 +377,54 @@
                             </span>
                           </template>
                         </el-table-column>
-                        <el-table-column prop="previousin" label="Prev. IN" min-width="95" align="right">
+                        <el-table-column prop="previousin" label="Prev. IN" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.previousin) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="previousout" label="Prev. OUT" min-width="105" align="right">
+                        <el-table-column prop="previousout" label="Prev. OUT" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.previousout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="currentin" label="Curr. IN" min-width="95" align="right">
+                        <el-table-column prop="currentin" label="Curr. IN" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.currentin) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="currentout" label="Curr. OUT" min-width="95" align="right">
+                        <el-table-column prop="currentout" label="Curr. OUT" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.currentout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="dailyin" label="Daily IN" min-width="95" align="right">
+                        <el-table-column prop="dailyin" label="Daily IN" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.dailyin) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="dailyout" label="Daily OUT" min-width="95" align="right">
+                        <el-table-column prop="dailyout" label="Daily OUT" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.dailyout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="ticketout" label="Ticket Out" min-width="95" align="right">
+                        <el-table-column prop="ticketout" label="Ticket Out" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ number(row.ticketout) }}
                           </template>
                         </el-table-column>
-                        <el-table-column label="OUT Check" min-width="110" align="center">
+                        <el-table-column label="OUT Check" min-width="100" align="center">
                           <template #default="{ row }">
                             <el-tag :type="machineOutCheckType(row)" effect="light" round>
                               {{ machineOutCheckLabel(row) }}
                             </el-tag>
                           </template>
                         </el-table-column>
-                        <el-table-column prop="difference" label="Difference" min-width="95" align="right">
+                        <el-table-column prop="difference" label="Difference" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ money(row.difference) }}
                           </template>
                         </el-table-column>
-                        <el-table-column prop="points" label="Points Given" min-width="95" align="right">
+                        <el-table-column prop="points" label="Points" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ money(row.points) }}
                           </template>
@@ -425,12 +434,12 @@
                             <strong>{{ money(row.net) }}</strong>
                           </template>
                         </el-table-column>
-                        <el-table-column label="Life Pay %" min-width="95" align="right">
+                        <el-table-column label="Life Pay %" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ machineLifePayPercent(row) }}
                           </template>
                         </el-table-column>
-                        <el-table-column label="Life Hold %" min-width="95" align="right">
+                        <el-table-column label="Life Hold %" min-width="90" align="right">
                           <template #default="{ row }">
                             {{ machineLifeHoldPercent(row) }}
                           </template>
@@ -438,28 +447,6 @@
                       </el-table>
                     </div>
 
-                    <!--<div class="weekly-report-mobile-list weekly-reading-mobile-list">
-                      <div v-for="row in report.reading.machines"
-                           :key="row.id"
-                           class="weekly-report-mobile-card">
-                        <span class="weekly-machine-number-badge weekly-machine-number-badge-mobile">
-                          {{ row.machinenumber }}
-                        </span>
-                        <div><span>Previous IN</span><b>{{ number(row.previousin) }}</b></div>
-                        <div><span>Previous OUT</span><b>{{ number(row.previousout) }}</b></div>
-                        <div><span>Current IN</span><b>{{ number(row.currentin) }}</b></div>
-                        <div><span>Current OUT</span><b>{{ number(row.currentout) }}</b></div>
-                        <div><span>Daily IN</span><b>{{ number(row.dailyin) }}</b></div>
-                        <div><span>Daily OUT</span><b>{{ number(row.dailyout) }}</b></div>
-                        <div><span>Ticket Out</span><b>{{ number(row.ticketout) }}</b></div>
-                        <div><span>OUT Check</span><b>{{ machineOutCheckLabel(row) }}</b></div>
-                        <div><span>Difference</span><b>{{ money(row.difference) }}</b></div>
-                        <div><span>Points Given</span><b>{{ money(row.points) }}</b></div>
-                        <div><span>Net</span><b>{{ money(row.net) }}</b></div>
-                        <div><span>Life Pay %</span><b>{{ machineLifePayPercent(row) }}</b></div>
-                        <div><span>Life Hold %</span><b>{{ machineLifeHoldPercent(row) }}</b></div>
-                      </div>
-                    </div>-->
                   </el-tab-pane>
 
                   <el-tab-pane label="Machine Type Wise" name="type">
@@ -536,18 +523,23 @@
         <el-tab-pane label="Credit" name="credit">
           <div v-loading="dayLoading" class="weekly-report-tab-body">
             <template v-if="report">
-              <div v-if="isAdminUser" class="weekly-report-expense-actions">
-                <el-button type="primary" @click="openAdminCreditDialog">
-                  <el-icon><Plus /></el-icon>
-                  <span>Add Credit</span>
-                </el-button>
-              </div>
-
               <el-card shadow="never" class="weekly-report-section-card">
                 <template #header>
-                  <div>
-                    <strong>Admin Credit</strong>
-                    <div class="small-text">Credits added directly to Reading Session #{{ selectedSessionId }}.</div>
+                  <div class="weekly-report-card-header-actions">
+                    <div class="weekly-analytics-card-title">
+                      <el-icon><Plus /></el-icon>
+                      <div>
+                        <strong>Credit</strong>
+                        <div class="small-text">Credits added directly to Reading Session #{{ selectedSessionId }}.</div>
+                      </div>
+                    </div>
+
+                    <el-button v-if="isAdminUser"
+                               type="primary"
+                               @click="openAdminCreditDialog">
+                      <el-icon><Plus /></el-icon>
+                      <span>Add Credit</span>
+                    </el-button>
                   </div>
                 </template>
 
@@ -573,13 +565,6 @@
         <el-tab-pane label="Expenses" name="expenses">
           <div v-loading="dayLoading" class="weekly-report-tab-body">
             <template v-if="report">
-              <div v-if="isAdminUser" class="weekly-report-expense-actions">
-                <el-button type="primary" @click="openAdminExpenseDialog">
-                  <el-icon><Plus /></el-icon>
-                  <span>Add Expense</span>
-                </el-button>
-              </div>
-
               <div class="reading-report-page">
                 <el-card v-if="expenseCategories.length"
                          shadow="never"
@@ -614,9 +599,21 @@
 
               <el-card shadow="never" class="weekly-report-section-card weekly-report-shifts-card">
                 <template #header>
-                  <div>
-                    <strong>Employee Shifts</strong>
-                    <div class="small-text">Employee Sessions covered by Reading Session #{{ selectedSessionId }}.</div>
+                  <div class="weekly-report-card-header-actions">
+                    <div class="weekly-analytics-card-title">
+                      <el-icon><UserFilled /></el-icon>
+                      <div>
+                        <strong>Employee Shifts</strong>
+                        <div class="small-text">Employee Sessions covered by Reading Session #{{ selectedSessionId }}.</div>
+                      </div>
+                    </div>
+
+                    <el-button v-if="isAdminUser"
+                               type="primary"
+                               @click="openAdminExpenseDialog">
+                      <el-icon><Plus /></el-icon>
+                      <span>Add Expense</span>
+                    </el-button>
                   </div>
                 </template>
 
@@ -745,46 +742,74 @@
                   </div>
                 </template>
 
-                <div class="weekly-analytics-shifts">
-                  <div class="weekly-analytics-shift">
+                <div class="weekly-analytics-shifts weekly-analytics-shifts-modern">
+                  <div class="weekly-analytics-shift shift-morning">
                     <div class="weekly-analytics-shift-head">
-                      <div>
+                      <div class="weekly-analytics-shift-title">
                         <span class="weekly-analytics-dot"></span>
                         <strong>Morning Shift</strong>
                       </div>
-                      <small>
+                      <span class="weekly-analytics-shift-share">
                         {{ shiftPercent(report.analytics.shifts.morning.pulls, report.analytics.dailyActivity.totalPulls) }}%
-                      </small>
-                    </div>
-                    <b>{{ money(report.analytics.shifts.morning.pulls) }}</b>
-                    <div class="weekly-analytics-shift-meta">
-                      <span>{{ number(report.analytics.shifts.morning.customers) }} customers</span>
-                      <span>{{ money(report.analytics.shifts.morning.averageMatchPerCustomer) }} avg</span>
-                      <span>
-                        {{ timeLabel(report.analytics.shifts.morning.start) }} -
-                        {{ timeLabel(report.analytics.shifts.morning.end) }}
                       </span>
+                    </div>
+
+                    <div class="weekly-analytics-shift-amount">
+                      <span>Total Pull</span>
+                      <strong>{{ money(report.analytics.shifts.morning.pulls) }}</strong>
+                    </div>
+
+                    <div class="weekly-analytics-shift-stats">
+                      <div>
+                        <span>Customers</span>
+                        <strong>{{ number(report.analytics.shifts.morning.customers) }}</strong>
+                      </div>
+                      <div>
+                        <span>Avg / Customer</span>
+                        <strong>{{ money(report.analytics.shifts.morning.averageMatchPerCustomer) }}</strong>
+                      </div>
+                      <div>
+                        <span>Shift Hours</span>
+                        <strong>
+                          {{ timeLabel(report.analytics.shifts.morning.start) }} -
+                          {{ timeLabel(report.analytics.shifts.morning.end) }}
+                        </strong>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="weekly-analytics-shift">
+                  <div class="weekly-analytics-shift shift-night">
                     <div class="weekly-analytics-shift-head">
-                      <div>
+                      <div class="weekly-analytics-shift-title">
                         <span class="weekly-analytics-dot is-night"></span>
                         <strong>Night Shift</strong>
                       </div>
-                      <small>
+                      <span class="weekly-analytics-shift-share">
                         {{ shiftPercent(report.analytics.shifts.night.pulls, report.analytics.dailyActivity.totalPulls) }}%
-                      </small>
-                    </div>
-                    <b>{{ money(report.analytics.shifts.night.pulls) }}</b>
-                    <div class="weekly-analytics-shift-meta">
-                      <span>{{ number(report.analytics.shifts.night.customers) }} customers</span>
-                      <span>{{ money(report.analytics.shifts.night.averageMatchPerCustomer) }} avg</span>
-                      <span>
-                        {{ timeLabel(report.analytics.shifts.night.start) }} -
-                        {{ timeLabel(report.analytics.shifts.night.end) }}
                       </span>
+                    </div>
+
+                    <div class="weekly-analytics-shift-amount">
+                      <span>Total Pull</span>
+                      <strong>{{ money(report.analytics.shifts.night.pulls) }}</strong>
+                    </div>
+
+                    <div class="weekly-analytics-shift-stats">
+                      <div>
+                        <span>Customers</span>
+                        <strong>{{ number(report.analytics.shifts.night.customers) }}</strong>
+                      </div>
+                      <div>
+                        <span>Avg / Customer</span>
+                        <strong>{{ money(report.analytics.shifts.night.averageMatchPerCustomer) }}</strong>
+                      </div>
+                      <div>
+                        <span>Shift Hours</span>
+                        <strong>
+                          {{ timeLabel(report.analytics.shifts.night.start) }} -
+                          {{ timeLabel(report.analytics.shifts.night.end) }}
+                        </strong>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1282,7 +1307,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import request from '@/utils/request';
 import { useUserStore } from '@/store/modules/user';
@@ -1314,6 +1339,8 @@ const adminExpenseDetailsVisible = ref(false);
 const analyticsBreakdownVisible = ref(false);
 const sessionCashFlowActiveNames = ref<string[]>([]);
 const readingDetailTab = ref('machine');
+const weeklyTabMinHeight = ref(0);
+let weeklyTabScrollTop = 0;
 
 const adminExpenseDialogVisible = ref(false);
 const adminExpenseSaving = ref(false);
@@ -1940,6 +1967,58 @@ async function loadWeek() {
                                 weekLoading.value = false;
                               }
 }
+
+function getWeeklyScrollContainer() {
+                              return document.querySelector('.app-main-scroll') as HTMLElement | null;
+}
+
+function beforeWeeklyTabLeave() {
+                              const scrollContainer = getWeeklyScrollContainer();
+                              weeklyTabScrollTop = scrollContainer
+                                ? scrollContainer.scrollTop
+                                : window.scrollY;
+
+                              const tabContent = document.querySelector(
+                                '.weekly-report-page .weekly-report-tabs > .el-tabs__content'
+                              ) as HTMLElement | null;
+
+                              if (tabContent) {
+                                weeklyTabMinHeight.value = Math.max(
+                                  weeklyTabMinHeight.value,
+                                  Math.ceil(tabContent.getBoundingClientRect().height)
+                                );
+                              }
+
+                              return true;
+}
+
+watch(activeTab, async () => {
+                              await nextTick();
+
+                              requestAnimationFrame(() => {
+                                const scrollContainer = getWeeklyScrollContainer();
+
+                                if (scrollContainer) {
+                                  scrollContainer.scrollTop = weeklyTabScrollTop;
+                                } else {
+                                  window.scrollTo({
+                                    top: weeklyTabScrollTop,
+                                    behavior: 'auto'
+                                  });
+                                }
+
+                                const tabContent = document.querySelector(
+                                  '.weekly-report-page .weekly-report-tabs > .el-tabs__content'
+                                ) as HTMLElement | null;
+
+                                if (tabContent) {
+                                  weeklyTabMinHeight.value = Math.max(
+                                    weeklyTabMinHeight.value,
+                                    Math.ceil(tabContent.scrollHeight)
+                                  );
+                                }
+                              });
+});
 
 async function selectDay(item: any) {
                               if (!item?.sessions?.length) return;

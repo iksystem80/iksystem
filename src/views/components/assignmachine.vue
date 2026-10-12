@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container assign-machine-page">
+  <div class="assign-machine-page">
     <!-- =========================================
          MAIN CONTENT
     ========================================== -->
@@ -7,7 +7,7 @@
       <!-- =======================================
              PROFILE HERO
         ======================================== -->
-      <section class="profile-card">
+      <section class="profile-card" :class="{ 'match-rule-blocked': matchRuleBlocked }">
         <div class="profile-photo-area">
           <div v-if="!cameraStart" class="photo-wrapper">
             <img :src="customer.avatar" class="customer-photo" alt="Customer photo" />
@@ -26,12 +26,13 @@
             </div>
           </div>
           <el-alert v-if="matchRuleBlocked"
+                    class="match-rule-blocked-alert"
                     :title="matchRuleMessage"
                     type="warning"
                     :closable="false"
                     show-icon />
 
-          <div style="margin-top:25px">
+          <div v-if="!matchRuleBlocked" style="margin-top:25px">
             <el-form ref="pointFormRef" :model="pointForm" :rules="formRules" label-position="top" class="point-form">
               <el-row :gutter="16">
                 <!-- Machine Number -->
@@ -74,7 +75,8 @@
       <!-- =======================================
          VIP STATUS  v-if="customer.isVip"
         ======================================== -->
-      <section class="vip-status"
+      <section v-if="!matchRuleBlocked"
+               class="vip-status"
                :class="{ verified: photoTaken }">
 
         <div class="status-icon">
@@ -116,7 +118,7 @@
       <!-- =======================================
              TWO COLUMN AREA
         ======================================== -->
-      <div class="dashboard-grid">
+      <div v-if="!matchRuleBlocked" class="dashboard-grid">
         <!-- LEFT -->
         <div class="left-column">
           <!-- COMMENTS -->
@@ -248,7 +250,7 @@
       <div class="action-summary">
         <span>Machine</span>
         <strong>
-          {{ pointForm.machinenumber ? pointForm.machinenumber : 'Not selected' }}
+          {{ pointForm.machinenumber ? pointForm.machinenumber : '' }}
           {{ pointForm.machinid }}
         </strong>
       </div>
@@ -299,16 +301,16 @@ const cameraStart = ref(false);
 const cameraRef = ref(null);
 
 const defaultForm = {
-      checkinid: null,
-      customerid: null,
-      machineid: null,
-      machinenumber: null,
-      points: null,
-      assignedby: userStore.userId,
-      locationid: userStore.locationId
+        checkinid: null,
+        customerid: null,
+        machineid: null,
+        machinenumber: null,
+        points: null,
+        assignedby: userStore.userId,
+        locationid: userStore.locationId
 };
 const pointForm = reactive({
-      ...defaultForm
+        ...defaultForm
 });
 const pointFormRef = ref(null);
 const capturedImage = ref(null);
@@ -317,47 +319,47 @@ const loading = ref(false);
 const eligibilityLoading = ref(false);
 const matchEligibility = ref(null);
 const matchRuleBlocked = computed(() =>
-    Boolean(matchEligibility.value?.ruleEnabled && !matchEligibility.value?.eligible)
+      Boolean(matchEligibility.value?.ruleEnabled && !matchEligibility.value?.eligible)
 );
 const matchRuleMessage = computed(() =>
-    matchEligibilityMessage(matchEligibility.value)
+      matchEligibilityMessage(matchEligibility.value)
 );
 const emit = defineEmits(['closed']);
 
 const formRules = {
-      machinenumber: [
-        { required: true, message: 'machine number is required', trigger: 'blur' }
-      ],
-      points: [
-        { required: true, message: 'point is required', trigger: 'blur' }
-      ]
+        machinenumber: [
+          { required: true, message: 'machine number is required', trigger: 'blur' }
+        ],
+        points: [
+          { required: true, message: 'point is required', trigger: 'blur' }
+        ]
 };
 /* =========================================
-           Customer
-        ========================================= */
+             Customer
+          ========================================= */
 
 const props = defineProps({
-      customer: {
-        type: Object,
-        required: true
-      }
+        customer: {
+          type: Object,
+          required: true
+        }
 });
 
 function handleCapturedImage(image) {
-      capturedImage.value = image;
+        capturedImage.value = image;
 
-      if (tempImage.value) {
-        URL.revokeObjectURL(tempImage.value);
-      }
-      tempImage.value = URL.createObjectURL(image);
+        if (tempImage.value) {
+          URL.revokeObjectURL(tempImage.value);
+        }
+        tempImage.value = URL.createObjectURL(image);
 
-      cameraStart.value = false;
-      photoTaken.value = true;
+        cameraStart.value = false;
+        photoTaken.value = true;
 }
 
 /* =========================================
-           Computed
-        ========================================= */
+             Computed
+          ========================================= */
 
 // const machineLocked = computed(() => {
 //     return customer.value.isVip &&
@@ -381,159 +383,160 @@ function handleCapturedImage(image) {
 // })
 
 /* =========================================
-           Methods
-        ========================================= */
+             Methods
+          ========================================= */
 
 async function refreshMatchEligibility() {
-      if (!props.customer?.id || !userStore.locationId) {
-        matchEligibility.value = null;
-        return true;
-      }
+        if (!props.customer?.id || !userStore.locationId) {
+          matchEligibility.value = null;
+          return true;
+        }
 
-      try {
-        eligibilityLoading.value = true;
+        try {
+          eligibilityLoading.value = true;
 
-        matchEligibility.value = await getMatchEligibility(
-          props.customer.id,
-          userStore.locationId
-        );
+          matchEligibility.value = await getMatchEligibility(
+            props.customer.id,
+            userStore.locationId
+          );
 
-        return !matchRuleBlocked.value;
-      } catch (error) {
-        console.error('Match eligibility check failed:', error);
-        ElMessage.error('Unable to verify Match eligibility.');
-        return false;
-      } finally {
-        eligibilityLoading.value = false;
-      }
+          return !matchRuleBlocked.value;
+        } catch (error) {
+          console.error('Match eligibility check failed:', error);
+          ElMessage.error('Unable to verify Match eligibility.');
+          return false;
+        } finally {
+          eligibilityLoading.value = false;
+        }
 }
 
 onMounted(() => {
-      refreshMatchEligibility();
+        refreshMatchEligibility();
 });
 
 const takePhoto = async () => {
-      cameraStart.value = true;
-      await nextTick();
-      cameraRef.value?.startCamera();
+        cameraStart.value = true;
+        await nextTick();
+        cameraRef.value?.startCamera();
 };
 
 async function getmachine() {
-      console.log('locaton id: ' + locationid);
-      // Save new session
-      if (!pointForm.machinenumber) {
-        pointForm.machineid = 0;
-        return;
-      }
-      const response = await getmachinebynumber(pointForm.machinenumber, locationid);
-      console.log(response);
+        console.log('locaton id: ' + locationid);
+        // Save new session
+        if (!pointForm.machinenumber) {
+          pointForm.machineid = 0;
+          return;
+        }
+        const response = await getmachinebynumber(pointForm.machinenumber, locationid);
+        console.log(response);
 
-      if (!response) {
-        pointForm.machineid = 0;
-        throw new Error('Error while saving new reading');
-      }
-      if (response?.data?.id) {
-        pointForm.machineid = response.data.id;
-        // alert('point machine id:' + pointForm.machineid)
-      } else {
-        console.log('else');
-        ElMessage({ message: 'machine not found', type: 'error' });
-        pointForm.machineid = 0;
-      }
+        if (!response) {
+          pointForm.machineid = 0;
+          throw new Error('Error while saving new reading');
+        }
+        if (response?.data?.id) {
+          pointForm.machineid = response.data.id;
+          // alert('point machine id:' + pointForm.machineid)
+        } else {
+          console.log('else');
+          ElMessage({ message: 'machine not found', type: 'error' });
+          pointForm.machineid = 0;
+          pointForm.machinenumber=''
+        }
 }
 
 async function assignMachine() {
-      if (!pointFormRef.value) {
-        return;
-      }
-
-      try {
-        const eligible = await refreshMatchEligibility();
-
-        if (!eligible) {
-          ElMessage.warning(matchRuleMessage.value || 'Customer is not eligible for Match.');
+        if (!pointFormRef.value) {
           return;
         }
 
-        // Validate form
-        const valid = await pointFormRef.value.validate();
+        try {
+          const eligible = await refreshMatchEligibility();
 
-        if (!valid) {
-          return;
-        }
-
-        // Check captured image
-        if (!capturedImage.value) {
-          ElMessage.warning('Please capture a customer photo with machine.');
-          return;
-        }
-
-        loading.value = true;
-
-        /**
-             * Create a new File with customer name
-             */
-        const fileName = `${pointForm.fullname}${pointForm.machineid}.png`;
-
-        const imageFile = new File(
-          [capturedImage.value],
-          fileName,
-          {
-            type: capturedImage.value.type || 'image/png'
+          if (!eligible) {
+            ElMessage.warning(matchRuleMessage.value || 'Customer is not eligible for Match.');
+            return;
           }
-        );
 
-        pointForm.locationid = userStore.locationId;
-        pointForm.customerid = props.customer.id;
-        pointForm.checkinid = props.customer.checkinid;
-        /**
-             * Create FormData
-             */
-        const formData = new FormData();
+          // Validate form
+          const valid = await pointFormRef.value.validate();
 
-        formData.append('image', imageFile);
+          if (!valid) {
+            return;
+          }
 
-        formData.append('customer', JSON.stringify(pointForm));
+          // Check captured image
+          if (!capturedImage.value) {
+            ElMessage.warning('Please capture a customer photo with machine.');
+            return;
+          }
 
-        /**
-             * Send request
-             */
-        const response = await saveassignmachine(formData);
+          loading.value = true;
 
-        if (!response) {
-          throw new Error('Upload failed');
+          /**
+               * Create a new File with customer name
+               */
+          const fileName = `${pointForm.fullname}${pointForm.machineid}.png`;
+
+          const imageFile = new File(
+            [capturedImage.value],
+            fileName,
+            {
+              type: capturedImage.value.type || 'image/png'
+            }
+          );
+
+          pointForm.locationid = userStore.locationId;
+          pointForm.customerid = props.customer.id;
+          pointForm.checkinid = props.customer.checkinid;
+          /**
+               * Create FormData
+               */
+          const formData = new FormData();
+
+          formData.append('image', imageFile);
+
+          formData.append('customer', JSON.stringify(pointForm));
+
+          /**
+               * Send request
+               */
+          const response = await saveassignmachine(formData);
+
+          if (!response) {
+            throw new Error('Upload failed');
+          }
+
+          console.log('Server response:', response);
+
+          ElMessage({
+            message: 'Machine assigned successfully.',
+            type: 'success'
+          });
+
+          // Reset form after successful submission
+          cameraRef.value?.stopCamera();
+          emit('closed');
+        } catch (error) {
+          console.error('Error uploading file:', error);
+
+          ElMessage({
+            message: error.message || 'Error uploading customer.',
+            type: 'error'
+          });
+        } finally {
+          loading.value = false;
         }
-
-        console.log('Server response:', response);
-
-        ElMessage({
-          message: 'Machine assigned successfully.',
-          type: 'success'
-        });
-
-        // Reset form after successful submission
-        cameraRef.value?.stopCamera();
-        emit('closed');
-      } catch (error) {
-        console.error('Error uploading file:', error);
-
-        ElMessage({
-          message: error.message || 'Error uploading customer.',
-          type: 'error'
-        });
-      } finally {
-        loading.value = false;
-      }
 }
 
 const closePage = () => {
-      emit('closed');
-      cameraRef.value?.stopCamera();
+        emit('closed');
+        cameraRef.value?.stopCamera();
 };
 
 onBeforeUnmount(() => {
-      emit('closed');
-      cameraRef.value?.stopCamera();
+        emit('closed');
+        cameraRef.value?.stopCamera();
 });
 </script>
 

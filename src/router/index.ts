@@ -50,10 +50,10 @@ export const asyncRoutes: RouteRecordRaw[] = [
 
     meta: {
       title: 'System Administration',
-      icon: 'setting',
+      icon: 'dashboard',
       // ONLY System Admin can see this route
       roles: ['system admin'],
-      permission: 'companies.read'
+      permission: 'system'
     },
 
     children: [
@@ -65,7 +65,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           title: 'Companies',
           icon: 'office-building',
-          permission: 'companies.read',
+          permission: 'system.companies',
           roles: ['system admin']
         }
       },
@@ -77,7 +77,19 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           hidden: true,
           title: 'Company',
-          permission: 'companies.read',
+          permission: 'system.companies',
+          roles: ['system admin']
+        }
+      },
+      {
+        path: 'module-assignment',
+        name: 'SystemModuleAssignment',
+        component: () =>
+          import('@/views/system/moduleassignment/index.vue'),
+        meta: {
+          title: 'Module Assignment',
+          icon: 'setting',
+          permission: 'system',
           roles: ['system admin']
         }
       }
@@ -92,7 +104,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/customer/index'),
         name: 'Customers',
-        meta: { title: 'Customers', icon: 'peoples', noCache: true, permission: 'customers.read' }
+        meta: { title: 'Customers', icon: 'peoples', noCache: true, permission: 'customers' }
       }
     ]
   },
@@ -106,7 +118,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/customer/newcustomer/index'),
         name: 'NewCustomer',
-        meta: { title: 'New Customer', noCache: true, hidden: true, permission: 'customers.create' }
+        meta: { title: 'New Customer', noCache: true, hidden: true, permission: 'customers' }
       }
     ]
   },
@@ -114,7 +126,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     path: '/customercheckin',
     component: () => import('@/views/customer/checkin/tabletcheckin'),
     name: 'CustomerCheckin',
-    meta: { title: 'Check In', noCache: true, permission: 'checkin.read', roles: ['checkin'] }
+    meta: { title: 'Check In', noCache: true, permission: 'checkin', roles: ['checkin'] }
   },
   {
     path: '/checkin',
@@ -125,7 +137,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/customer/checkin/index'),
         name: 'CheckIn',
-        meta: { title: 'Check In', icon: 'peoples', noCache: true, permission: 'checkin.read', hidden: true, roles: ['employee'] }
+        meta: { title: 'Check In', icon: 'peoples', noCache: true, permission: 'checkin', hidden: true, roles: ['employee'] }
       }
     ]
   },
@@ -138,7 +150,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/ticket/index'),
         name: 'TicketOut',
-        meta: { title: 'Ticket Out', icon: 'Ticket', noCache: true, permission: 'ticketout.read', roles: ['employee'] }
+        meta: { title: 'Ticket Out', icon: 'Ticket', noCache: true, permission: 'ticketout', roles: ['employee'] }
       }
     ]
   },
@@ -155,7 +167,8 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Bonus',
           icon: 'Money',
           noCache: true,
-          permission: 'clock.read', roles: ['employee']
+          permission: 'bonus',
+          roles: ['employee']
         }
       }
     ]
@@ -173,7 +186,8 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Lucky Bird',
           icon: 'Money',
           noCache: true,
-          permission: 'clock.read', roles: ['employee']
+          permission: 'luckybird',
+          roles: ['employee']
         }
       }
     ]
@@ -187,14 +201,14 @@ export const asyncRoutes: RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/raffle/index.vue'),
         name: 'Raffle',
-        meta: { title: 'Raffle', icon: 'Money', noCache: true, permission: 'clock.read' }
-      },
-      {
-        path: 'settings',
-        component: () => import('@/views/raffle/settings.vue'),
-        name: 'RaffleSettings',
-        meta: { title: 'Raffle Settings', hidden: true, noCache: true, permission: 'clock.read', roles: ['admin'] }
+        meta: { title: 'Raffle', icon: 'Money', noCache: true, permission: 'raffle', roles: ['employee'] }
       }
+      //, {
+      //   path: 'settings',
+      //   component: () => import('@/views/raffle/settings.vue'),
+      //   name: 'RaffleSettings',
+      //   meta: { title: 'Raffle Settings', icon: 'Money', noCache: true, permission: 'clock.read', roles: ['admin'] }
+      // }
     ]
   },
 
@@ -208,7 +222,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         path: 'index',
         component: () => import('@/views/clock/index'),
         name: 'EmployeeClock',
-        meta: { title: 'Time Clock', icon: 'LocationFilled', noCache: true, permission: 'clock.read' }
+        meta: { title: 'Time Clock', icon: 'LocationFilled', noCache: true, permission: 'clock' }
       }
     ]
   },
@@ -217,19 +231,19 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: Layout,
     redirect: '/transaction',
     name: 'Transaction',
-    meta: { title: 'Transaction', icon: 'Money' },
+    meta: { title: 'Transaction', icon: 'Money', permission: 'transaction' },
     children: [
       {
         path: '/sessiontrasaction',
         name: 'EmployeeFinance',
         component: () => import('@/views/transaction/employeetransactions.vue'),
-        meta: { title: 'Transaction', noCache: true, permission: 'clock.read', roles: ['employee'] }
+        meta: { title: 'Transaction', noCache: true, permission: 'transaction.employee', roles: ['employee'] }
       },
       {
         path: '/admintransaction',
         name: 'AdminFinance',
         component: () => import('@/views/transaction/owneradmintransactions.vue'),
-        meta: { title: 'Transaction', noCache: true, permission: 'employeesession.update', roles: ['owner', 'admin', 'system admin'] }
+        meta: { title: 'Transaction', noCache: true, permission: 'transaction.admin', roles: ['owner', 'admin', 'system admin'] }
       }
     ]
   },
@@ -238,13 +252,13 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: Layout,
     redirect: 'noRedirect',
     name: 'Operation',
-    meta: { title: 'Operations', icon: 'Management' },
+    meta: { title: 'Operations', icon: 'Management', permission: 'operations' },
     children: [
       {
         path: 'pointwatching',
         component: () => import('@/views/operation/pointwatching'),
         name: 'PointWatching',
-        meta: { title: 'Point Watching', noCache: true, permission: 'pointwatching.read' }
+        meta: { title: 'Point Watching', noCache: true, permission: 'operations.pointwatching' }
       },
       {
         path: 'employee-sessions',
@@ -253,7 +267,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           title: 'Employee Sessions',
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -264,7 +278,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Employee Sessions',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -275,7 +289,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Session Reports',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -286,7 +300,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Points Report',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -297,7 +311,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Shift Report',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -308,7 +322,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Ticket Out Report',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -319,7 +333,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Raffle Report',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -330,7 +344,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Bonus Report',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       },
       {
@@ -341,7 +355,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'Lucky Bird Report',
           hidden: true,
           noCache: true,
-          permission: 'employeesession.read'
+          permission: 'operations.employee-sessions'
         }
       }
     ]
@@ -354,7 +368,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     meta: {
       title: 'Readings',
       icon: 'form',
-      permissions: ['reading.read']
+      permission: 'reading'
     },
     children: [
       {
@@ -363,7 +377,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         name: 'ReadingSession',
         meta: {
           title: 'Record Reading', noCache: true,
-          permissions: ['reading.read']
+          permission: 'reading.record'
         }
       },
 
@@ -373,7 +387,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         name: 'ReadingReport',
         meta: {
           title: 'Reading Reports', noCache: true,
-          permissions: ['reading.read']
+          permission: 'reading.reports'
         }
       }
     ]
@@ -383,47 +397,14 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: Layout,
     redirect: 'noRedirect',
     name: 'Reports',
-    meta: { title: 'Report', icon: 'chart', permission: 'reports.read' },
+    meta: { title: 'Report', icon: 'chart', permission: 'reports' },
     children: [
-      {
-        path: 'overview',
-        name: 'FinancialOverview',
-        component: () => import('@/views/report/financialoverview.vue'),
-        meta: { title: 'Financial Overview', noCache: true, hidden: true }
-      },
-      {
-        path: 'location-cash',
-        name: 'LocationCashLedger',
-        component: () => import('@/views/report/locationcashledger.vue'),
-        meta: { title: 'Location Ledger', noCache: true, hidden: true }
-      },
       {
         path: 'weeklyreport',
         component: () => import('@/views/report/weeklyreport'),
         name: 'WeeklyReport',
-        meta: { title: 'Weekly Report', noCache: true, permission: 'reports.read' }
-      },
-      // {
-      //     path: 'monthlyreport',
-      //     component: () => import('@/views/report/monthlyreport'),
-      //     name: 'MonthlyReport',
-      //     meta: { title: 'Monthly Report', noCache: true, permission: 'reports.read' },
-      // },
-      {
-        path: 'session-cash-report',
-        name: 'SessionCashHistoryReport',
-        component: () => import('@/views/report/sessioncashhistoryreport.vue'),
-        meta: { title: 'Session Cash Report', noCache: true, hidden: true }
-      },
-      {
-        path: 'money-trail-report',
-        name: 'MoneyTrailReport',
-        component: () => import('@/views/report/moneytrailreport.vue'),
-        meta: {
-          title: 'Money Trail Report', noCache: true, hidden: true
-        }
-      }
-
+        meta: { title: 'Weekly Report', noCache: true, permission: 'reports.weekly' }
+       }
     ]
   },
   {
@@ -431,49 +412,55 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: Layout,
     redirect: 'noRedirect',
     name: 'Settings',
-    meta: { title: 'Settings', icon: 'Tools' },
+    meta: { title: 'Settings', icon: 'Tools', permission: 'settings' },
     children: [
       {
         path: 'users',
         component: () => import('@/views/settings/users/index.vue'),
         name: 'Users',
-        meta: { title: 'Users', noCache: true, permission: 'users.read' }
+        meta: { title: 'Users', noCache: true, permission: 'settings.users' }
       },
       {
         path: 'roles',
         component: () => import('@/views/settings/roles/index.vue'),
         name: 'RolesPermissions',
-        meta: { title: 'Roles & Permissions', noCache: true, permission: 'roles.read' }
+        meta: { title: 'Roles & Permissions', noCache: true, permission: 'settings.roles' }
       },
       {
         path: 'machines',
         component: () => import('@/views/settings/machine/index'),
         name: 'Machines',
-        meta: { title: 'Machines Setup', noCache: true, permission: 'machinesetup.read' }
+        meta: { title: 'Machines Setup', noCache: true, permission: 'settings.machines' }
       },
       {
         path: 'bonus',
         name: 'BonusManagement',
         component: () => import('@/views/settings/bonus/index.vue'),
-        meta: { title: 'Bonus Management', noCache: true, permission: 'bonus.read' }
+        meta: { title: 'Bonus Management', noCache: true, permission: 'settings.bonus' }
       },
       {
         path: 'bonus/create',
         name: 'BonusCreate',
         component: () => import('@/views/settings/bonus/edit.vue'),
-        meta: { title: 'Create Bonus', noCache: true, hidden: true, permission: 'bonus.create' }
+        meta: { title: 'Create Bonus', noCache: true, hidden: true, permission: 'settings.bonus' }
       },
       {
         path: 'bonus/edit/:id',
         name: 'BonusEdit',
         component: () => import('@/views/settings/bonus/edit.vue'),
-        meta: { title: 'Edit Bonus', noCache: true, hidden: true, permission: 'bonus.update' }
+        meta: { title: 'Edit Bonus', noCache: true, hidden: true, permission: 'settings.bonus' }
+      },
+      {
+        path: 'rafflesettings',
+        component: () => import('@/views/raffle/settings.vue'),
+        name: 'RaffleSettings',
+        meta: { title: 'Raffle Settings',noCache: true, permission: 'settings.raffle' }
       },
       {
         path: 'manage-rules',
         name: 'ManageRules',
         component: () => import('@/views/settings/managerules/index.vue'),
-        meta: { title: 'Manage Rules', noCache: true, permission: 'managerules.read' }
+        meta: { title: 'Manage Rules', noCache: true, permission: 'settings.manage-rules' }
       }
     ]
   },
@@ -484,7 +471,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     name: 'Promotion',
     meta: {
       title: 'Promotions',
-      permissions: ['promotion.read'],
+      permission: 'promotions',
       icon: 'Promotion'
     },
     children: [
@@ -495,7 +482,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         name: 'PromotionTemplates',
         meta: {
           title: 'Templates',
-          permissions: ['promotion.template.read']
+          permission: 'promotions.templates'
         }
       },
       {
@@ -506,7 +493,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           hidden: true,
           title: 'Create Template',
-          permissions: ['promotion.template.create']
+          permission: 'promotions.templates'
         }
       },
       {
@@ -517,7 +504,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           hidden: true,
           title: 'Edit Template',
-          permissions: ['promotion.template.update']
+          permission: 'promotions.templates'
         }
       },
       {
@@ -527,7 +514,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         name: 'PromotionList',
         meta: {
           title: 'Promotions',
-          permissions: ['promotion.read']
+          permission: 'promotions.list'
         }
       },
       {
@@ -538,7 +525,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           hidden: true,
           title: 'Create Promotion',
-          permissions: ['promotion.create']
+          permission: 'promotions.list'
         }
       },
       {
@@ -549,7 +536,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           hidden: true,
           title: 'Promotion Details',
-          permissions: ['promotion.read']
+          permission: 'promotions.list'
         }
       }
     ]

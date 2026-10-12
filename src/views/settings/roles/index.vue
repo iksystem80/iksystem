@@ -2,51 +2,72 @@
   <div class="app-container">
     <div class="page-header">
       <div>
-        <h2 class="page-title">Roles & Permissions</h2>
-        <p>Each user has one role. Permissions assigned here control pages and actions.</p>
+        <h2 class="page-title">Roles & Module Access</h2>
+        <p>Page access is controlled by router modules and sub-modules. CRUD permissions are no longer used.</p>
       </div>
-      <el-button v-if="canCreate" type="primary" @click="newRole"><el-icon><Plus /></el-icon><span>New Role</span></el-button>
+      <el-button v-if="!isSystemAdmin" type="primary" @click="newRole"><el-icon><Plus /></el-icon><span>New Role</span></el-button>
     </div>
-    <div class="role-layout">
+
+    <el-alert
+      :title="`Assignments below apply to the currently selected location${locationId ? ` #${locationId}` : ''}.`"
+      type="info" :closable="false" show-icon class="mb-16" />
+
+    <el-card v-if="isSystemAdmin" shadow="never" class="permission-card location-module-card">
+      <template #header>
+        <div>
+          <strong>Location Modules</strong>
+          <div class="small-text">Enable the pages this company location is allowed to use. Location roles can only receive pages enabled here.</div>
+        </div>
+      </template>
+      <el-tree ref="locationTreeRef" :data="moduleTree" node-key="id" show-checkbox default-expand-all
+               :props="treeProps" :default-checked-keys="locationModuleIds" />
+      <div class="actions">
+        <div class="spacer" />
+        <el-button type="primary" :loading="savingLocation" :disabled="!locationId" @click="saveLocationModules">Save Location Modules</el-button>
+      </div>
+    </el-card>
+
+    <div class="role-layout" :class="{ 'mt-16': isSystemAdmin }">
       <el-card shadow="never" class="role-list-card">
         <div class="role-list-title">Roles</div>
         <div v-loading="loadingRoles" class="role-list">
-          <button v-for="role in roles" :key="role.id" class="role-item" :class="{ active: selectedRoleId === role.id }" @click="selectRole(role.id)" >
+          <button v-for="role in roles" :key="role.id" class="role-item" :class="{ active: selectedRoleId === role.id }" @click="selectRole(role.id)">
             <span><strong>{{ role.name }}</strong><small>{{ role.description || 'No description' }}</small></span>
             <el-tag size="small" :type="role.isActive ? 'success' : 'info'">{{ role.isActive ? 'Active' : 'Inactive' }}</el-tag>
           </button>
         </div>
       </el-card>
+
       <el-card shadow="never" class="permission-card">
         <template v-if="form.id || creating">
           <div class="role-form-header">
             <div class="role-fields">
-              <el-input v-model="form.name" placeholder="Role name" :disabled="isOwner" />
-              <el-input v-model="form.description" placeholder="Description" :disabled="isOwner" />
+              <el-input v-model="form.name" placeholder="Role name" :disabled="form.isSystem" />
+              <el-input v-model="form.description" placeholder="Description" :disabled="form.isSystem" />
             </div>
-            <el-switch v-model="form.isActive" active-text="Active" :disabled="isOwner" />
+            <el-switch v-model="form.isActive" active-text="Active" :disabled="form.isSystem" />
           </div>
-          <el-alert v-if="isOwner" type="info" :closable="false" show-icon title="Owner always has full access and is protected." />
-          <div class="matrix-wrapper">
-            <el-table :data="permissionRows" v-loading="loadingPermissions" style="width:100%">
-              <el-table-column prop="module" label="Module" min-width="180" fixed />
-              <el-table-column v-for="action in actions" :key="action" :label="actionLabel(action)" width="100" align="center">
-                <template #default="{ row }">
-                  <el-checkbox v-if="row[action]" :model-value="form.permissionIds.includes(row[action].id)" :disabled="isOwner || !canUpdateSelected" @change="value => togglePermission(row[action].id, Boolean(value))" />
-                  <span v-else>—</span>
-                </template>
-              </el-table-column>
-            </el-table>
+
+          <el-alert v-if="form.isSystem" type="info" :closable="false" show-icon
+                    title="This is a protected system role. Its name/status are protected, but its page access can be changed for this location." />
+
+          <div class="module-tree-heading">
+            <div>
+              <strong>Module Access</strong>
+              <div class="small-text">Parent modules control menu groups. Sub-modules control the pages inside each group.</div>
+            </div>
           </div>
+
+          <el-tree ref="roleTreeRef" v-loading="loadingModules" :data="roleModuleTree" node-key="id"
+                   show-checkbox default-expand-all :props="treeProps" />
 
           <div class="actions">
-            <el-button v-if="form.id && canDelete && !form.isSystem" type="danger" plain @click="removeRole">Delete</el-button>
+            <el-button v-if="form.id && !form.isSystem" type="danger" plain @click="removeRole">Delete</el-button>
             <div class="spacer" />
             <el-button v-if="creating" @click="cancelCreate">Cancel</el-button>
-            <el-button v-if="canSave" type="primary" :loading="saving" @click="saveRole">{{ creating ? 'Create Role' : 'Save Changes' }}</el-button>
+            <el-button type="primary" :loading="saving" @click="saveRole">{{ creating ? 'Create Role' : 'Save Changes' }}</el-button>
           </div>
         </template>
-
         <el-empty v-else description="Select a role" />
       </el-card>
     </div>
@@ -54,75 +75,85 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
-import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole } from '@/api/role';
-import checkPermission from '@/utils/permission';
+import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole, updateLocationModules } from '@/api/role';
+import { useUserStore } from '@/store/modules/user';
 
+const userStore = useUserStore();
 const roles = ref<any[]>([]);
-const allPermissions = ref<any[]>([]);
+const moduleTree = ref<any[]>([]);
+const locationModuleIds = ref<number[]>([]);
 const selectedRoleId = ref<number | null>(null);
 const loadingRoles = ref(false);
-const loadingPermissions = ref(false);
+const loadingModules = ref(false);
 const saving = ref(false);
+const savingLocation = ref(false);
 const creating = ref(false);
-const actions = ['read', 'create', 'update', 'delete'];
+const roleTreeRef = ref<any>(null);
+const locationTreeRef = ref<any>(null);
+const treeProps = { children: 'children', label: 'name', disabled: 'disabled' };
 
-const form = reactive<any>({ id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] });
+const form = reactive<any>({ id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
+const locationId = computed(() => Number(userStore.locationId || 0) || null);
+const isSystemAdmin = computed(() => String(userStore.roleName || '').trim().toLowerCase() === 'system admin');
 
-const canCreate = computed(() => checkPermission('roles.create'));
-const canUpdate = computed(() => checkPermission('roles.update'));
-const canDelete = computed(() => checkPermission('roles.delete'));
-const isOwner = computed(() => form.name === 'Owner');
-const canUpdateSelected = computed(() => creating.value ? canCreate.value : canUpdate.value);
-const canSave = computed(() => !isOwner.value && (creating.value ? canCreate.value : canUpdate.value));
+function cloneRoleTree(nodes: any[]): any[] {
+  const allowed = new Set(locationModuleIds.value.map(Number));
+  return nodes.map(node => ({
+    ...node,
+    disabled: !allowed.has(Number(node.id)),
+    children: cloneRoleTree(node.children || [])
+  }));
+}
+const roleModuleTree = computed(() => cloneRoleTree(moduleTree.value));
 
-const permissionRows = computed(() => {
-  const map: Record<string, any> = {};
-  for (const permission of allPermissions.value) {
-    if (!map[permission.module]) map[permission.module] = { module: permission.module };
-    map[permission.module][permission.action] = permission;
-  }
-  return Object.values(map);
-});
+function checkedKeys(tree: any) {
+  if (!tree) return [];
+  return [...new Set([...(tree.getCheckedKeys(false) || []), ...(tree.getHalfCheckedKeys() || [])].map(Number))];
+}
 
-function actionLabel(action: string) {
-  return action.charAt(0).toUpperCase() + action.slice(1);
+async function loadModules() {
+  if (!locationId.value) return;
+  loadingModules.value = true;
+  try {
+    const response = await getPermissions(locationId.value);
+    const data = response.data || {};
+    moduleTree.value = data.modules || [];
+    locationModuleIds.value = (data.locationModuleIds || []).map(Number);
+    await nextTick();
+    locationTreeRef.value?.setCheckedKeys(locationModuleIds.value, false);
+  } finally { loadingModules.value = false; }
 }
 
 async function loadRoles() {
+  if (!locationId.value) return;
   loadingRoles.value = true;
   try {
-    const response = await getRoles();
-    roles.value = response.data || [];
+    const response = await getRoles(locationId.value);
+    // System Admin is hidden in both backend and frontend as a second safeguard.
+    roles.value = (response.data || []).filter((role: any) => String(role.name || '').trim().toLowerCase() !== 'system admin');
+    if (!roles.value.some((r: any) => r.id === selectedRoleId.value)) selectedRoleId.value = null;
     if (!selectedRoleId.value && roles.value.length) await selectRole(roles.value[0].id);
-  } finally {
-    loadingRoles.value = false;
-  }
-}
-
-async function loadPermissions() {
-  loadingPermissions.value = true;
-  try {
-    const response = await getPermissions();
-    allPermissions.value = response.data || [];
-  } finally {
-    loadingPermissions.value = false;
-  }
+  } finally { loadingRoles.value = false; }
 }
 
 async function selectRole(id: number) {
+  if (!locationId.value) return;
   creating.value = false;
   selectedRoleId.value = id;
-  const response = await getRole(id);
-  Object.assign(form, response.data);
+  const response = await getRole(id, locationId.value);
+  Object.assign(form, response.data, { moduleIds: response.data?.moduleIds || [] });
+  await nextTick();
+  roleTreeRef.value?.setCheckedKeys(form.moduleIds, false);
 }
 
 function newRole() {
   creating.value = true;
   selectedRoleId.value = null;
-  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] });
+  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
+  nextTick(() => roleTreeRef.value?.setCheckedKeys([], false));
 }
 
 function cancelCreate() {
@@ -130,27 +161,30 @@ function cancelCreate() {
   if (roles.value.length) selectRole(roles.value[0].id);
 }
 
-function togglePermission(id: number, checked: boolean) {
-  const index = form.permissionIds.indexOf(id);
-  if (checked && index === -1) form.permissionIds.push(id);
-  if (!checked && index !== -1) form.permissionIds.splice(index, 1);
+async function saveLocationModules() {
+  if (!locationId.value) return ElMessage.warning('Select a location first.');
+  try {
+    savingLocation.value = true;
+    const moduleIds = checkedKeys(locationTreeRef.value);
+    await updateLocationModules(locationId.value, moduleIds);
+    ElMessage.success('Location modules updated.');
+    await loadModules();
+    if (selectedRoleId.value) await selectRole(selectedRoleId.value);
+  } finally { savingLocation.value = false; }
 }
 
 async function saveRole() {
-  if (!form.name?.trim()) {
-    ElMessage.warning('Role name is required');
-    return;
-  }
-
+  if (!locationId.value) return ElMessage.warning('Select a location first.');
+  if (!form.name?.trim()) return ElMessage.warning('Role name is required');
   try {
     saving.value = true;
     const payload = {
+      locationid: locationId.value,
       name: form.name.trim(),
       description: form.description,
       isActive: form.isActive,
-      permissionIds: form.permissionIds
+      moduleIds: checkedKeys(roleTreeRef.value)
     };
-
     if (creating.value) {
       const response = await createRole(payload);
       ElMessage.success('Role created successfully');
@@ -159,26 +193,32 @@ async function saveRole() {
       if (response.data?.id) await selectRole(response.data.id);
     } else {
       await updateRole(form.id, payload);
-      ElMessage.success('Role updated successfully');
+      ElMessage.success('Role module access updated');
       await loadRoles();
       await selectRole(form.id);
     }
-  } finally {
-    saving.value = false;
-  }
+  } finally { saving.value = false; }
 }
 
 async function removeRole() {
   await ElMessageBox.confirm(`Delete role ${form.name}?`, 'Delete Role', { type: 'warning', confirmButtonText: 'Delete' });
-  await deleteRole(form.id);
+  await deleteRole(form.id, locationId.value);
   ElMessage.success('Role deleted successfully');
   selectedRoleId.value = null;
-  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, permissionIds: [] });
+  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
   await loadRoles();
 }
 
-onMounted(async () => {
-  await Promise.all([loadPermissions(), loadRoles()]);
-});
-</script>
+async function reloadForLocation() {
+  selectedRoleId.value = null;
+  creating.value = false;
+  await loadModules();
+  await loadRoles();
+}
 
+watch(locationId, async (value, oldValue) => {
+  if (value && value !== oldValue) await reloadForLocation();
+});
+
+onMounted(reloadForLocation);
+</script>

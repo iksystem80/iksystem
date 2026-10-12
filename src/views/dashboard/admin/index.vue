@@ -57,7 +57,12 @@ function handleSetLineChartData(type) {
   // }
 }
 
-onMounted(async() => {
+onMounted(async () => {
+  console.log('role: ' + userStore.isSystemAdmin);
+  if (userStore.isSystemAdmin) {
+    router.push('/system/companies');
+  }
+
   if (userStore.isEmployee) {
     try {
       const response = await getClockStatus(userStore.userId);
@@ -65,8 +70,7 @@ onMounted(async() => {
       const isClockedIn = response.data?.clockedIn === true;
 
       userStore.setClockedIn(isClockedIn);
-
-      // console.log('isEmployee: ' + userStore.isEmployee);
+     
       // console.log('isClockedIn: ' + userStore.isClockedIn);
 
       if (!isClockedIn) {

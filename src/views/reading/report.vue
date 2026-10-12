@@ -1,13 +1,12 @@
 <template>
   <div class="app-container">
-    <div class="page-header">
-      <div>
+    <div class="page-header reading-report-header">
+      <div class="reading-report-heading">
         <h2 class="page-title">Reading Reports</h2>
         <p>Reconcile reading sessions, review completed sessions etc.</p>
       </div>
-    </div>
-    <div class="reading-report-page">
-      <div class="filter-card">
+
+      <div class="filter-card reading-report-header-filter">
         <div class="filter-layout mobile-select-refresh-row reading-session-row">
           <div class="filter-session">
             <label>Reading Session</label>
@@ -34,6 +33,9 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="reading-report-page">
 
       <el-empty v-if="!selectedSessionId"
                 description="Select a reconcile or completed reading session to view its report."
@@ -55,14 +57,18 @@
                   <span>Session #</span>
                 </div>
 
-                <div class="reading-summary-item">
-                  <strong class="reading-summary-date">{{ formatDateTime(selectedSession.startedat) }}</strong>
-                  <span>Started</span>
-                </div>
-
-                <div class="reading-summary-item">
-                  <strong class="reading-summary-date">{{ formatDateTime(selectedSession.endedat) }}</strong>
-                  <span>{{ Number(selectedSession.status) === 2 ? 'Reading Finished' : 'Completed' }}</span>
+                <div class="reading-summary-item reading-summary-time">
+                  <div class="reading-summary-time-values">
+                    <div class="reading-summary-time-row">
+                      <small>Started</small>
+                      <strong class="reading-summary-date">{{ formatDateTime(selectedSession.startedat) }}</strong>
+                    </div>
+                    <div class="reading-summary-time-row">
+                      <small>{{ Number(selectedSession.status) === 2 ? 'Reading Finished' : 'Completed' }}</small>
+                      <strong class="reading-summary-date">{{ formatDateTime(selectedSession.endedat) }}</strong>
+                    </div>
+                  </div>
+                  <span>Reading Time</span>
                 </div>
 
                 <div class="reading-summary-item">

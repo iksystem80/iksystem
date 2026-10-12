@@ -130,18 +130,20 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { ArrowLeft, ArrowRight, Clock, Picture } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
+import { useRefreshStore } from '@/store/modules/refresh';
 import { getEmployeeReportSessions } from '@/api/employeesession';
 import SessionPhotoAuditDrawer from './sessionphotoauditdrawer.vue';
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const refreshStore = useRefreshStore();
 
 const loading = ref(false);
 const employee = ref(null);
@@ -288,6 +290,11 @@ async function loadSessions() {
       loading.value = false;
     }
 }
+
+watch(
+  () => refreshStore.key('employeeSessions'),
+  () => loadSessions()
+);
 
 onMounted(loadSessions);
 </script>

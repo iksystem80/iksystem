@@ -98,7 +98,7 @@
                 class="clickable-table"
                 @row-click="openEmployee">
         <el-table-column label="Employee"
-                         min-width="280">
+                         min-width="160">
           <template #default="{ row }">
             <div class="table-cell">
               <el-avatar :size="42"
@@ -117,37 +117,37 @@
         </el-table-column>
 
         <el-table-column label="Sessions"
-                         width="130"
+                         width="90"
                          align="center">
           <template #default="{ row }">
             <el-tag type="primary"
                     effect="light"
                     round>
-              {{ Number(row.readingIncludedCount || 0) }}/{{ Number(row.sessionCount || 0) }}
+              {{ Number(row.readingIncludedCount || 0) }} / {{ Number(row.sessionCount || 0) }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column label="Points" width="115" align="right">
+        <el-table-column label="Points" min-width="70" align="center">
           <template #default="{ row }">
             {{ Number(row.totalPoints || 0).toLocaleString() }}
           </template>
         </el-table-column>
-        <el-table-column label="Expenses" width="130" align="right">
+        <el-table-column label="Expenses" min-width="100" align="center">
           <template #default="{ row }">
             {{ formatMoney(row.cashExpenses) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="Last Session"
-                         min-width="190">
+        <el-table-column label="Last Session"  align="center"
+                         min-width="85">
           <template #default="{ row }">
             {{ formatDateTime(row.lastSession) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="Hours"
-                         width="120"
+        <el-table-column label="Hours" 
+                         min-width="80"
                          align="center">
           <template #default="{ row }">
             {{ formatHours(row.totalWorkingHours) }}
@@ -155,7 +155,7 @@
         </el-table-column>
 
         <el-table-column label="Status"
-                         width="130"
+                         width="100"
                          align="center">
           <template #default="{ row }">
             <el-tag v-if="row.activeSessionCount > 0"
@@ -255,16 +255,18 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { ArrowRight, Filter, UserFilled, Calendar, Coin, Money } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
+import { useRefreshStore } from '@/store/modules/refresh';
 import { getEmployeeSessionSummary } from '@/api/employeesession';
 
 const router = useRouter();
 const userStore = useUserStore();
+const refreshStore = useRefreshStore();
 
 const loading = ref(false);
 const filterDrawer = ref(false);
@@ -413,6 +415,11 @@ async function loadEmployees() {
       loading.value = false;
     }
 }
+
+watch(
+  () => refreshStore.key('employeeSessions'),
+  () => loadEmployees()
+);
 
 onMounted(loadEmployees);
 </script>

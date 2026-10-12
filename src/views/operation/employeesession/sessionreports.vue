@@ -257,16 +257,18 @@
 
 <script setup>
 import { ArrowLeft } from '@element-plus/icons-vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
+import { useRefreshStore } from '@/store/modules/refresh';
 import { getEmployeeSessionReport } from '@/api/employeesession';
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const refreshStore = useRefreshStore();
 
 const loading = ref(false);
 const session = ref(null);
@@ -397,6 +399,11 @@ async function loadSession() {
       loading.value = false;
     }
 }
+
+watch(
+  () => refreshStore.key('employeeSessions'),
+  () => loadSession()
+);
 
 onMounted(loadSession);
 </script>

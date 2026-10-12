@@ -107,9 +107,49 @@
       </el-card>
       <!--<RuleToggleCard v-model="form.nfcTicketOutEnabled" title="Enable NFC Ticket Out" accent="#409eff" accent-soft="rgba(64, 158, 255, 0.11)" description="When enabled, employees with NFC access can scan a machine to auto-fill the Ticket Out form. Turn this off to require manual machine entry." />-->
       <RuleToggleCard v-model="form.auditVerificationEnabled" title="Enable Audit Verification of Bonuses & Raffles & Lucky Bird" accent="#e6a23c" accent-soft="rgba(230, 162, 60, 0.11)" description="When enabled, employees cannot close out every bonus and raffle in a session until the session has been audited, approved, or flagged." />
+
+      <el-card shadow="never" class="rule-card rule-lucky-bird" :class="{ enabled: form.luckyBirdEnabled }">
+        <el-checkbox v-model="form.luckyBirdEnabled" size="large">
+          <div class="rule-title-wrap">
+            <strong>Enable Lucky Bird</strong>
+            <small>
+              Allow employees to give Lucky Bird bonuses at this location.
+            </small>
+          </div>
+        </el-checkbox>
+
+        <el-collapse-transition>
+          <div v-if="form.luckyBirdEnabled" class="rule-body">
+            <div class="match-settings-grid">
+              <div class="match-setting-block">
+                <div class="setting-label">
+                  Customers Per Day
+                  <span class="required-mark">*</span>
+                </div>
+
+                <div class="input-with-suffix">
+                  <el-input-number
+                    v-model="form.luckyBirdMaxCustomersPerDay"
+                    :min="1"
+                    :max="1000"
+                    controls-position="right"
+                    class="full-width"
+                  />
+                  <span class="input-suffix">customers</span>
+                </div>
+
+                <div class="setting-help">
+                  Maximum Lucky Bird awards allowed per day. The Lucky Bird day resets at 6:00 AM.
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-collapse-transition>
+      </el-card>
       <!--<RuleToggleCard v-model="form.phoneVerificationRequired" title="Require Phone Verification" accent="#f56c6c" accent-soft="rgba(245, 108, 108, 0.10)" description="When enabled, a customer must verify their phone with an SMS code before collecting points. Turn this off for locations that do not need phone verification." />-->
       <RuleToggleCard v-model="form.nuVueBoostEnabled" title="Enable Marketing Promotion" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="When enabled, the NuVue Boost marketing menu is available to permitted staff at this location." />
-      <el-card shadow="never" class="rule-card rule-ticket-photo" :class="{ enabled: form.ticketPhotoRequired }">
+
+      <el-card style="display:none" shadow="never" class="rule-card rule-ticket-photo" :class="{ enabled: form.ticketPhotoRequired }">
         <el-checkbox v-model="form.ticketPhotoRequired" size="large">
           <div class="rule-title-wrap">
             <strong>Enable Ticket Photo Requirement</strong>
@@ -131,7 +171,7 @@
           </div>
         </el-collapse-transition>
       </el-card>
-      <el-card shadow="never" class="rule-card rule-vip" :class="{ enabled: form.vipMatchEnabled }">
+      <el-card style="display:none" shadow="never" class="rule-card rule-vip" :class="{ enabled: form.vipMatchEnabled }">
         <el-checkbox v-model="form.vipMatchEnabled" size="large">
           <div class="rule-title-wrap">
             <strong>Enable VIP Match</strong>
@@ -194,6 +234,8 @@ const defaultForm = () => ({
   matchResetDayTime: '07:00',
   nfcTicketOutEnabled: false,
   auditVerificationEnabled: false,
+  luckyBirdEnabled: false,
+  luckyBirdMaxCustomersPerDay: 1,
   phoneVerificationRequired: false,
   nuVueBoostEnabled: false,
   ticketPhotoRequired: false,
@@ -252,6 +294,11 @@ async function saveRules() {
 
   if (form.matchRuleEnabled && form.matchResetTimes.length === 0) {
     ElMessage.warning('Add at least one reset time.');
+    return;
+  }
+
+  if (form.luckyBirdEnabled && Number(form.luckyBirdMaxCustomersPerDay || 0) < 1) {
+    ElMessage.warning('Enter how many customers can receive Lucky Bird per day.');
     return;
   }
 

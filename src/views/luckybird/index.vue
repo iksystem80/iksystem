@@ -5,11 +5,15 @@
         <h2 class="page-title">Lucky Bird</h2>
         <p>
           {{
-            step === 1
-              ? 'Scan or enter the machine number.'
-              : step === 2
-                ? 'Select the Lucky Bird denomination.'
-                : 'Select the customer and capture the Lucky Bird photo.'
+            stateLoaded && !state.luckyBirdEnabled
+              ? 'This feature is disabled by an administrator.'
+              : stateLoaded && state.luckyBirdEnabled && state.luckyBirdRemainingToday <= 0
+                ? 'The daily Lucky Bird limit has been reached.'
+                : step === 1
+                  ? 'Scan or enter the machine number.'
+                  : step === 2
+                    ? 'Select the Lucky Bird denomination.'
+                    : 'Select the customer and capture the Lucky Bird photo.'
           }}
         </p>
       </div>
@@ -41,12 +45,41 @@
       </div>
     </el-card>
 
-    <el-alert v-if="!state.cashReady"
-              class="cash-alert"
-              type="warning"
-              :closable="false"
-              show-icon
-              title="Opening Bank must be available before a Lucky Bird can be paid." />
+    <el-card v-if="stateLoaded && !state.luckyBirdEnabled"
+             shadow="never"
+             class="main-card">
+      <el-result
+        icon="warning"
+        title="Lucky Bird is disabled"
+        sub-title="This feature has been disabled by an administrator for this location."
+      />
+    </el-card>
+
+    <el-card v-else-if="stateLoaded && state.luckyBirdEnabled && state.luckyBirdRemainingToday <= 0"
+             shadow="never"
+             class="main-card">
+      <el-result
+        icon="info"
+        title="Daily Lucky Bird limit reached"
+        :sub-title="`All ${state.luckyBirdDailyLimit} Lucky Bird award${state.luckyBirdDailyLimit === 1 ? '' : 's'} for this day have been used. The limit resets at 6:00 AM.`"
+      />
+    </el-card>
+
+    <template v-else-if="stateLoaded && state.luckyBirdEnabled">
+      <el-alert
+        class="cash-alert"
+        type="info"
+        :closable="false"
+        show-icon
+        :title="`${state.luckyBirdUsedToday} of ${state.luckyBirdDailyLimit} Lucky Bird award${state.luckyBirdDailyLimit === 1 ? '' : 's'} used today · ${state.luckyBirdRemainingToday} remaining · resets at 6:00 AM`"
+      />
+
+      <el-alert v-if="!state.cashReady"
+                class="cash-alert"
+                type="warning"
+                :closable="false"
+                show-icon
+                title="Opening Bank must be available before a Lucky Bird can be paid." />
 
     <Transition name="step-fade" mode="out-in">
       <!-- STEP 1 -->
@@ -268,6 +301,7 @@
         </div>
       </div>
     </Transition>
+    </template>
   </div>
 </template>
 
@@ -318,8 +352,14 @@ const state = reactive({
             sessionId: null,
             locationId: null,
             balance: 0,
-            cashReady: false
+            cashReady: false,
+            luckyBirdEnabled: false,
+            luckyBirdDailyLimit: 0,
+            luckyBirdUsedToday: 0,
+            luckyBirdRemainingToday: 0,
+            luckyBirdDayStart: '06:00'
 });
+const stateLoaded = ref(false);
 
 const machineNumber = ref('');
 const machine = ref(null);
@@ -356,6 +396,8 @@ const canSubmit = computed(() =>
               customerId.value &&
               photoFile.value &&
               state.cashReady &&
+              state.luckyBirdEnabled &&
+              Number(state.luckyBirdRemainingToday) > 0 &&
               Number(selectedAmount.value) > 0 &&
               Number(selectedAmount.value) <= Number(state.balance)
             )
@@ -393,6 +435,8 @@ function scheduleActionBarUpdate() {
 }
 
 async function loadState() {
+            stateLoaded.value = false;
+
             try {
               const response = await getLuckyBirdGiveState();
               Object.assign(state, response.data || {});
@@ -402,6 +446,8 @@ async function loadState() {
                 error?.message ||
                 'Unable to load Lucky Bird status.'
               );
+            } finally {
+              stateLoaded.value = true;
             }
 }
 
@@ -431,6 +477,14 @@ function clearMachine() {
 }
 
 async function findMachine() {
+            if (!state.luckyBirdEnabled) {
+              return ElMessage.warning('Lucky Bird is disabled by the administrator.');
+            }
+
+            if (Number(state.luckyBirdRemainingToday) <= 0) {
+              return ElMessage.warning('The daily Lucky Bird limit has been reached.');
+            }
+
             const number = String(machineNumber.value || '').trim();
 
             if (!number) {
@@ -517,6 +571,7 @@ async function stopNfcScan() {
 
 async function scanNfc() {
             if (step.value !== 1) return;
+            if (!state.luckyBirdEnabled || Number(state.luckyBirdRemainingToday) <= 0) return;
 
             if (!Capacitor.isNativePlatform()) {
               nfcScanning.value = false;
@@ -681,7 +736,10 @@ async function resetToScan() {
             clearPhoto();
 
             await nextTick();
-            await scanNfc();
+
+            if (state.luckyBirdEnabled && Number(state.luckyBirdRemainingToday) > 0) {
+              await scanNfc();
+            }
 }
 
 async function goBack() {
@@ -732,6 +790,10 @@ async function submitLuckyBird() {
                 error?.message ||
                 'Unable to save Lucky Bird.'
               );
+
+              if ([403, 409].includes(Number(error?.response?.status))) {
+                await loadState();
+              }
             } finally {
               saving.value = false;
             }
@@ -765,7 +827,9 @@ onMounted(async () => {
               scheduleActionBarUpdate
             );
 
-            await scanNfc();
+            if (state.luckyBirdEnabled && Number(state.luckyBirdRemainingToday) > 0) {
+              await scanNfc();
+            }
 });
 
 onBeforeUnmount(async () => {

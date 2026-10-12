@@ -50,7 +50,16 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     if (!permissionStore.routesLoaded) {
-      const accessRoutes = permissionStore.generateRoutes(userStore.permissions, userStore.roleName);
+      // userStore.permissions now contains assigned module/sub-module codes
+      // returned by the new module-access backend.
+      const assignedModules = Array.isArray(userStore.permissions)
+        ? userStore.permissions
+        : [];
+
+      const accessRoutes = permissionStore.generateRoutes(
+        assignedModules,
+        userStore.roleName
+      );
 
       accessRoutes.forEach(route => {
         router.addRoute(route);

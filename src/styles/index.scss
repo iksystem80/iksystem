@@ -34,6 +34,10 @@
         height: calc(100vh - 50px) !important;
         max-height: calc(100vh - 50px) !important;
     }
+
+    .el-message {
+        margin-top: 50px;
+    }
 }
 
 html,
@@ -1704,10 +1708,10 @@ html[data-theme='coffee'] {
 }
 
 .eldialog-class {
-    width: 50%;
+    width: 70% !important;
     min-width: 700px;
     background: radial-gradient( circle at 85% 0%, #ede9fe 0, transparent 28% ), #f6f7fb;
-    padding: 5px 0;
+    padding: 5px 0 30px;
 }
 
     .eldialog-class .el-dialog__header {
@@ -7286,7 +7290,7 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 0px;
 }
 
     .toolbar .search {
@@ -7707,7 +7711,7 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
         width: 100%;
         max-width: 1280px;
         margin: 0 auto;
-        padding: 14px 12px 92px;
+        padding: 10px 10px;
     }
 
     .assign-machine-page .point-form {
@@ -8046,7 +8050,7 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             display: block;
             max-width: 300px;
             margin-top: 3px;
-            font-size: 13px;
+            font-size: 26px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -8985,7 +8989,7 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
         }
 
     .weekly-report-page .weekly-report-shifts-card .el-card__body {
-        padding: 0 16px;
+        padding: 16px 16px;
     }
 
     .weekly-report-page .weekly-report-shifts {
@@ -11202,8 +11206,9 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
     }
 
     .assign-machine-page .content {
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: 7px;
+        padding-right: 7px;
+        padding-top: 7px;
     }
 
     .assign-machine-page .profile-main {
@@ -11717,9 +11722,9 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             grid-template-columns: 48px 1fr 16px 1fr;
         }
 
-    .assign-machine-page .content {
+    /*.assign-machine-page .content {
         padding: 20px 20px 92px;
-    }
+    }*/
 
     .assign-machine-page .profile-card {
         flex-direction: column;
@@ -13229,18 +13234,21 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
     }
 
     .main-container.hasFixedHeader .app-main-scroll {
-        margin-bottom: 40px;
+        margin-bottom: 0px;
     }
+        .main-container.hasFixedHeader .app-main-scroll .app-main {
+            padding-bottom: 40px;
+        }
 
     .metric-grid, .panel-grid {
         grid-template-columns: 1fr;
     }
 
     .eldialog-class {
-        width: 90%;
-        min-width: 90%;
-        background: radial-gradient( circle at 85% 0%, #ede9fe 0, transparent 28% ), #f6f7fb;
-        padding: 0;
+        width: 90% !important;
+        min-width: 90% !important;
+        background: radial-gradient( circle at 85% 0%, #ede9fe 0, transparent 28% ), #f6f7fb !important;
+        padding: 0 0 30px !important;
     }
 
     .footer-row {
@@ -13573,7 +13581,7 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
     }
 
     .assign-machine-page .content {
-        padding: 14px 12px 88px;
+        padding: 10px 10px;
     }
 
     .assign-machine-page .profile-card {
@@ -14490,21 +14498,25 @@ html[data-theme='light'] .employee-banner {
     box-shadow: none !important;
 }
 
-/* Employee banner metric boxes remain secondary to the parent surface. */
+/* Employee banner metric boxes stay visually inside the dark banner
+   across every theme. */
 .employee-banner .employee-right > div,
 .employee-banner .session-grid > div,
 .employee-banner-theme .ticket-reconcile-badge,
 .employee-banner-theme .ticket-reconcile-bottom > div {
-    border-color: color-mix(
-        in srgb,
-        var(--stat-card-border) 72%,
-        var(--employee-banner-text-primary)
-    ) !important;
-    background: color-mix(
-        in srgb,
-        var(--stat-card-bg-end) 82%,
-        transparent
-    ) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    background: rgba(255, 255, 255, 0.055) !important;
+    box-shadow: none !important;
+}
+
+.employee-banner .employee-right span,
+.employee-banner .session-grid span {
+    color: var(--employee-banner-text-muted) !important;
+}
+
+.employee-banner .employee-right strong,
+.employee-banner .session-grid strong {
+    color: var(--employee-banner-text-primary) !important;
 }
 
 /* ============================================================
@@ -14527,5 +14539,743 @@ html[data-theme='light'] .employee-banner {
 /* Prevent Element Plus from painting the pseudo background layer. */
 .table-card .el-table__inner-wrapper::before {
     background-color: var(--el-border-color-lighter) !important;
+}
+
+/* ============================================================
+   ASSIGN MACHINE - DARK THEME WARNING TEXT
+   Keep warning surfaces light while forcing readable dark text.
+   ============================================================ */
+html[data-theme='dark'] .assign-machine-page {
+    .vip-status:not(.verified) {
+        .status-content h3,
+        .status-content p {
+            color: #111111 !important;
+        }
+    }
+
+    .el-alert--warning {
+        .el-alert__title,
+        .el-alert__description,
+        .el-alert__content {
+            color: #111111 !important;
+        }
+    }
+}
+
+/* ============================================================
+   ASSIGN MACHINE - MATCH RULE ALERT
+   ============================================================ */
+.assign-machine-page .profile-main > .el-alert.el-alert--warning {
+    margin-top: 14px;
+    background: rgba(245, 108, 108, 0.10) !important;
+    border: 1px solid rgba(245, 108, 108, 0.22);
+
+    .el-alert__title,
+    .el-alert__description,
+    .el-alert__content {
+        color: #7f1d1d !important;
+    }
+}
+
+/* ============================================================
+   ASSIGN MACHINE - MATCH RULE BLOCKED STATE
+   Show only customer photo, name, phone and the blocked message.
+   ============================================================ */
+.assign-machine-page .profile-card.match-rule-blocked {
+    min-height: 260px;
+}
+
+.assign-machine-page .profile-card.match-rule-blocked .profile-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.assign-machine-page .match-rule-blocked-alert.el-alert--warning {
+    width: min(100%, 720px);
+    margin: 24px auto 0;
+    padding: 18px 22px;
+    border-radius: 14px;
+    background: rgba(245, 108, 108, 0.10) !important;
+    border: 1px solid rgba(245, 108, 108, 0.24);
+    box-shadow: 0 8px 24px rgba(127, 29, 29, 0.08);
+}
+
+.assign-machine-page .match-rule-blocked-alert .el-alert__content {
+    width: 100%;
+    text-align: center;
+}
+
+.assign-machine-page .match-rule-blocked-alert .el-alert__title,
+.assign-machine-page .match-rule-blocked-alert .el-alert__description,
+.assign-machine-page .match-rule-blocked-alert .el-alert__content {
+    color: #7f1d1d !important;
+}
+
+.assign-machine-page .match-rule-blocked-alert .el-alert__title {
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 600;
+}
+
+.assign-machine-page .match-rule-blocked-alert .el-alert__icon {
+    color: #b42318;
+    font-size: 20px;
+}
+
+@media (max-width: 767px) {
+    .assign-machine-page .profile-card.match-rule-blocked {
+        min-height: 0;
+    }
+
+    .assign-machine-page .profile-card.match-rule-blocked .profile-main {
+        justify-content: flex-start;
+    }
+
+    .assign-machine-page .match-rule-blocked-alert.el-alert--warning {
+        margin-top: 18px;
+        padding: 15px 16px;
+    }
+}
+
+/* ============================================================
+   CUSTOMER LIST - COMPACT SUMMARY / SEARCH BAR
+   Scoped only to the Customers page.
+   ============================================================ */
+.irfan-customer-index .toolbar-card .el-card__body {
+    padding: 12px 20px;
+}
+
+@media (max-width: 767px) {
+    .irfan-customer-index .toolbar-card .el-card__body {
+        padding: 10px 12px;
+    }
+}
+
+/* ============================================================
+   CUSTOMER PROFILE USER CARD - TABLET QUICK INFO
+   Keep Points and Customer Since on separate rows on tablets.
+   ============================================================ */
+@media (min-width: 769px) and (max-width: 1200px) {
+    .customer-user-card .quick-info {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+
+    .customer-user-card .info-item {
+        width: 100%;
+    }
+}
+
+/* ============================================================
+   EMPLOYEE SESSION BANNER - TABLET LAYOUT
+   Keep Duration on the first row with the employee profile,
+   then Clock In / Clock Out side-by-side below.
+   Applies generically to employee-session banners with session-grid.
+   ============================================================ */
+@media (min-width: 768px) and (max-width: 1100px) {
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) minmax(120px, auto) !important;
+        grid-template-areas:
+            "profile duration"
+            "divider divider"
+            "clockin clockout" !important;
+        align-items: center !important;
+        gap: 14px 12px !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid)::after {
+        content: "";
+        grid-area: divider;
+        display: block;
+        width: 100%;
+        height: 1px;
+        background: rgba(255, 255, 255, .12);
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .employee-profile {
+        grid-area: profile;
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid {
+        display: contents !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(1) {
+        grid-area: clockin;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+        grid-area: clockout;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+        grid-area: duration;
+        justify-self: end;
+        align-self: center;
+        min-width: 120px !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(1),
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div {
+        padding: 10px 12px !important;
+        text-align: center !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid span,
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid strong {
+        text-align: center !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid strong {
+        white-space: nowrap !important;
+    }
+}
+
+/* ============================================================
+   EMPLOYEE SESSION BANNER - EQUAL CLOCK ROW
+   Tablet: Clock In and Clock Out always share the second row 50/50.
+   ============================================================ */
+@media (min-width: 768px) and (max-width: 1100px) {
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .employee-profile {
+        grid-column: 1 / 2;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+        grid-column: 2 / 3;
+        width: auto !important;
+        min-width: 120px !important;
+        max-width: 220px;
+    }
+
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(1),
+    .employee-banner.employee-session-banner
+    .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+}
+
+/* ============================================================
+   READING ENTRY CARD - EMPLOYEE BANNER THEME
+   Theme-driven reading entry surface using the same banner palette.
+   ============================================================ */
+.reading-step .entry-card {
+    background: linear-gradient(
+        135deg,
+        var(--employee-banner-gradient-start),
+        var(--employee-banner-gradient-end)
+    ) !important;
+    border-color: transparent !important;
+    color: var(--employee-banner-text-primary) !important;
+}
+
+.reading-step .entry-card .el-card__body {
+    background: transparent !important;
+}
+
+.reading-step .entry-card .el-form-item__label,
+.reading-step .entry-card .input-label,
+.reading-step .entry-card .el-statistic__head,
+.reading-step .entry-card .small-text,
+.reading-step .entry-card .reading-delta {
+    color: var(--employee-banner-text-secondary) !important;
+}
+
+.reading-step .entry-card .el-input__wrapper,
+.reading-step .entry-card .el-input-number,
+.reading-step .entry-card .el-input-number .el-input__wrapper {
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset !important;
+}
+
+.reading-step .entry-card .el-input__inner,
+.reading-step .entry-card .el-input-number .el-input__inner {
+    color: var(--employee-banner-text-primary) !important;
+}
+
+.reading-step .entry-card .el-input__inner::placeholder {
+    color: var(--employee-banner-text-muted) !important;
+}
+
+.reading-step .entry-card .el-input-number__decrease,
+.reading-step .entry-card .el-input-number__increase {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--employee-banner-text-primary) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.reading-step .entry-card .statistic-card,
+.reading-step .entry-card .el-alert {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.reading-step .entry-card .el-alert__title,
+.reading-step .entry-card .el-alert__description,
+.reading-step .entry-card .el-alert__content,
+.reading-step .entry-card .el-alert__icon {
+    color: var(--employee-banner-text-secondary) !important;
+}
+
+.reading-step .entry-card .previous-value,
+.reading-step .entry-card .el-statistic__number {
+    color: var(--employee-banner-text-primary) !important;
+}
+
+.reading-step .entry-card .save-reading-row .el-button--primary {
+    background: var(--el-color-primary-light-3) !important;
+    border-color: var(--el-color-primary-light-3) !important;
+    color: #ffffff !important;
+}
+
+.reading-step .entry-card .save-reading-row .el-button--primary:hover:not(.is-disabled) {
+    background: var(--el-color-primary) !important;
+    border-color: var(--el-color-primary) !important;
+}
+
+.reading-step .entry-card .save-reading-row .el-button--primary.is-disabled {
+    opacity: .55;
+}
+
+/* Reading entry inputs - larger value text */
+.reading-step .entry-card .el-input__inner,
+.reading-step .entry-card .el-input-number .el-input__inner {
+    font-size: 18px !important;
+}
+
+/* ============================================================
+   READING REPORT - READING TIME SUMMARY + DESKTOP FILTER ALIGNMENT
+   ============================================================ */
+.reading-report-page .reading-summary-time {
+    min-width: 245px;
+}
+
+.reading-report-page .reading-summary-time-values {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reading-report-page .reading-summary-time-row {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+}
+
+.reading-report-page .reading-summary-time-row small {
+    color: var(--el-text-color-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.reading-report-page .reading-summary-time-row .reading-summary-date {
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+@media (min-width: 1201px) {
+    .reading-report-page .reading-session-row {
+        grid-template-columns: minmax(420px, 620px) auto !important;
+        justify-content: end !important;
+    }
+
+    .reading-report-page .reading-session-row .filter-session {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .reading-report-page .reading-summary-time {
+        min-width: 210px;
+    }
+
+    .reading-report-page .reading-summary-time-row {
+        grid-template-columns: 68px minmax(0, 1fr);
+    }
+
+    .reading-report-page .reading-summary-time-row .reading-summary-date {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 900px) {
+    .reading-report-page .reading-summary-time {
+        min-width: 0;
+    }
+
+    .reading-report-page .reading-summary-time-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .reading-report-page .reading-summary-time-row .reading-summary-date {
+        white-space: normal;
+    }
+}
+
+/* ============================================================
+   READING REPORT - HEADER / SESSION FILTER ALIGNMENT
+   Desktop: selector aligns with the page heading.
+   Tablet/mobile: keep selector full-width below the heading.
+   ============================================================ */
+.reading-report-header {
+    width: 100%;
+}
+
+.reading-report-header .reading-report-header-filter {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+@media (min-width: 1201px) {
+    .reading-report-header {
+        display: grid !important;
+        grid-template-columns: minmax(300px, 1fr) minmax(560px, 760px);
+        align-items: start !important;
+        gap: 28px;
+    }
+
+    .reading-report-header .reading-report-header-filter {
+        align-self: start;
+    }
+
+    .reading-report-header .reading-session-row {
+        grid-template-columns: minmax(420px, 1fr) auto !important;
+        justify-content: stretch !important;
+        align-items: end !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .reading-report-header {
+        display: block !important;
+    }
+
+    .reading-report-header .reading-report-header-filter {
+        margin-top: 18px;
+        width: 100%;
+    }
+
+    .reading-report-header .reading-session-row {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        width: 100% !important;
+    }
+}
+
+/* ============================================================
+   READING REPORT HEADER FILTER - FINAL DESKTOP ALIGNMENT
+   Keep selector + Refresh on one row and preserve standard label style.
+   ============================================================ */
+.reading-report-header .reading-report-header-filter .reading-session-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.reading-report-header .reading-report-header-filter .filter-session {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.reading-report-header .reading-report-header-filter .filter-session label {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--el-text-color-secondary) !important;
+    line-height: 1.2 !important;
+}
+
+.reading-report-header .reading-report-header-filter .reading-session-select {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.reading-report-header .reading-report-header-filter .filter-refresh {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    width: auto !important;
+}
+
+.reading-report-header .reading-report-header-filter .reading-report-refresh {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+}
+
+@media (min-width: 1201px) {
+    .reading-report-header {
+        display: grid !important;
+        grid-template-columns: minmax(300px, 1fr) minmax(560px, 760px) !important;
+        align-items: start !important;
+        gap: 28px !important;
+    }
+
+    .reading-report-header .reading-report-header-filter {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        align-self: start !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .reading-report-header {
+        display: block !important;
+    }
+
+    .reading-report-header .reading-report-header-filter {
+        width: 100% !important;
+        margin-top: 18px !important;
+    }
+}
+
+/* Reading Report desktop selector: compact fixed width */
+@media (min-width: 1201px) {
+    .reading-report-header {
+        grid-template-columns: minmax(300px, 1fr) auto !important;
+    }
+
+    .reading-report-header .reading-report-header-filter {
+        width: auto !important;
+    }
+
+    .reading-report-header .reading-report-header-filter .reading-session-row {
+        grid-template-columns: 420px auto !important;
+        width: auto !important;
+    }
+
+    .reading-report-header .reading-report-header-filter .filter-session {
+        width: 420px !important;
+    }
+}
+
+/* Ticket reconciliation: Short Pay + Over Ticket Paid side-by-side */
+.reading-report-page .ticket-reconcile-badges,
+.ticket-reconcile-dialog .ticket-reconcile-badges {
+    grid-template-columns: repeat(2, 170px) !important;
+    width: max-content;
+    min-width: 0;
+}
+
+.reading-report-page .ticket-reconcile-badge,
+.ticket-reconcile-dialog .ticket-reconcile-badge {
+    width: 170px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+    .reading-report-page .ticket-reconcile-badges,
+    .ticket-reconcile-dialog .ticket-reconcile-badges {
+        grid-template-columns: 170px !important;
+        width: 170px;
+    }
+}
+
+/* ============================================================
+   WEEKLY REPORT - SEAMLESS TAB SWITCHING
+   Preserve the tab body's occupied height so changing tabs does not
+   collapse the page and force .app-main-scroll back upward.
+   ============================================================ */
+.weekly-report-page .weekly-report-tabs > .el-tabs__content {
+    min-height: var(--weekly-tab-min-height, 0px);
+    overflow-anchor: none;
+}
+
+.weekly-report-page .weekly-report-tabs {
+    overflow-anchor: none;
+}
+
+/* ============================================================
+   WEEKLY REPORT - MODERN SHIFT BREAKDOWN
+   Clear Morning/Night shift hierarchy and labeled metrics.
+   ============================================================ */
+.weekly-report-page .weekly-analytics-shifts-modern {
+    gap: 12px;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+}
+
+.weekly-report-page .weekly-analytics-shifts-modern .weekly-analytics-shift {
+    padding: 14px;
+    border: 1px solid var(--el-border-color-lighter) !important;
+    border-radius: 12px;
+    background: var(--el-bg-color) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .035);
+}
+
+.weekly-report-page .weekly-analytics-shifts-modern .weekly-analytics-shift + .weekly-analytics-shift {
+    border-left: 1px solid var(--el-border-color-lighter) !important;
+}
+
+.weekly-report-page .weekly-analytics-shift-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.weekly-report-page .weekly-analytics-shift-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.weekly-report-page .weekly-analytics-shift-title strong {
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+}
+
+.weekly-report-page .weekly-analytics-shift-share {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-secondary);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.weekly-report-page .shift-morning .weekly-analytics-shift-share {
+    background: color-mix(in srgb, var(--el-color-warning) 12%, var(--el-bg-color));
+    color: var(--el-color-warning-dark-2);
+}
+
+.weekly-report-page .shift-night .weekly-analytics-shift-share {
+    background: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-bg-color));
+    color: var(--el-color-primary);
+}
+
+.weekly-report-page .weekly-analytics-shift-amount {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    margin-top: 6px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.weekly-report-page .weekly-analytics-shift-amount span {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--el-text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.weekly-report-page .weekly-analytics-shift-amount strong {
+    font-size: 22px;
+    line-height: 1;
+    color: var(--el-text-color-primary);
+}
+
+.weekly-report-page .shift-morning .weekly-analytics-shift-amount strong {
+    color: var(--el-color-warning-dark-2);
+}
+
+.weekly-report-page .shift-night .weekly-analytics-shift-amount strong {
+    color: var(--el-color-primary);
+}
+
+.weekly-report-page .weekly-analytics-shift-stats {
+    display: grid;
+    grid-template-columns: .8fr 1fr 1.35fr;
+    gap: 10px;
+    padding-top: 12px;
+}
+
+.weekly-report-page .weekly-analytics-shift-stats > div {
+    min-width: 0;
+}
+
+.weekly-report-page .weekly-analytics-shift-stats span,
+.weekly-report-page .weekly-analytics-shift-stats strong {
+    display: block;
+}
+
+.weekly-report-page .weekly-analytics-shift-stats span {
+    margin-bottom: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--el-text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: .035em;
+}
+
+.weekly-report-page .weekly-analytics-shift-stats strong {
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--el-text-color-primary);
+    white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+    .weekly-report-page .weekly-analytics-shifts-modern {
+        grid-template-columns: 1fr;
+    }
+
+    .weekly-report-page .weekly-analytics-shift-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .weekly-report-page .weekly-analytics-shift-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .weekly-report-page .weekly-analytics-shift-stats > div:last-child {
+        grid-column: 1 / -1;
+    }
 }
 

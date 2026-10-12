@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="profile-card">
+  <el-card shadow="never" class="profile-card customer-user-card">
     <!-- PROFILE -->
     <div class="profile-header">
       <div class="avatar-wrap">

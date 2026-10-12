@@ -1,65 +1,98 @@
-
 import socket from './socket';
 import { useUserStore } from '@/store/modules/user';
 import { useCheckinStore } from '@/store/modules/checkin';
+import { useRefreshStore } from '@/store/modules/refresh';
 import { ElNotification } from 'element-plus';
 
 let initialized = false;
+let currentLocationId = null;
+let connectScheduled = false;
+
+function normalizedLocationId(value) {
+  const id = Number(value);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+function joinCurrentLocation() {
+  if (!socket.connected || !currentLocationId) return;
+  socket.emit('join-location', currentLocationId);
+}
+
+function connectWhenIdle() {
+  if (socket.connected || connectScheduled) return;
+
+  connectScheduled = true;
+
+  const connect = () => {
+    connectScheduled = false;
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+  };
+
+  // Let the first page render and its API requests start before opening
+  // the realtime connection. timeout guarantees it still connects quickly.
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(connect, { timeout: 1000 });
+  } else {
+    setTimeout(connect, 0);
+  }
+}
 
 export function initializeSocketListeners(locationId) {
-  console.log('Initializing socket listeners...');
+  currentLocationId = normalizedLocationId(locationId);
 
-  socket.emit('join-location', locationId);
+  if (!initialized) {
+    initialized = true;
 
-  if (initialized) {
-    console.log('Socket listeners already initialized');
-    return;
+    socket.on('connect', joinCurrentLocation);
+    socket.on('customer-checkin', NotifyCheckin);
+    socket.on('app-refresh', NotifyAppRefresh);
   }
 
-  initialized = true;
-
-  socket.on('customer-checkin', NotifyCheckin);
-
-  console.log('customer-checkin listener registered');
+  // If already connected (for example after a location change), join now.
+  // Otherwise connect in the background without blocking first render.
+  if (socket.connected) {
+    joinCurrentLocation();
+  } else {
+    connectWhenIdle();
+  }
 }
 
 export function cleanupSocket() {
-  console.log('Cleaning up socket listeners...');
-
+  socket.off('connect', joinCurrentLocation);
   socket.off('customer-checkin', NotifyCheckin);
+  socket.off('app-refresh', NotifyAppRefresh);
 
   initialized = false;
+  currentLocationId = null;
+}
+
+function NotifyAppRefresh(data) {
+  const userStore = useUserStore();
+
+  if (Number(data?.locationId) !== Number(userStore.locationId)) return;
+
+  const refreshStore = useRefreshStore();
+  refreshStore.notify(data?.targets || [], data || {});
 }
 
 function NotifyCheckin(data) {
-  console.log('NotifyCheckin called');
   const userStore = useUserStore();
   const checkinStore = useCheckinStore();
 
-  console.log('NotifyCheckin called 2');
-  console.log(data.locationId);
-  console.log(userStore.locationId);
+  if (Number(data?.locationId) !== Number(userStore.locationId)) return;
 
-  if (Number(data.locationId) === Number(userStore.locationId)) {
-    console.log('Refreshing check-in list...: ' + data);
-    console.log(data);
-    // Tell the application that a new check-in happened
-    checkinStore.notifyNewCheckin();
+  checkinStore.notifyNewCheckin();
 
-    // ElNotification.success({
-    //   title: `${data.firstname} ${data.lastname}`,
-    //   message: `checked-in at ${new Date().toLocaleTimeString()}`,
-    //   duration: 5000
-    // });
-
-    ElNotification({
-      title: `${data.firstname} ${data.lastname}`,
-      message: `checked-in at ${new Date().toLocaleTimeString()}`,
-      duration: 5000,
-      type: 'success',
-      progress: true,
-      pauseOnHover: false,
-      position: 'bottom-right'
-    });
-  }
+  ElNotification({
+    title: `${data.firstname} ${data.lastname}`,
+    message: `checked-in at ${new Date().toLocaleTimeString()}`,
+    duration: 5000,
+    type: 'success',
+    progress: true,
+    pauseOnHover: false,
+    position: 'bottom-right'
+  });
 }

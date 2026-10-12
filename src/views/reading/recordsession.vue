@@ -220,10 +220,10 @@
                   <el-input ref="readingInput"
                             v-model.number="readingForm.readingin"
                             inputmode="numeric"
-                            placeholder="Enter IN"
+                            placeholder=""
                             :disabled="!readingForm.machinenumber" />
                   <div v-if="entryDailyIn !== null" class="reading-delta">
-                    Daily IN = <strong>{{ formatReadingValue(entryDailyIn) }}</strong>
+                    Daily IN = <strong style="color:var(--el-color-success)">{{ formatReadingValue(entryDailyIn) }}</strong>
                   </div>
                 </div>
               </el-form-item>
@@ -238,10 +238,10 @@
                 <div class="reading-input-stack">
                   <el-input v-model.number="readingForm.readingout"
                             inputmode="numeric"
-                            placeholder="Enter OUT"
+                            placeholder=""
                             :disabled="!readingForm.machinenumber" />
                   <div v-if="entryDailyOut !== null" class="reading-delta">
-                    Daily OUT = <strong>{{ formatReadingValue(entryDailyOut) }}</strong>
+                    Daily OUT = <strong style="color:var(--el-color-danger)">{{ formatReadingValue(entryDailyOut) }}</strong>
                   </div>
                 </div>
               </el-form-item>
@@ -256,7 +256,7 @@
             <el-container class="statistic-card">
               <!-- MACHINE NUMBER - ALWAYS VISIBLE -->
 
-              <el-aside width="110px"
+              <!--<el-aside width="110px"
                         class="machine-number-panel">
                 <div class="el-statistic">
                   <div class="el-statistic__head">
@@ -269,7 +269,7 @@
                     </span>
                   </div>
                 </div>
-              </el-aside>
+              </el-aside>-->
 
               <!-- RIGHT SIDE -->
 
@@ -387,67 +387,67 @@
 
         <el-table v-else-if="device !== 'mobile'"
                   :data="currentreadings"
-                  style="width: 100%">
+                  style="width: 100%; font-size:12px;">
           <el-table-column prop="machinenumber"
-                           label="Machine #"
-                           min-width="120" />
+                           label="Mach #"
+                           min-width="80" />
 
-          <el-table-column prop="readingtype"
+          <!--<el-table-column prop="readingtype"
                            label="Reading Type"
-                           min-width="130" />
+                           min-width="110" />-->
 
           <el-table-column prop="previousin"
-                           label="Previous IN"
-                           min-width="130">
+                           label="Prev. IN"
+                           min-width="100">
             <template #default="{ row }">
               {{ row.previousin ?? '-' }}
             </template>
           </el-table-column>
 
           <el-table-column prop="previousout"
-                           label="Previous OUT"
-                           min-width="130">
+                           label="Prev. OUT"
+                           min-width="100">
             <template #default="{ row }">
               {{ row.previousout ?? '-' }}
             </template>
           </el-table-column>
 
           <el-table-column label="Daily IN"
-                           min-width="120">
+                           min-width="100">
             <template #default="{ row }">
               {{ formatReadingValue(dailyIn(row)) }}
             </template>
           </el-table-column>
 
           <el-table-column label="Daily OUT"
-                           min-width="120">
+                           min-width="100">
             <template #default="{ row }">
               {{ formatReadingValue(dailyOut(row)) }}
             </template>
           </el-table-column>
 
           <el-table-column label="Diff"
-                           min-width="110">
+                           min-width="100">
             <template #default="{ row }">
               {{ formatReadingValue(readingDiff(row)) }}
             </template>
           </el-table-column>
 
           <el-table-column label="Reading At"
-                           min-width="180">
+                           min-width="120">
             <template #default="{ row }">
               {{ formatDateTime(row.readingat) }}
             </template>
           </el-table-column>
 
           <el-table-column label=""
-                           width="70"
+                           width="35"
                            align="right">
             <template #default="{ row }">
               <el-button link
                          type="danger"
                          @click="handleDelete(row)">
-                <el-icon>
+                <el-icon size="20">
                   <Delete />
                 </el-icon>
               </el-button>

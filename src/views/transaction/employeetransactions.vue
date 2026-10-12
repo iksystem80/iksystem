@@ -677,7 +677,22 @@ async function run(action, success) {
 }
 async function saveOpening() {
                     if (!validAmount(opening.value.amount, true)) return ElMessage.warning('Enter a nonnegative amount (up to 2 decimals).');
-                    if (await run(() => setOpeningCash({ sessionid: session.value.id, ...opening.value }), 'Opening Bank saved.')) { opening.value = { amount: '', notes: '' }; }
+
+                    try {
+                      busy.value = true;
+                      const response = await setOpeningCash({
+                        sessionid: session.value.id,
+                        ...opening.value
+                      });
+
+                      ElMessage.success(response?.message || 'Opening Bank saved.');
+                      opening.value = { amount: '', notes: '' };
+                      await load();
+                    } catch (e) {
+                      ElMessage.error(errorText(e));
+                    } finally {
+                      busy.value = false;
+                    }
 }
 async function saveTransaction() {
                     if (!validAmount(transaction.value.amount)) return ElMessage.warning('Enter a positive amount (up to 2 decimals).');

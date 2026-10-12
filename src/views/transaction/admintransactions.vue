@@ -10,26 +10,8 @@
     <el-tabs v-else v-model="adminTab">
       <el-tab-pane label="Overview" name="overview">
         <div class="employee-finance-summary">
-          <el-row :gutter="16" class="summary-row employee-finance-main-summary">
-            <el-col :xs="24" :sm="8" class="summary-column">
-              <el-card shadow="never" class="summary-card summary-teal">
-                <div class="summary-card-content">
-                  <div class="summary-icon"><el-icon><WalletFilled /></el-icon></div>
-                  <el-statistic title="Admin Cash" :value="Number(myCustodyBalance || 0)" :precision="2" prefix="$" />
-                </div>
-              </el-card>
-            </el-col>
-
-            <el-col :xs="24" :sm="8" class="summary-column">
-              <el-card shadow="never" class="summary-card summary-orange">
-                <div class="summary-card-content">
-                  <div class="summary-icon"><el-icon><Money /></el-icon></div>
-                  <el-statistic title="Pending / Reserved" :value="Number(myCustodyReserved || 0)" :precision="2" prefix="$" />
-                </div>
-              </el-card>
-            </el-col>
-
-            <el-col :xs="24" :sm="8" class="summary-column">
+          <el-row class="summary-row employee-finance-main-summary">
+            <el-col :span="24" class="summary-column">
               <el-card shadow="never" class="summary-card summary-green">
                 <div class="summary-card-content">
                   <div class="summary-icon"><el-icon><CircleCheckFilled /></el-icon></div>
@@ -169,10 +151,12 @@
         <el-card shadow="never" class="panel">
           <template #header>
             <div class="cash-header-actions">
-              <div><strong>Admin → Employee Cash Funding</strong><div class="hint">Send opening cash or additional business support from your Admin custody. The employee confirms receipt before their session is credited.</div></div>
+              <div>
+                <strong>Admin → Employee Cash Funding</strong>
+                <div class="hint">Send opening cash for new session from your Admin custody. The employee confirms receipt before their session is credited.</div>
+              </div>
             </div>
           </template>
-          <p>Available to transfer: <strong>{{ custodyLoaded && !custodyError ? money(myCustodyAvailable) : '—' }}</strong></p>
           <el-alert v-if="custodyError" type="error" :title="custodyError" :closable="false" show-icon />
           <el-form label-position="top" class="cash-activity-form" @submit.prevent="sendAdminFunding">
             <el-form-item label="Receiving employee">
@@ -280,24 +264,26 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useUserStore } from '@/store/modules/user';
+import { useRefreshStore } from '@/store/modules/refresh';
 import request from '@/utils/request';
 import { ElMessage, ElMessageBox } from 'element-plus';
 //
 import {
-    getEmployeeFinance,
-    getExpenseTypes,
-    getCreditTypes,
-    createExpenseType,
-    setExpenseTypeStatus,
-    getAdminFinanceOverview,
-    updateAdminFunding,
-    cancelAdminFunding,
-    sendCustodyEmployeeSupport,
-    getLocationCash,
-    addCustodyExpense
+      getEmployeeFinance,
+      getExpenseTypes,
+      getCreditTypes,
+      createExpenseType,
+      setExpenseTypeStatus,
+      getAdminFinanceOverview,
+      updateAdminFunding,
+      cancelAdminFunding,
+      sendCustodyEmployeeSupport,
+      getLocationCash,
+      addCustodyExpense
 } from '@/api/employeefinance';
 
 const userStore = useUserStore();
+const refreshStore = useRefreshStore();
 const locationId = computed(() => userStore.locationId);
 const isAdmin = computed(() => String(userStore.roleName || '').trim().toLowerCase() === 'admin');
 const isAdminRole = computed(() => String(userStore.roleName || '').trim().toLowerCase() === 'admin');
@@ -313,16 +299,16 @@ const custodyLoading = ref(false);
 const custodyError = ref('');
 let custodyRequestId = 0;
 const myCustodyAccount = computed(() => custodyAccounts.value.find(a =>
-    String(a.kind).toUpperCase() === (isAdminRole.value ? 'ADMIN' : 'OWNER') &&
-          Number(a.userId) === Number(custodyViewerId.value)
+      String(a.kind).toUpperCase() === (isAdminRole.value ? 'ADMIN' : 'OWNER') &&
+            Number(a.userId) === Number(custodyViewerId.value)
 ) || null);
 const myCustodyBalance = computed(() => Number(myCustodyAccount.value?.balance || 0));
 const myCustodyReserved = computed(() => Number(myCustodyAccount.value?.reserved || 0));
 const myCustodyAvailable = computed(() => Math.max(0, Math.round((myCustodyBalance.value - myCustodyReserved.value) * 100) / 100));
 const adminTransactionMode = ref('CASH_RECEIVED');
 const adminTransactionOptions = [
-    { label: 'Add Bank', value: 'CASH_RECEIVED', icon: 'WalletFilled' },
-    { label: 'Expense', value: 'EXPENSE', icon: 'Money' }
+      { label: 'Add Bank', value: 'CASH_RECEIVED', icon: 'WalletFilled' },
+      { label: 'Expense', value: 'EXPENSE', icon: 'Money' }
 ];
 const adminCashTransaction = ref({ amount: '', credittypeid: null, expensetypeid: null, notes: '' });
 const transactionCreditTypes = ref([]);
@@ -340,322 +326,352 @@ const dateTime = value => value ? new Date(value).toLocaleString() : '—'; cons
 const validAmount = (v, allowZero = false) => /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(v).trim()) && (Number(v) > 0 || (allowZero && Number(v) === 0));
 
 const adminCreditTransactions = computed(() =>
-    adminLedger.value
-      .filter(item => Number(item.amount || 0) > 0)
-      .slice()
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      adminLedger.value
+        .filter(item => Number(item.amount || 0) > 0)
+        .slice()
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 );
 
 const adminExpenseTransactions = computed(() =>
-    adminLedger.value
-      .filter(item => Number(item.amount || 0) < 0)
-      .slice()
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      adminLedger.value
+        .filter(item => Number(item.amount || 0) < 0)
+        .slice()
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 );
 
 const adminLedgerLabel = item => {
-    if (item?.label) return item.label;
+      if (item?.label) return item.label;
 
-    return {
-      BANK_DEPOSIT: 'Add Bank',
-      MACHINE_COLLECTION: 'Machine Collection',
-      EMPLOYEE_CASH_TAKEN: 'Employee Session Close',
-      INITIAL_CAPITAL: 'Initial Capital',
-      CUTOVER_OPENING: 'Opening Bank',
-      TRANSFER: Number(item?.amount || 0) >= 0 ? 'Transfer In' : 'Transfer Out',
-      EMPLOYEE_SUPPORT: 'Employee Funding',
-      DIRECT_EXPENSE: item?.expenseTypeName || 'Expense',
-      BANK_WITHDRAWAL: 'Bank Withdrawal',
-      OWNER_DISTRIBUTION: 'Owner Distribution'
-    }[item?.kind] || (Number(item?.amount || 0) >= 0 ? 'Credit' : 'Expense');
+      return {
+        BANK_DEPOSIT: 'Add Bank',
+        MACHINE_COLLECTION: 'Machine Collection',
+        EMPLOYEE_CASH_TAKEN: 'Employee Session Close',
+        INITIAL_CAPITAL: 'Initial Capital',
+        CUTOVER_OPENING: 'Opening Bank',
+        TRANSFER: Number(item?.amount || 0) >= 0 ? 'Transfer In' : 'Transfer Out',
+        EMPLOYEE_SUPPORT: 'Employee Funding',
+        DIRECT_EXPENSE: item?.expenseTypeName || 'Expense',
+        BANK_WITHDRAWAL: 'Bank Withdrawal',
+        OWNER_DISTRIBUTION: 'Owner Distribution'
+      }[item?.kind] || (Number(item?.amount || 0) >= 0 ? 'Credit' : 'Expense');
 };
 
 
 async function loadCustody() {
-    if (!isAdmin.value || !locationId.value) return;
-    const targetLocation = Number(locationId.value);
-    const requestId = ++custodyRequestId;
-    // Retain previously loaded figures while refreshing; never unmount the balance/form.
-    try {
-      custodyLoading.value = true;
-      custodyError.value = '';
-      const response = await getLocationCash(targetLocation);
-      if (Number(locationId.value) !== targetLocation || requestId !== custodyRequestId) return;
-      const d = response.data || {};
-      custodyAccounts.value = d.accounts || [];
-      custodyViewerId.value = d.viewerId;
-      custodyLoaded.value = true;
-    } catch (e) {
-      if (Number(locationId.value) !== targetLocation || requestId !== custodyRequestId) return;
-      // Preserve the previous figures for display, but block transfers until a fresh check succeeds.
-      custodyError.value = errorText(e);
-    } finally {
-      if (Number(locationId.value) === targetLocation && requestId === custodyRequestId) custodyLoading.value = false;
-    }
+      if (!isAdmin.value || !locationId.value) return;
+      const targetLocation = Number(locationId.value);
+      const requestId = ++custodyRequestId;
+      // Retain previously loaded figures while refreshing; never unmount the balance/form.
+      try {
+        custodyLoading.value = true;
+        custodyError.value = '';
+        const response = await getLocationCash(targetLocation);
+        if (Number(locationId.value) !== targetLocation || requestId !== custodyRequestId) return;
+        const d = response.data || {};
+        custodyAccounts.value = d.accounts || [];
+        custodyViewerId.value = d.viewerId;
+        custodyLoaded.value = true;
+      } catch (e) {
+        if (Number(locationId.value) !== targetLocation || requestId !== custodyRequestId) return;
+        // Preserve the previous figures for display, but block transfers until a fresh check succeeds.
+        custodyError.value = errorText(e);
+      } finally {
+        if (Number(locationId.value) === targetLocation && requestId === custodyRequestId) custodyLoading.value = false;
+      }
 }
 async function loadAdminLedger() {
-    if (!isAdmin.value || !locationId.value) return;
+      if (!isAdmin.value || !locationId.value) return;
 
-    try {
-      const response = await request({
-        url: '/employeefinance/admin/cash-ledger',
-        method: 'get',
-        params: { locationid: locationId.value }
-      });
+      try {
+        const response = await request({
+          url: '/employeefinance/admin/cash-ledger',
+          method: 'get',
+          params: { locationid: locationId.value }
+        });
 
-      adminLedger.value = response?.data || [];
-    } catch (e) {
-      adminLedger.value = [];
-      ElMessage.error(errorText(e));
-    }
+        adminLedger.value = response?.data || [];
+      } catch (e) {
+        adminLedger.value = [];
+        ElMessage.error(errorText(e));
+      }
 }
 
 async function refreshAdminCreditTypes() {
-    if (!locationId.value) return;
+      if (!locationId.value) return;
 
-    try {
-      transactionTypesLoading.value = true;
-      const response = await getCreditTypes(locationId.value);
-      transactionCreditTypes.value = response?.data || response || [];
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      transactionTypesLoading.value = false;
-    }
+      try {
+        transactionTypesLoading.value = true;
+        const response = await getCreditTypes(locationId.value);
+        transactionCreditTypes.value = response?.data || response || [];
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        transactionTypesLoading.value = false;
+      }
 }
 
 async function refreshAdminExpenseTypes() {
-    if (!locationId.value) return;
+      if (!locationId.value) return;
 
-    try {
-      transactionTypesLoading.value = true;
-      const response = await getExpenseTypes(locationId.value);
-      transactionExpenseTypes.value = response?.data || response || [];
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      transactionTypesLoading.value = false;
-    }
+      try {
+        transactionTypesLoading.value = true;
+        const response = await getExpenseTypes(locationId.value);
+        transactionExpenseTypes.value = response?.data || response || [];
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        transactionTypesLoading.value = false;
+      }
 }
 
 async function saveAdminCashTransaction() {
-    if (!validAmount(adminCashTransaction.value.amount)) {
-      return ElMessage.warning('Enter a positive amount (up to 2 decimals).');
-    }
-
-    if (
-      adminTransactionMode.value === 'CASH_RECEIVED' &&
-      !adminCashTransaction.value.credittypeid
-    ) {
-      return ElMessage.warning('Select a credit type.');
-    }
-
-    if (
-      adminTransactionMode.value === 'EXPENSE' &&
-      !adminCashTransaction.value.expensetypeid
-    ) {
-      return ElMessage.warning('Select an expense type.');
-    }
-
-    if (adminTransactionMode.value === 'EXPENSE') {
-      await loadCustody();
-
-      if (!custodyLoaded.value || custodyError.value) {
-        return ElMessage.error('Unable to verify your current Admin cash balance.');
+      if (!validAmount(adminCashTransaction.value.amount)) {
+        return ElMessage.warning('Enter a positive amount (up to 2 decimals).');
       }
 
-      if (Number(adminCashTransaction.value.amount) > myCustodyAvailable.value) {
-        return ElMessage.warning(
-          `Expense cannot exceed ${money(myCustodyAvailable.value)} available Admin cash.`
-        );
+      if (
+        adminTransactionMode.value === 'CASH_RECEIVED' &&
+        !adminCashTransaction.value.credittypeid
+      ) {
+        return ElMessage.warning('Select a credit type.');
       }
-    }
 
-    try {
-      adminBusy.value = true;
+      if (
+        adminTransactionMode.value === 'EXPENSE' &&
+        !adminCashTransaction.value.expensetypeid
+      ) {
+        return ElMessage.warning('Select an expense type.');
+      }
 
-      if (adminTransactionMode.value === 'CASH_RECEIVED') {
-        await request({
-          url: '/employeefinance/admin/add-bank',
-          method: 'post',
-          data: {
+      if (adminTransactionMode.value === 'EXPENSE') {
+        await loadCustody();
+
+        if (!custodyLoaded.value || custodyError.value) {
+          return ElMessage.error('Unable to verify your current Admin cash balance.');
+        }
+
+        if (Number(adminCashTransaction.value.amount) > myCustodyAvailable.value) {
+          return ElMessage.warning(
+            `Expense cannot exceed ${money(myCustodyAvailable.value)} available Admin cash.`
+          );
+        }
+      }
+
+      try {
+        adminBusy.value = true;
+
+        if (adminTransactionMode.value === 'CASH_RECEIVED') {
+          await request({
+            url: '/employeefinance/admin/add-bank',
+            method: 'post',
+            data: {
+              locationid: locationId.value,
+              credittypeid: adminCashTransaction.value.credittypeid,
+              amount: adminCashTransaction.value.amount,
+              notes: adminCashTransaction.value.notes
+            }
+          });
+
+          ElMessage.success('Admin bank credited.');
+        } else {
+          await addCustodyExpense({
             locationid: locationId.value,
-            credittypeid: adminCashTransaction.value.credittypeid,
+            source: 'ADMIN',
+            expensetypeid: adminCashTransaction.value.expensetypeid,
             amount: adminCashTransaction.value.amount,
             notes: adminCashTransaction.value.notes
-          }
-        });
+          });
 
-        ElMessage.success('Admin bank credited.');
-      } else {
-        await addCustodyExpense({
-          locationid: locationId.value,
-          source: 'ADMIN',
-          expensetypeid: adminCashTransaction.value.expensetypeid,
-          amount: adminCashTransaction.value.amount,
-          notes: adminCashTransaction.value.notes
-        });
+          ElMessage.success('Admin expense recorded.');
+        }
 
-        ElMessage.success('Admin expense recorded.');
+        adminCashTransaction.value = {
+          amount: '',
+          credittypeid: null,
+          expensetypeid: null,
+          notes: ''
+        };
+
+        await Promise.all([loadCustody(), loadAdminLedger()]);
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        adminBusy.value = false;
       }
-
-      adminCashTransaction.value = {
-        amount: '',
-        credittypeid: null,
-        expensetypeid: null,
-        notes: ''
-      };
-
-      await Promise.all([loadCustody(), loadAdminLedger()]);
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      adminBusy.value = false;
-    }
 }
 
 async function refreshBalances() {
-    await Promise.all([loadAdminOverview(), loadCustody(), loadAdminLedger()]);
+      await Promise.all([loadAdminOverview(), loadCustody(), loadAdminLedger()]);
+}
+
+let realtimeRefreshRunning = false;
+let realtimeRefreshPending = false;
+
+async function refreshAdminTransactionsRealtime() {
+      if (!isAdmin.value || !locationId.value) return;
+
+      if (realtimeRefreshRunning) {
+        realtimeRefreshPending = true;
+        return;
+      }
+
+      realtimeRefreshRunning = true;
+
+      try {
+        do {
+          realtimeRefreshPending = false;
+          await refreshBalances();
+        } while (realtimeRefreshPending);
+      } finally {
+        realtimeRefreshRunning = false;
+      }
 }
 async function load() {
-    if (!locationId.value) return;
-    // Reload data in place. Clear custody only when the selected location actually changes.
-    try {
-      loading.value = true;
-      const response = await getEmployeeFinance(locationId.value);
-      const d = response.data || {};
-      session.value = d.session || null; summary.value = d.summary || {};
-      transactions.value = d.transactions || []; pending.value = d.pending || [];
-      pendingAdminFunding.value = d.pendingAdminFunding || [];
-      recipients.value = d.recipients || [];
-      expenseTypes.value = d.expenseTypes || [];
-      transactionExpenseTypes.value = (d.expenseTypes || []).filter(x => x.isActive);
-      transactionCreditTypes.value = (d.creditTypes || []).filter(x => x.isActive);
-      if (isAdmin.value) await refreshBalances();
-    } catch (e) { ElMessage.error(errorText(e)); } finally { loading.value = false; }
+      if (!locationId.value) return;
+      // Reload data in place. Clear custody only when the selected location actually changes.
+      try {
+        loading.value = true;
+        const response = await getEmployeeFinance(locationId.value);
+        const d = response.data || {};
+        session.value = d.session || null; summary.value = d.summary || {};
+        transactions.value = d.transactions || []; pending.value = d.pending || [];
+        pendingAdminFunding.value = d.pendingAdminFunding || [];
+        recipients.value = d.recipients || [];
+        expenseTypes.value = d.expenseTypes || [];
+        transactionExpenseTypes.value = (d.expenseTypes || []).filter(x => x.isActive);
+        transactionCreditTypes.value = (d.creditTypes || []).filter(x => x.isActive);
+        if (isAdmin.value) await refreshBalances();
+      } catch (e) { ElMessage.error(errorText(e)); } finally { loading.value = false; }
 }
 
 async function loadAdminOverview() {
-    if (!isAdmin.value || !locationId.value) return;
-    try {
-      adminLoading.value = true;
-      const d = (await getAdminFinanceOverview(locationId.value)).data || {};
-      adminEmployees.value = d.employees || [];
-      adminFundingHistory.value = d.funding || [];
-      adminSummary.value = d.summary || {};
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      adminLoading.value = false;
-    }
+      if (!isAdmin.value || !locationId.value) return;
+      try {
+        adminLoading.value = true;
+        const d = (await getAdminFinanceOverview(locationId.value)).data || {};
+        adminEmployees.value = d.employees || [];
+        adminFundingHistory.value = d.funding || [];
+        adminSummary.value = d.summary || {};
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        adminLoading.value = false;
+      }
 }
 
 async function sendAdminFunding() {
-    // Recheck the server-authoritative custody balance immediately before sending.
-    await loadCustody();
-    if (!custodyLoaded.value || custodyError.value) return ElMessage.error('Unable to verify your current Admin cash balance.');
-    if (!adminFunding.value.touserid) return ElMessage.warning('Select the receiving employee.');
-    if (!validAmount(adminFunding.value.amount)) return ElMessage.warning('Enter a positive amount (up to 2 decimals).');
-    if (Number(adminFunding.value.amount) > myCustodyAvailable.value) { return ElMessage.warning(`You can transfer up to ${money(myCustodyAvailable.value)} of unreserved cash.`); }
-    try {
-      adminBusy.value = true;
-      await sendCustodyEmployeeSupport({ locationid: locationId.value, ...adminFunding.value });
-      ElMessage.success(adminFunding.value.fundingtype === 'INITIAL_OPENING'
-        ? 'Opening balance sent for employee confirmation.'
-        : 'Business support sent for employee confirmation.');
-      adminFunding.value = { touserid: null, fundingtype: 'BUSINESS_SUPPORT', amount: '', notes: '' };
-      await refreshBalances();
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      adminBusy.value = false;
-    }
+      // Recheck the server-authoritative custody balance immediately before sending.
+      await loadCustody();
+      if (!custodyLoaded.value || custodyError.value) return ElMessage.error('Unable to verify your current Admin cash balance.');
+      if (!adminFunding.value.touserid) return ElMessage.warning('Select the receiving employee.');
+      if (!validAmount(adminFunding.value.amount)) return ElMessage.warning('Enter a positive amount (up to 2 decimals).');
+      if (Number(adminFunding.value.amount) > myCustodyAvailable.value) { return ElMessage.warning(`You can transfer up to ${money(myCustodyAvailable.value)} of unreserved cash.`); }
+      try {
+        adminBusy.value = true;
+        await sendCustodyEmployeeSupport({ locationid: locationId.value, ...adminFunding.value });
+        ElMessage.success(adminFunding.value.fundingtype === 'INITIAL_OPENING'
+          ? 'Opening balance sent for employee confirmation.'
+          : 'Business support sent for employee confirmation.');
+        adminFunding.value = { touserid: null, fundingtype: 'BUSINESS_SUPPORT', amount: '', notes: '' };
+        await refreshBalances();
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        adminBusy.value = false;
+      }
 }
 
 function openEditFunding(item) {
-    if (item.status !== 'Pending') return ElMessage.warning('Only pending funding can be edited.');
+      if (item.status !== 'Pending') return ElMessage.warning('Only pending funding can be edited.');
 
-    const employee = adminEmployees.value.find(person => Number(person.id) === Number(item.toUserId)) || adminEmployees.value.find(person => person.name === item.toName);
+      const employee = adminEmployees.value.find(person => Number(person.id) === Number(item.toUserId)) || adminEmployees.value.find(person => person.name === item.toName);
 
-    editFunding.value = {
-      id: item.id,
-      touserid: employee?.id ?? null,
-      fundingtype: item.fundingType || 'INITIAL_OPENING',
-      amount: String(item.amount ?? ''),
-      notes: item.notes || ''
-    };
+      editFunding.value = {
+        id: item.id,
+        touserid: employee?.id ?? null,
+        fundingtype: item.fundingType || 'INITIAL_OPENING',
+        amount: String(item.amount ?? ''),
+        notes: item.notes || ''
+      };
 
-    editFundingOpen.value = true;
+      editFundingOpen.value = true;
 }
 
 async function saveFundingEdit() {
-    if (!editFunding.value.id) return;
-    if (!editFunding.value.touserid) return ElMessage.warning('Select the receiving employee.');
-    if (!validAmount(editFunding.value.amount)) { return ElMessage.warning('Enter a positive amount (up to 2 decimals).'); }
+      if (!editFunding.value.id) return;
+      if (!editFunding.value.touserid) return ElMessage.warning('Select the receiving employee.');
+      if (!validAmount(editFunding.value.amount)) { return ElMessage.warning('Enter a positive amount (up to 2 decimals).'); }
 
-    try {
-      adminBusy.value = true;
+      try {
+        adminBusy.value = true;
 
-      await updateAdminFunding(editFunding.value.id, {
-        locationid: locationId.value,
-        touserid: editFunding.value.touserid,
-        fundingtype: editFunding.value.fundingtype,
-        amount: editFunding.value.amount,
-        notes: editFunding.value.notes
-      });
+        await updateAdminFunding(editFunding.value.id, {
+          locationid: locationId.value,
+          touserid: editFunding.value.touserid,
+          fundingtype: editFunding.value.fundingtype,
+          amount: editFunding.value.amount,
+          notes: editFunding.value.notes
+        });
 
-      editFundingOpen.value = false;
-      ElMessage.success('Pending funding updated.');
+        editFundingOpen.value = false;
+        ElMessage.success('Pending funding updated.');
 
-      await refreshBalances();
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      adminBusy.value = false;
-    }
+        await refreshBalances();
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        adminBusy.value = false;
+      }
 }
 
 async function cancelFunding(item) {
-    try {
-      await ElMessageBox.confirm(`Cancel pending funding of ${money(item.amount)} to ${item.toName}?`,
-        'Cancel funding', { type: 'warning', confirmButtonText: 'Cancel funding' });
-    } catch { return; }
-    try {
-      adminBusy.value = true;
-      await cancelAdminFunding(item.id, { locationid: locationId.value });
-      ElMessage.success('Pending funding cancelled.');
-      await refreshBalances();
-    } catch (e) {
-      ElMessage.error(errorText(e));
-    } finally {
-      adminBusy.value = false;
-    }
+      try {
+        await ElMessageBox.confirm(`Cancel pending funding of ${money(item.amount)} to ${item.toName}?`,
+          'Cancel funding', { type: 'warning', confirmButtonText: 'Cancel funding' });
+      } catch { return; }
+      try {
+        adminBusy.value = true;
+        await cancelAdminFunding(item.id, { locationid: locationId.value });
+        ElMessage.success('Pending funding cancelled.');
+        await refreshBalances();
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        adminBusy.value = false;
+      }
 }
 
 async function run(action, success) {
-    try { busy.value = true; await action(); ElMessage.success(success); await load(); return true; } catch (e) { ElMessage.error(errorText(e)); return false; } finally { busy.value = false; }
+      try { busy.value = true; await action(); ElMessage.success(success); await load(); return true; } catch (e) { ElMessage.error(errorText(e)); return false; } finally { busy.value = false; }
 }
 async function addType() {
-    if (!newExpenseType.value.trim()) return ElMessage.warning('Enter an expense type name.');
-    await run(() => createExpenseType({ locationid: locationId.value, name: newExpenseType.value.trim() }), 'Expense type added.');
-    newExpenseType.value = '';
+      if (!newExpenseType.value.trim()) return ElMessage.warning('Enter an expense type name.');
+      await run(() => createExpenseType({ locationid: locationId.value, name: newExpenseType.value.trim() }), 'Expense type added.');
+      newExpenseType.value = '';
 }
 async function changeType(item, value) {
-    await run(() => setExpenseTypeStatus(item.id, { locationid: locationId.value, isactive: value }), 'Expense type updated.');
+      await run(() => setExpenseTypeStatus(item.id, { locationid: locationId.value, isactive: value }), 'Expense type updated.');
 }
-watch(adminTransactionMode, mode => {
-    adminCashTransaction.value.amount = '';
-    adminCashTransaction.value.notes = '';
+watch(
+      () => refreshStore.key('adminTransactions'),
+      (current, previous) => {
+        if (current !== previous) refreshAdminTransactionsRealtime();
+      }
+);
 
-    if (mode === 'CASH_RECEIVED') {
-      adminCashTransaction.value.expensetypeid = null;
-    } else {
-      adminCashTransaction.value.credittypeid = null;
-    }
+watch(adminTransactionMode, mode => {
+      adminCashTransaction.value.amount = '';
+      adminCashTransaction.value.notes = '';
+
+      if (mode === 'CASH_RECEIVED') {
+        adminCashTransaction.value.expensetypeid = null;
+      } else {
+        adminCashTransaction.value.credittypeid = null;
+      }
 });
 
 watch(adminTab, value => {
-    if (!['overview', 'funding', 'expenses'].includes(value)) adminTab.value = 'overview';
+      if (!['overview', 'funding', 'expenses'].includes(value)) adminTab.value = 'overview';
 });
 watch(locationId, () => { ++custodyRequestId; custodyLoaded.value = false; custodyLoading.value = false; custodyError.value = ''; custodyAccounts.value = []; custodyViewerId.value = null; adminLedger.value = []; load(); });
 onMounted(load);

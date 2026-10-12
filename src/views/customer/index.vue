@@ -64,7 +64,7 @@
              class="table-card">
       <el-table v-loading="loading"
                 :data="filteredCustomers"
-                style="width: 100%; height:66vh">
+                style="width: 100%; height: calc(100vh - 310px)">
         <!-- Product Image -->
         <el-table-column label="" width="105">
           <template #default="{ row }">
@@ -423,7 +423,7 @@
 
     <el-drawer v-model="drawer2"
                direction="rtl"
-               size="360px">
+               size="380px">
       <template #header>
         <div class="drawer-header">
           <div class="drawer-icon">
@@ -458,7 +458,7 @@
         </el-radio-group>
       </div>
 
-      <div class="filter-section">
+      <div class="filter-section" style="margin-top:20px;">
         <div class="filter-label">Verification Status</div>
 
         <el-radio-group v-model="verificationFilter"
@@ -467,6 +467,9 @@
             All
           </el-radio-button>
 
+          <el-radio-button value="bypass">
+            Bypass
+          </el-radio-button>
           <el-radio-button value="verified">
             Verified
           </el-radio-button>
@@ -475,9 +478,6 @@
             Unverified
           </el-radio-button>
 
-          <el-radio-button value="bypass">
-            Bypass
-          </el-radio-button>
         </el-radio-group>
       </div>
 
