@@ -161,6 +161,7 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { ArrowLeft, Cellphone, Connection } from '@element-plus/icons-vue';
 import { Capacitor } from '@capacitor/core';
@@ -171,6 +172,7 @@ import { getcustomers } from '@/api/customer';
 import { getTicketOutMachine, getTicketOutState, saveTicketOut } from '@/api/ticketout';
 
 const userStore = useUserStore();
+const route = useRoute();
 const employeeName = computed(() =>
             userStore.userInfo?.name || userStore.name || userStore.user?.name || 'Employee'
 );
@@ -276,25 +278,76 @@ async function findMachine() {
 }
 
 function decodeNdefRecord(record) {
-            const payload = Array.isArray(record?.payload) ? record.payload : [];
-            if (!payload.length) return '';
-            try {
-              const type = String.fromCharCode(...(record.type || []));
-              if (type === 'T') {
-                const languageLength = payload[0] & 0x3f;
-                return new TextDecoder('utf-8').decode(new Uint8Array(payload.slice(1 + languageLength))).trim();
-              }
-              return new TextDecoder('utf-8').decode(new Uint8Array(payload)).trim();
-            } catch { return ''; }
+  const payload = Array.isArray(record?.payload) ? record.payload : [];
+  if (!payload.length) return '';
+
+  try {
+    const type = String.fromCharCode(...(record.type || []));
+
+    if (type === 'T') {
+      const languageLength = payload[0] & 0x3f;
+      return new TextDecoder('utf-8')
+        .decode(new Uint8Array(payload.slice(1 + languageLength)))
+        .trim();
+    }
+
+    if (type === 'U') {
+      const prefixes = {
+        0x00: '',
+        0x01: 'http://www.',
+        0x02: 'https://www.',
+        0x03: 'http://',
+        0x04: 'https://'
+      };
+      const prefix = prefixes[payload[0]] ?? '';
+      const value = new TextDecoder('utf-8')
+        .decode(new Uint8Array(payload.slice(1)))
+        .trim();
+
+      return `${prefix}${value}`;
+    }
+
+    return new TextDecoder('utf-8')
+      .decode(new Uint8Array(payload))
+      .trim();
+  } catch {
+    return '';
+  }
 }
 
-function machineNumberFromNativeNfc(event) {
-            for (const record of event?.tag?.ndefMessage || []) {
-              const text = decodeNdefRecord(record);
-              const match = text.match(/(?:machine(?:number)?[\s:#=-]*)?(\d+)/i);
-              if (match) return match[1];
-            }
-            return '';
+function nfcTargetFromNativeEvent(event) {
+  for (const record of event?.tag?.ndefMessage || []) {
+    const text = decodeNdefRecord(record);
+    if (!text) continue;
+
+    const urlMatch = text.match(
+      /^https:\/\/secure\.iklogy\.com\/nfc\/(\d+)\/(\d+)\/?(?:[?#].*)?$/i
+    );
+
+    if (urlMatch) {
+      return {
+        locationId: urlMatch[1],
+        machineNumber: urlMatch[2],
+        locationAware: true
+      };
+    }
+
+    // Backward compatibility for existing NFC tags that contain
+    // only a machine number, such as "1" or "Machine #1".
+    const oldMatch = text.match(
+      /(?:machine(?:number)?[\s:#=-]*)?(\d+)/i
+    );
+
+    if (oldMatch) {
+      return {
+        locationId: '',
+        machineNumber: oldMatch[1],
+        locationAware: false
+      };
+    }
+  }
+
+  return null;
 }
 
 async function stopNfcScan() {
@@ -329,14 +382,25 @@ async function scanNfc() {
               nfcScanning.value = true;
 
               nfcListener = await CapacitorNfc.addListener('nfcEvent', async event => {
-                const number = machineNumberFromNativeNfc(event);
+                const target = nfcTargetFromNativeEvent(event);
                 await stopNfcScan();
-                if (!number) {
-                  ElMessage.error('The NFC tag does not contain a machine number.');
+
+                if (!target?.machineNumber) {
+                  ElMessage.error('The NFC tag does not contain a valid machine number.');
                   await scanNfc();
                   return;
                 }
-                machineNumber.value = number;
+
+                if (
+                  target.locationAware &&
+                  String(target.locationId) !== String(userStore.locationId || '')
+                ) {
+                  ElMessage.error('This NFC tag belongs to another location.');
+                  await scanNfc();
+                  return;
+                }
+
+                machineNumber.value = target.machineNumber;
                 await findMachine();
                 if (step.value === 1) await scanNfc();
               });
@@ -439,7 +503,25 @@ onMounted(async () => {
             window.addEventListener('resize', scheduleActionBarUpdate);
             window.addEventListener('transitionend', scheduleActionBarUpdate);
 
-            await scanNfc();
+            const nfcSource = String(route.query.source || '').trim().toLowerCase() === 'nfc';
+            const nfcLocationId = String(route.query.locationId || '').trim();
+            const nfcMachine = String(route.query.machine || '').trim();
+            const currentLocationId = String(userStore.locationId || '').trim();
+
+            if (nfcSource) {
+              if (
+                !/^\d+$/.test(nfcLocationId) ||
+                !/^\d+$/.test(nfcMachine) ||
+                nfcLocationId !== currentLocationId
+              ) {
+                ElMessage.error('This NFC tag belongs to another location.');
+              } else {
+                machineNumber.value = nfcMachine;
+                await findMachine();
+              }
+            } else {
+              await scanNfc();
+            }
 });
 
 onBeforeUnmount(async () => {

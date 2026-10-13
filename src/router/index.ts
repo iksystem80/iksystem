@@ -40,6 +40,23 @@ export const constantRoutes: RouteRecordRaw[] = [
     children: [{ path: '/401', component: () => import('@/views/error-page/401.vue') }]
   },
   {
+    path: '/nfc/:locationId/:machineNumber',
+    component: Layout,
+    meta: { hidden: true },
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/nfc/index.vue'),
+        name: 'NfcMachine',
+        meta: {
+          title: 'Machine Actions',
+          hidden: true,
+          noCache: true
+        }
+      }
+    ]
+  },
+  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
