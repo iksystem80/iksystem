@@ -5,29 +5,13 @@
         <h2 class="page-title">Roles & Module Access</h2>
         <p>Page access is controlled by router modules and sub-modules. CRUD permissions are no longer used.</p>
       </div>
-      <el-button v-if="!isSystemAdmin" type="primary" @click="newRole"><el-icon><Plus /></el-icon><span>New Role</span></el-button>
+      <el-button type="primary" @click="newRole"><el-icon><Plus /></el-icon><span>New Role</span></el-button>
     </div>
 
-    <el-alert
-      :title="`Assignments below apply to the currently selected location${locationId ? ` #${locationId}` : ''}.`"
-      type="info" :closable="false" show-icon class="mb-16" />
+    <el-alert :title="`Assignments below apply to the currently selected location${locationId ? ` #${locationId}` : ''}.`"
+              type="info" :closable="false" show-icon class="mb-16" />
 
-    <el-card v-if="isSystemAdmin" shadow="never" class="permission-card location-module-card">
-      <template #header>
-        <div>
-          <strong>Location Modules</strong>
-          <div class="small-text">Enable the pages this company location is allowed to use. Location roles can only receive pages enabled here.</div>
-        </div>
-      </template>
-      <el-tree ref="locationTreeRef" :data="moduleTree" node-key="id" show-checkbox default-expand-all
-               :props="treeProps" :default-checked-keys="locationModuleIds" />
-      <div class="actions">
-        <div class="spacer" />
-        <el-button type="primary" :loading="savingLocation" :disabled="!locationId" @click="saveLocationModules">Save Location Modules</el-button>
-      </div>
-    </el-card>
-
-    <div class="role-layout" :class="{ 'mt-16': isSystemAdmin }">
+    <div class="role-layout">
       <el-card shadow="never" class="role-list-card">
         <div class="role-list-title">Roles</div>
         <div v-loading="loadingRoles" class="role-list">
@@ -78,7 +62,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
-import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole, updateLocationModules } from '@/api/role';
+import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole } from '@/api/role';
 import { useUserStore } from '@/store/modules/user';
 
 const userStore = useUserStore();
@@ -89,135 +73,130 @@ const selectedRoleId = ref<number | null>(null);
 const loadingRoles = ref(false);
 const loadingModules = ref(false);
 const saving = ref(false);
-const savingLocation = ref(false);
 const creating = ref(false);
 const roleTreeRef = ref<any>(null);
-const locationTreeRef = ref<any>(null);
 const treeProps = { children: 'children', label: 'name', disabled: 'disabled' };
 
 const form = reactive<any>({ id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
 const locationId = computed(() => Number(userStore.locationId || 0) || null);
-const isSystemAdmin = computed(() => String(userStore.roleName || '').trim().toLowerCase() === 'system admin');
 
-function cloneRoleTree(nodes: any[]): any[] {
-  const allowed = new Set(locationModuleIds.value.map(Number));
-  return nodes.map(node => ({
-    ...node,
-    disabled: !allowed.has(Number(node.id)),
-    children: cloneRoleTree(node.children || [])
-  }));
+function filterRoleTree(nodes: any[]): any[] {
+    const allowed = new Set(locationModuleIds.value.map(Number));
+
+    return nodes
+      .map(node => {
+        const children = filterRoleTree(node.children || []);
+        const isAllowed = allowed.has(Number(node.id));
+
+        if (!isAllowed && !children.length) return null;
+
+        return {
+          ...node,
+          disabled: false,
+          children
+        };
+      })
+      .filter(Boolean);
 }
-const roleModuleTree = computed(() => cloneRoleTree(moduleTree.value));
+
+const roleModuleTree = computed(() => filterRoleTree(moduleTree.value));
 
 function checkedKeys(tree: any) {
-  if (!tree) return [];
-  return [...new Set([...(tree.getCheckedKeys(false) || []), ...(tree.getHalfCheckedKeys() || [])].map(Number))];
+    if (!tree) return [];
+    return [...new Set([...(tree.getCheckedKeys(false) || []), ...(tree.getHalfCheckedKeys() || [])].map(Number))];
 }
 
 async function loadModules() {
-  if (!locationId.value) return;
-  loadingModules.value = true;
-  try {
-    const response = await getPermissions(locationId.value);
-    const data = response.data || {};
-    moduleTree.value = data.modules || [];
-    locationModuleIds.value = (data.locationModuleIds || []).map(Number);
-    await nextTick();
-    locationTreeRef.value?.setCheckedKeys(locationModuleIds.value, false);
-  } finally { loadingModules.value = false; }
+    if (!locationId.value) return;
+    loadingModules.value = true;
+    try {
+      const response = await getPermissions(locationId.value);
+      const data = response.data || {};
+      moduleTree.value = data.modules || [];
+      locationModuleIds.value = (data.locationModuleIds || []).map(Number);
+      await nextTick();
+    } finally { loadingModules.value = false; }
 }
 
 async function loadRoles() {
-  if (!locationId.value) return;
-  loadingRoles.value = true;
-  try {
-    const response = await getRoles(locationId.value);
-    // System Admin is hidden in both backend and frontend as a second safeguard.
-    roles.value = (response.data || []).filter((role: any) => String(role.name || '').trim().toLowerCase() !== 'system admin');
-    if (!roles.value.some((r: any) => r.id === selectedRoleId.value)) selectedRoleId.value = null;
-    if (!selectedRoleId.value && roles.value.length) await selectRole(roles.value[0].id);
-  } finally { loadingRoles.value = false; }
+    if (!locationId.value) return;
+    loadingRoles.value = true;
+    try {
+      const response = await getRoles(locationId.value);
+      // System Admin is hidden in both backend and frontend as a second safeguard.
+      roles.value = (response.data || []).filter((role: any) => String(role.name || '').trim().toLowerCase() !== 'system admin');
+      if (!roles.value.some((r: any) => r.id === selectedRoleId.value)) selectedRoleId.value = null;
+      if (!selectedRoleId.value && roles.value.length) await selectRole(roles.value[0].id);
+    } finally { loadingRoles.value = false; }
 }
 
 async function selectRole(id: number) {
-  if (!locationId.value) return;
-  creating.value = false;
-  selectedRoleId.value = id;
-  const response = await getRole(id, locationId.value);
-  Object.assign(form, response.data, { moduleIds: response.data?.moduleIds || [] });
-  await nextTick();
-  roleTreeRef.value?.setCheckedKeys(form.moduleIds, false);
+    if (!locationId.value) return;
+    creating.value = false;
+    selectedRoleId.value = id;
+    const response = await getRole(id, locationId.value);
+    Object.assign(form, response.data, { moduleIds: response.data?.moduleIds || [] });
+    await nextTick();
+    roleTreeRef.value?.setCheckedKeys(form.moduleIds, false);
 }
 
 function newRole() {
-  creating.value = true;
-  selectedRoleId.value = null;
-  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
-  nextTick(() => roleTreeRef.value?.setCheckedKeys([], false));
+    creating.value = true;
+    selectedRoleId.value = null;
+    Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
+    nextTick(() => roleTreeRef.value?.setCheckedKeys([], false));
 }
 
 function cancelCreate() {
-  creating.value = false;
-  if (roles.value.length) selectRole(roles.value[0].id);
-}
-
-async function saveLocationModules() {
-  if (!locationId.value) return ElMessage.warning('Select a location first.');
-  try {
-    savingLocation.value = true;
-    const moduleIds = checkedKeys(locationTreeRef.value);
-    await updateLocationModules(locationId.value, moduleIds);
-    ElMessage.success('Location modules updated.');
-    await loadModules();
-    if (selectedRoleId.value) await selectRole(selectedRoleId.value);
-  } finally { savingLocation.value = false; }
+    creating.value = false;
+    if (roles.value.length) selectRole(roles.value[0].id);
 }
 
 async function saveRole() {
-  if (!locationId.value) return ElMessage.warning('Select a location first.');
-  if (!form.name?.trim()) return ElMessage.warning('Role name is required');
-  try {
-    saving.value = true;
-    const payload = {
-      locationid: locationId.value,
-      name: form.name.trim(),
-      description: form.description,
-      isActive: form.isActive,
-      moduleIds: checkedKeys(roleTreeRef.value)
-    };
-    if (creating.value) {
-      const response = await createRole(payload);
-      ElMessage.success('Role created successfully');
-      creating.value = false;
-      await loadRoles();
-      if (response.data?.id) await selectRole(response.data.id);
-    } else {
-      await updateRole(form.id, payload);
-      ElMessage.success('Role module access updated');
-      await loadRoles();
-      await selectRole(form.id);
-    }
-  } finally { saving.value = false; }
+    if (!locationId.value) return ElMessage.warning('Select a location first.');
+    if (!form.name?.trim()) return ElMessage.warning('Role name is required');
+    try {
+      saving.value = true;
+      const payload = {
+        locationid: locationId.value,
+        name: form.name.trim(),
+        description: form.description,
+        isActive: form.isActive,
+        moduleIds: checkedKeys(roleTreeRef.value)
+      };
+      if (creating.value) {
+        const response = await createRole(payload);
+        ElMessage.success('Role created successfully');
+        creating.value = false;
+        await loadRoles();
+        if (response.data?.id) await selectRole(response.data.id);
+      } else {
+        await updateRole(form.id, payload);
+        ElMessage.success('Role module access updated');
+        await loadRoles();
+        await selectRole(form.id);
+      }
+    } finally { saving.value = false; }
 }
 
 async function removeRole() {
-  await ElMessageBox.confirm(`Delete role ${form.name}?`, 'Delete Role', { type: 'warning', confirmButtonText: 'Delete' });
-  await deleteRole(form.id, locationId.value);
-  ElMessage.success('Role deleted successfully');
-  selectedRoleId.value = null;
-  Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
-  await loadRoles();
+    await ElMessageBox.confirm(`Delete role ${form.name}?`, 'Delete Role', { type: 'warning', confirmButtonText: 'Delete' });
+    await deleteRole(form.id, locationId.value);
+    ElMessage.success('Role deleted successfully');
+    selectedRoleId.value = null;
+    Object.assign(form, { id: null, name: '', description: '', isActive: true, isSystem: false, moduleIds: [] });
+    await loadRoles();
 }
 
 async function reloadForLocation() {
-  selectedRoleId.value = null;
-  creating.value = false;
-  await loadModules();
-  await loadRoles();
+    selectedRoleId.value = null;
+    creating.value = false;
+    await loadModules();
+    await loadRoles();
 }
 
 watch(locationId, async (value, oldValue) => {
-  if (value && value !== oldValue) await reloadForLocation();
+    if (value && value !== oldValue) await reloadForLocation();
 });
 
 onMounted(reloadForLocation);

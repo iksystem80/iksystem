@@ -147,7 +147,7 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="Business Funding" name="funding">
+      <el-tab-pane label="Session Funding" name="funding">
         <el-card shadow="never" class="panel">
           <template #header>
             <div class="cash-header-actions">
@@ -166,8 +166,8 @@
             </el-form-item>
             <el-form-item label="Funding type">
               <el-select v-model="adminFunding.fundingtype" style="width:100%">
-                <el-option label="Initial Opening Balance" value="INITIAL_OPENING" />
-                <el-option label="Business Support / Additional Cash" value="BUSINESS_SUPPORT" />
+                <el-option label="Session Opening Bank" value="INITIAL_OPENING" />
+                <el-option label="Additional Cash" value="BUSINESS_SUPPORT" />
               </el-select>
             </el-form-item>
             <el-form-item :label="`Amount · Available ${custodyLoaded && !custodyError ? money(myCustodyAvailable) : '—'}`">
@@ -201,7 +201,7 @@
               <el-table-column prop="toName" label="Employee" min-width="130" />
               <el-table-column label="Type" min-width="145">
                 <template #default="{ row }">
-                  {{ row.fundingType === 'INITIAL_OPENING' ? 'Initial Opening' : 'Business Support' }}
+                  {{ row.fundingType === 'INITIAL_OPENING' ? 'Session Opening Bank' : 'Additional Cash' }}
                 </template>
               </el-table-column>
               <el-table-column label="Amount" min-width="105">
@@ -228,7 +228,7 @@
         </el-card>
       </el-tab-pane>
 
-      <el-tab-pane label="Add Expense Type" name="expenses">
+      <el-tab-pane label="Expense Type" name="expenses">
 
         <el-card shadow="never" class="panel">
           <template #header>
@@ -243,7 +243,7 @@
     <el-dialog v-model="editFundingOpen" title="Edit Pending Funding" width="520px" :close-on-click-modal="false" destroy-on-close>
       <el-form label-position="top">
         <el-form-item label="Receiving employee"><el-select v-model="editFunding.touserid" filterable style="width:100%"><el-option v-for="person in adminEmployees" :key="person.id" :value="person.id" :label="`${person.name}${person.clockedIn ? ' · Clocked in' : ''}`" /></el-select></el-form-item>
-        <el-form-item label="Funding type"><el-select v-model="editFunding.fundingtype" style="width:100%"><el-option label="Initial Opening Balance" value="INITIAL_OPENING" /><el-option label="Business Support / More Cash" value="BUSINESS_SUPPORT" /></el-select></el-form-item>
+        <el-form-item label="Funding type"><el-select v-model="editFunding.fundingtype" style="width:100%"><el-option label="Session Opening Bank" value="INITIAL_OPENING" /><el-option label="Additional Cash" value="BUSINESS_SUPPORT" /></el-select></el-form-item>
         <el-form-item label="Amount">
           <el-input v-model="editFunding.amount" inputmode="decimal">
             <template #prefix>
@@ -346,7 +346,8 @@ const adminLedgerLabel = item => {
         BANK_DEPOSIT: 'Add Bank',
         MACHINE_COLLECTION: 'Machine Collection',
         EMPLOYEE_CASH_TAKEN: 'Employee Session Close',
-        INITIAL_CAPITAL: 'Initial Capital',
+        INITIAL_CAPITAL: 'Initial Owner Capital',
+        REINVEST: 'Reinvest',
         CUTOVER_OPENING: 'Opening Bank',
         TRANSFER: Number(item?.amount || 0) >= 0 ? 'Transfer In' : 'Transfer Out',
         EMPLOYEE_SUPPORT: 'Employee Funding',
@@ -461,7 +462,7 @@ async function saveAdminCashTransaction() {
         adminBusy.value = true;
 
         if (adminTransactionMode.value === 'CASH_RECEIVED') {
-          await request({
+          const response = await request({
             url: '/employeefinance/admin/add-bank',
             method: 'post',
             data: {
@@ -472,7 +473,7 @@ async function saveAdminCashTransaction() {
             }
           });
 
-          ElMessage.success('Admin bank credited.');
+          ElMessage.success(response?.message || 'Admin bank credited.');
         } else {
           await addCustodyExpense({
             locationid: locationId.value,

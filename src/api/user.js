@@ -8,13 +8,19 @@ export function login(data) {
   });
 }
 
-export function getInfo(token, userid) {
+export function getInfo(token, userid, locationid) {
+  const params = {
+    token,
+    userid
+  };
+
+  if (locationid) {
+    params.locationid = locationid;
+  }
+
   return request({
     url: '/user/userinfo',
     method: 'get',
-    params: {
-      token,
-      userid
-    }
+    params
   });
 }

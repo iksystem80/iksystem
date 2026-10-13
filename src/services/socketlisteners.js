@@ -6,16 +6,21 @@ import { ElNotification } from 'element-plus';
 
 let initialized = false;
 let currentLocationId = null;
+let currentCompanyId = null;
 let connectScheduled = false;
 
-function normalizedLocationId(value) {
+function normalizedId(value) {
   const id = Number(value);
   return Number.isFinite(id) && id > 0 ? id : null;
 }
 
-function joinCurrentLocation() {
-  if (!socket.connected || !currentLocationId) return;
-  socket.emit('join-location', currentLocationId);
+function joinCurrentContext() {
+  if (!socket.connected) return;
+
+  socket.emit('join-user-context', {
+    locationId: currentLocationId,
+    companyId: currentCompanyId
+  });
 }
 
 function connectWhenIdle() {
@@ -26,13 +31,14 @@ function connectWhenIdle() {
   const connect = () => {
     connectScheduled = false;
 
+    // cleanupSocket() may have run while this idle callback was waiting.
+    if (!initialized) return;
+
     if (!socket.connected) {
       socket.connect();
     }
   };
 
-  // Let the first page render and its API requests start before opening
-  // the realtime connection. timeout guarantees it still connects quickly.
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     window.requestIdleCallback(connect, { timeout: 1000 });
   } else {
@@ -40,33 +46,83 @@ function connectWhenIdle() {
   }
 }
 
-export function initializeSocketListeners(locationId) {
-  currentLocationId = normalizedLocationId(locationId);
+export function initializeSocketListeners(locationId, companyId = null) {
+  currentLocationId = normalizedId(locationId);
+  currentCompanyId = normalizedId(companyId);
 
   if (!initialized) {
     initialized = true;
 
-    socket.on('connect', joinCurrentLocation);
+    socket.on('connect', joinCurrentContext);
     socket.on('customer-checkin', NotifyCheckin);
     socket.on('app-refresh', NotifyAppRefresh);
+    socket.on('access-status', NotifyAccessStatus);
+    socket.on('locations-refresh', NotifyLocationsRefresh);
   }
 
-  // If already connected (for example after a location change), join now.
-  // Otherwise connect in the background without blocking first render.
   if (socket.connected) {
-    joinCurrentLocation();
+    joinCurrentContext();
   } else {
     connectWhenIdle();
   }
 }
 
 export function cleanupSocket() {
-  socket.off('connect', joinCurrentLocation);
+  socket.off('connect', joinCurrentContext);
   socket.off('customer-checkin', NotifyCheckin);
   socket.off('app-refresh', NotifyAppRefresh);
+  socket.off('access-status', NotifyAccessStatus);
+  socket.off('locations-refresh', NotifyLocationsRefresh);
 
   initialized = false;
   currentLocationId = null;
+  currentCompanyId = null;
+  connectScheduled = false;
+
+  if (socket.connected) {
+    socket.disconnect();
+  }
+}
+
+function NotifyAccessStatus(data) {
+  const userStore = useUserStore();
+  const scope = String(data?.scope || '').toLowerCase();
+  const status = String(data?.status || '').toLowerCase();
+
+  if (!['inactive', 'suspended'].includes(status)) return;
+
+  if (
+    scope === 'location' &&
+    Number(data?.id) !== Number(userStore.locationId)
+  ) {
+    return;
+  }
+
+  if (
+    scope === 'company' &&
+    Number(data?.id) !== Number(userStore.companyId)
+  ) {
+    return;
+  }
+
+  userStore.forceAccessLogout({
+    scope,
+    status,
+    name: data?.name || ''
+  });
+}
+
+async function NotifyLocationsRefresh(data) {
+  const userStore = useUserStore();
+
+  if (
+    Number(data?.companyId) !==
+    Number(userStore.companyId)
+  ) {
+    return;
+  }
+
+  await userStore.refreshAvailableLocations();
 }
 
 function NotifyAppRefresh(data) {

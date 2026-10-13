@@ -48,7 +48,7 @@ const settingsStore = useSettingsStore();
 // Initialize resize handling
 useResizeHandler();
 
-initializeSocketListeners(userStore.locationId);
+initializeSocketListeners(userStore.locationId, userStore.companyId);
 
 const sidebar = computed(() => appStore.sidebar);
 const device = computed(() => appStore.device); const needTagsView = computed(() => settingsStore.tagsView);

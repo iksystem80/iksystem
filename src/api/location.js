@@ -22,3 +22,14 @@ export function updateLocation(id, data) {
     data
   });
 }
+
+
+export function updateLocationStatus(id, status) {
+  return request({
+    url: `/location/status/${id}`,
+    method: 'patch',
+    data: {
+      status
+    }
+  });
+}

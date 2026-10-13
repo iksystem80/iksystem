@@ -15,7 +15,6 @@ declare module 'vue' {
     Dropzone: typeof import('./src/components/dropzone/index.vue')['default']
     Editorimage: typeof import('./src/components/tinymce/components/editorimage.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
-    ElAside: typeof import('element-plus/es')['ElAside']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']

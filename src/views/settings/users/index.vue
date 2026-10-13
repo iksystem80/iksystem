@@ -105,91 +105,92 @@ const selectedEmployee = ref<any | null>(null);
 const search = ref('');
 const statusFilter = ref('');
 
-const canCreate = computed(() => checkPermission('users.create'));
-const canUpdate = computed(() => checkPermission('users.update'));
-const canDelete = computed(() => checkPermission('users.delete'));
+const canManageUsers = computed(() => checkPermission('settings.users'));
+const canCreate = canManageUsers;
+const canUpdate = canManageUsers;
+const canDelete = canManageUsers;
 
 const filteredEmployees = computed(() => {
-    const text = search.value.trim().toLowerCase();
+      const text = search.value.trim().toLowerCase();
 
-    return employees.value
-      .filter(row => {
-        const matchesText = !text || [row.name, row.username, row.roleName]
-          .some(value => String(value || '').toLowerCase().includes(text));
+      return employees.value
+        .filter(row => {
+          const matchesText = !text || [row.name, row.username, row.roleName]
+            .some(value => String(value || '').toLowerCase().includes(text));
 
-        const matchesStatus =
-          !statusFilter.value ||
-          (statusFilter.value === 'active' ? row.isActive : !row.isActive);
+          const matchesStatus =
+            !statusFilter.value ||
+            (statusFilter.value === 'active' ? row.isActive : !row.isActive);
 
-        return matchesText && matchesStatus;
-      })
-      .sort((a, b) => {
-        const roleCompare = String(a.roleName || '').localeCompare(
-          String(b.roleName || ''),
-          undefined,
-          { sensitivity: 'base' }
-        );
+          return matchesText && matchesStatus;
+        })
+        .sort((a, b) => {
+          const roleCompare = String(a.roleName || '').localeCompare(
+            String(b.roleName || ''),
+            undefined,
+            { sensitivity: 'base' }
+          );
 
-        if (roleCompare !== 0) return roleCompare;
+          if (roleCompare !== 0) return roleCompare;
 
-        return String(a.name || '').localeCompare(
-          String(b.name || ''),
-          undefined,
-          { sensitivity: 'base' }
-        );
-      });
+          return String(a.name || '').localeCompare(
+            String(b.name || ''),
+            undefined,
+            { sensitivity: 'base' }
+          );
+        });
 });
 
 async function loadEmployees() {
-    loading.value = true;
-    try {
-      const response = await getemployees(userStore.locationId);
-      employees.value = response.data || [];
-    } finally {
-      loading.value = false;
-    }
+      loading.value = true;
+      try {
+        const response = await getemployees(userStore.locationId);
+        employees.value = response.data || [];
+      } finally {
+        loading.value = false;
+      }
 }
 
 function openCreate() {
-    selectedEmployee.value = null;
-    dialogVisible.value = true;
+      selectedEmployee.value = null;
+      dialogVisible.value = true;
 }
 
 function openEdit(row: any) {
-    selectedEmployee.value = { ...row, locationId: userStore.locationId };
-    dialogVisible.value = true;
+      selectedEmployee.value = { ...row };
+      dialogVisible.value = true;
 }
 
 async function handleSaved() {
-    dialogVisible.value = false;
-    await loadEmployees();
+      dialogVisible.value = false;
+      await loadEmployees();
 }
 
 async function changeStatus(row: any, value: boolean) {
-    try {
-      await updateemployeestatus(row.id, value);
-      row.isActive = value;
-      ElMessage.success('User status updated');
-    } catch {
-      await loadEmployees();
-    }
+      try {
+        await updateemployeestatus(row.id, value);
+        row.isActive = value;
+        ElMessage.success('User status updated');
+      } catch {
+        await loadEmployees();
+      }
 }
 
 async function removeUser(row: any) {
-    try {
-      await ElMessageBox.confirm(`Delete ${row.name}?`, 'Delete User', { type: 'warning', confirmButtonText: 'Delete' });
-      await deleteemployee(row.id);
-      ElMessage.success('User deleted successfully');
-      await loadEmployees();
-    } catch (error: any) {
-      if (error !== 'cancel' && error !== 'close' && error?.response?.status === 409) {
-        ElMessage.error(error?.response?.data?.message || 'This user cannot be deleted');
+      try {
+        await ElMessageBox.confirm(`Delete ${row.name}?`, 'Delete User', { type: 'warning', confirmButtonText: 'Delete' });
+        await deleteemployee(row.id);
+        ElMessage.success('User deleted successfully');
+        await loadEmployees();
+      } catch (error: any) {
+        if (error !== 'cancel' && error !== 'close' && error?.response?.status === 409) {
+          ElMessage.error(error?.response?.data?.message || 'This user cannot be deleted');
+        }
       }
-    }
 }
 
 function initials(name: string) {
-    return String(name || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+      return String(name || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
 }
 
 onMounted(loadEmployees);

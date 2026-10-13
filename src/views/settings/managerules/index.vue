@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <div class="page-header">
+  <div class="app-container manage-rules-page">
+    <div class="page-header rules-page-header">
       <div>
         <h2 class="page-title">Manage Rules</h2>
         <p>Configure operational rules for the selected location.</p>
@@ -10,194 +10,147 @@
         <span>Save Rules</span>
       </el-button>
     </div>
+
     <div v-loading="loading" element-loading-text="Loading rules..." class="rules-content">
       <el-card shadow="never" class="rule-card rule-match" :class="{ enabled: form.matchRuleEnabled }">
-        <el-checkbox v-model="form.matchRuleEnabled" size="large">
-          <div class="rule-title-wrap">
-            <strong>Enable Match Rule</strong>
-            <small>
-              Enabling this rule allows customers to match again only after the configured time limit.
-            </small>
+        <div class="rule-card-header">
+          <div class="rule-heading">
+            <strong>Match Rule</strong>
+            <small>Control how often a customer can receive a match at this location.</small>
           </div>
-        </el-checkbox>
+          <div class="rule-toggle">
+            <span class="rule-status">{{ form.matchRuleEnabled ? 'Enabled' : 'Disabled' }}</span>
+            <el-switch v-model="form.matchRuleEnabled" />
+          </div>
+        </div>
+
         <el-collapse-transition>
           <div v-if="form.matchRuleEnabled" class="rule-body match-rule-body">
-            <!-- PRIMARY MATCH SETTINGS -->
             <div class="match-settings-grid">
               <div class="match-setting-block">
-                <div class="setting-label">
-                  Rule Name
-                  <span class="required-mark">*</span>
+                <div class="setting-label">Cooldown <span class="required-mark">*</span></div>
+                <div class="input-with-suffix compact-number-suffix">
+                  <el-input-number v-model="form.matchCooldownHours" :min="0" :max="720" :controls="false" class="compact-number-input" />
+                  <span class="input-suffix">hours</span>
                 </div>
-                <el-input v-model="form.matchRuleName" maxlength="100" placeholder="MATCH" />
-                <div class="setting-help">
-                  Internal name used for this match rule.
-                </div>
+                <div class="setting-help">Time before the customer can match again.</div>
               </div>
+
               <div class="match-setting-block">
-                <div class="setting-label">
-                  Cooldown
-                  <span class="required-mark">*</span>
+                <div class="setting-label">Daily Match Limit <span class="required-mark">*</span></div>
+                <div class="input-with-suffix compact-number-suffix">
+                  <el-input-number v-model="form.matchMaxPerDay" :min="0" :max="100" :controls="false" class="compact-number-input" />
+                  <span class="input-suffix">matches</span>
                 </div>
-                <div class="input-with-suffix">
-                  <el-input-number v-model="form.matchCooldownHours" :min="0" :max="720" controls-position="right" class="full-width" />
-                  <span class="input-suffix">
-                    hours
-                  </span>
-                </div>
-                <div class="setting-help">
-                  Time before the customer can match again.
-                </div>
-              </div>
-              <div class="match-setting-block">
-                <div class="setting-label">
-                  Daily Match Limit
-                  <span class="required-mark">*</span>
-                </div>
-                <div class="input-with-suffix">
-                  <el-input-number v-model="form.matchMaxPerDay" :min="0" :max="100" controls-position="right" class="full-width" />
-                  <span class="input-suffix">
-                    matches
-                  </span>
-                </div>
-                <div class="setting-help">
-                  Maximum allowed matches per customer per day.
-                </div>
+                <div class="setting-help">Maximum allowed matches per customer per day.</div>
               </div>
             </div>
-            <!-- RESET SCHEDULE -->
+
             <div class="reset-schedule-panel">
               <div class="reset-schedule-header">
-                <div>
-                  <div class="reset-title">
-                    Reset Schedule
-                  </div>
-                  <div class="reset-description">
-                    Configure when daily match limits reset.
-                  </div>
-                </div>
+                <div class="reset-title">Reset Schedule</div>
+                <div class="reset-description">Configure when daily match limits reset.</div>
               </div>
+
               <div class="reset-settings-grid">
                 <div class="match-setting-block">
-                  <div class="setting-label">
-                    Reset Times
-                    <span class="required-mark">*</span>
-                  </div>
+                  <div class="setting-label">Reset Times <span class="required-mark">*</span></div>
                   <el-select v-model="form.matchResetTimes" multiple allow-create filterable default-first-option placeholder="07:00, 19:00" class="full-width">
                     <el-option v-for="time in commonTimes" :key="time" :label="time" :value="time" />
                   </el-select>
-                  <div class="setting-help">
-                    Use 24-hour HH:MM format.
-                  </div>
+                  <div class="setting-help">Use 24-hour HH:MM format.</div>
                 </div>
-                <div class="match-setting-block">
-                  <div class="setting-label">
-                    Reset Day Time
-                    <span class="required-mark">*</span>
-                  </div>
+
+                <div class="match-setting-block reset-day-field">
+                  <div class="setting-label">Reset Day Time <span class="required-mark">*</span></div>
                   <el-time-picker v-model="form.matchResetDayTime" value-format="HH:mm" format="HH:mm" placeholder="07:00" class="full-width" />
-                  <div class="setting-help">
-                    Default time used for the daily reset cycle.
-                  </div>
+                  <div class="setting-help">Default time used for the daily reset cycle.</div>
                 </div>
               </div>
             </div>
           </div>
         </el-collapse-transition>
       </el-card>
+
       <!--<RuleToggleCard v-model="form.nfcTicketOutEnabled" title="Enable NFC Ticket Out" accent="#409eff" accent-soft="rgba(64, 158, 255, 0.11)" description="When enabled, employees with NFC access can scan a machine to auto-fill the Ticket Out form. Turn this off to require manual machine entry." />-->
-      <RuleToggleCard v-model="form.auditVerificationEnabled" title="Enable Audit Verification of Bonuses & Raffles & Lucky Bird" accent="#e6a23c" accent-soft="rgba(230, 162, 60, 0.11)" description="When enabled, employees cannot close out every bonus and raffle in a session until the session has been audited, approved, or flagged." />
+      <RuleToggleCard v-model="form.auditVerificationEnabled" title="Audit Verification of Bonuses, Raffles & Lucky Bird" accent="#e6a23c" accent-soft="rgba(230, 162, 60, 0.11)" description="Require bonuses, raffles and Lucky Bird to be audited, approved, or flagged before the session can be closed." />
 
       <el-card shadow="never" class="rule-card rule-lucky-bird" :class="{ enabled: form.luckyBirdEnabled }">
-        <el-checkbox v-model="form.luckyBirdEnabled" size="large">
-          <div class="rule-title-wrap">
-            <strong>Enable Lucky Bird</strong>
-            <small>
-              Allow employees to give Lucky Bird bonuses at this location.
-            </small>
+        <div class="rule-card-header">
+          <div class="rule-heading">
+            <strong>Lucky Bird</strong>
+            <small>Allow employees to give Lucky Bird bonuses at this location.</small>
           </div>
-        </el-checkbox>
+          <div class="rule-toggle">
+            <span class="rule-status">{{ form.luckyBirdEnabled ? 'Enabled' : 'Disabled' }}</span>
+            <el-switch v-model="form.luckyBirdEnabled" />
+          </div>
+        </div>
 
         <el-collapse-transition>
           <div v-if="form.luckyBirdEnabled" class="rule-body">
-            <div class="match-settings-grid">
+            <div class="single-setting-row">
               <div class="match-setting-block">
-                <div class="setting-label">
-                  Customers Per Day
-                  <span class="required-mark">*</span>
-                </div>
-
+                <div class="setting-label">Customers Per Day <span class="required-mark">*</span></div>
                 <div class="input-with-suffix">
-                  <el-input-number
-                    v-model="form.luckyBirdMaxCustomersPerDay"
-                    :min="1"
-                    :max="1000"
-                    controls-position="right"
-                    class="full-width"
-                  />
+                  <el-input-number v-model="form.luckyBirdMaxCustomersPerDay" :min="1" :max="1000" :controls="false" class="compact-number-input" />
                   <span class="input-suffix">customers</span>
                 </div>
-
-                <div class="setting-help">
-                  Maximum Lucky Bird awards allowed per day. The Lucky Bird day resets at 6:00 AM.
-                </div>
+                <div class="setting-help">Maximum Lucky Bird awards allowed per day. The Lucky Bird day resets at 6:00 AM.</div>
               </div>
             </div>
           </div>
         </el-collapse-transition>
       </el-card>
+
       <!--<RuleToggleCard v-model="form.phoneVerificationRequired" title="Require Phone Verification" accent="#f56c6c" accent-soft="rgba(245, 108, 108, 0.10)" description="When enabled, a customer must verify their phone with an SMS code before collecting points. Turn this off for locations that do not need phone verification." />-->
-      <RuleToggleCard v-model="form.nuVueBoostEnabled" title="Enable Marketing Promotion" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="When enabled, the NuVue Boost marketing menu is available to permitted staff at this location." />
+      <RuleToggleCard v-model="form.nuVueBoostEnabled" title="Marketing Promotion" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="Make the NuVue Boost marketing menu available to permitted staff at this location." />
 
       <el-card style="display:none" shadow="never" class="rule-card rule-ticket-photo" :class="{ enabled: form.ticketPhotoRequired }">
-        <el-checkbox v-model="form.ticketPhotoRequired" size="large">
-          <div class="rule-title-wrap">
-            <strong>Enable Ticket Photo Requirement</strong>
-            <small>
-              When an employee enters a Ticket Out at or above the minimum amount, a photo is required before saving.
-            </small>
+        <div class="rule-card-header">
+          <div class="rule-heading">
+            <strong>Ticket Photo Requirement</strong>
+            <small>Require a photo when Ticket Out reaches the configured minimum amount.</small>
           </div>
-        </el-checkbox>
+          <div class="rule-toggle">
+            <span class="rule-status">{{ form.ticketPhotoRequired ? 'Enabled' : 'Disabled' }}</span>
+            <el-switch v-model="form.ticketPhotoRequired" />
+          </div>
+        </div>
         <el-collapse-transition>
           <div v-if="form.ticketPhotoRequired" class="rule-body">
             <el-form-item label="Minimum Amount" required>
               <el-input-number v-model="form.ticketPhotoMinAmount" :min="0" :step="10" :precision="2" controls-position="right" class="amount-field" />
             </el-form-item>
             <div class="quick-values">
-              <el-button v-for="amount in ticketQuickValues" :key="amount" round @click="form.ticketPhotoMinAmount = amount">
-                ${{ amount.toLocaleString() }}
-              </el-button>
+              <el-button v-for="amount in ticketQuickValues" :key="amount" round @click="form.ticketPhotoMinAmount = amount">${{ amount.toLocaleString() }}</el-button>
             </div>
           </div>
         </el-collapse-transition>
       </el-card>
+
       <el-card style="display:none" shadow="never" class="rule-card rule-vip" :class="{ enabled: form.vipMatchEnabled }">
-        <el-checkbox v-model="form.vipMatchEnabled" size="large">
-          <div class="rule-title-wrap">
-            <strong>Enable VIP Match</strong>
-            <small>
-              When a pending customer's points are at or above the minimum amount, the employee must take a photo before the machine can be set.
-            </small>
+        <div class="rule-card-header">
+          <div class="rule-heading">
+            <strong>VIP Match</strong>
+            <small>Require a photo when a pending customer's points reach the configured minimum.</small>
           </div>
-        </el-checkbox>
+          <div class="rule-toggle">
+            <span class="rule-status">{{ form.vipMatchEnabled ? 'Enabled' : 'Disabled' }}</span>
+            <el-switch v-model="form.vipMatchEnabled" />
+          </div>
+        </div>
         <el-collapse-transition>
           <div v-if="form.vipMatchEnabled" class="rule-body">
             <el-form-item label="Minimum Points" required>
               <el-input-number v-model="form.vipMatchMinPoints" :min="0" :step="10" controls-position="right" class="amount-field" />
             </el-form-item>
             <div class="quick-values">
-              <el-button v-for="points in vipQuickValues" :key="points" round @click="form.vipMatchMinPoints = points">
-                {{ points }} pts
-              </el-button>
+              <el-button v-for="points in vipQuickValues" :key="points" round @click="form.vipMatchMinPoints = points">{{ points }} pts</el-button>
             </div>
           </div>
         </el-collapse-transition>
       </el-card>
-      <div class="save-footer">
-        <el-button type="primary" size="large" :loading="saving" :disabled="loading" @click="saveRules">
-          Save Rules
-        </el-button>
-      </div>
     </div>
   </div>
 </template>

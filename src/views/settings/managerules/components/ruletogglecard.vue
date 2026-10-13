@@ -1,14 +1,23 @@
 <template>
-  <el-card shadow="never" class="toggle-rule-card" :class="{ enabled: modelValue }" :style="{
-    '--rule-accent': accent,
-    '--rule-accent-soft': accentSoft
-  }">
-    <el-checkbox :model-value="modelValue" size="large" @update:model-value="$emit('update:modelValue', $event)">
-      <div class="rule-title-wrap">
+  <el-card
+    shadow="never"
+    class="toggle-rule-card"
+    :class="{ enabled: modelValue }"
+    :style="{
+      '--rule-accent': accent,
+      '--rule-accent-soft': accentSoft
+    }"
+  >
+    <div class="rule-card-header">
+      <div class="rule-heading">
         <strong>{{ title }}</strong>
         <small>{{ description }}</small>
       </div>
-    </el-checkbox>
+      <div class="rule-toggle">
+        <span class="rule-status">{{ modelValue ? 'Enabled' : 'Disabled' }}</span>
+        <el-switch :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" />
+      </div>
+    </div>
   </el-card>
 </template>
 
@@ -31,4 +40,3 @@ defineProps({
 
 defineEmits(['update:modelValue']);
 </script>
-

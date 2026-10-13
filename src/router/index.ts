@@ -13,6 +13,18 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
   { path: '/login', component: () => import('@/views/login/index.vue'), meta: { hidden: true }},
   { path: '/auth-redirect', component: () => import('@/views/login/auth-redirect.vue'), meta: { hidden: true }},
+  {
+    path: '/suspended',
+    name: 'AccountSuspended',
+    component: () => import('@/views/accountstatus/suspended.vue'),
+    meta: { hidden: true, title: 'Access Suspended' }
+  },
+  {
+    path: '/deactivated',
+    name: 'AccountDeactivated',
+    component: () => import('@/views/accountstatus/deactivated.vue'),
+    meta: { hidden: true, title: 'Access Deactivated' }
+  },
   // { path: '/404', component: () => import('@/views/error-page/404.vue'), meta: { hidden: true } },
   // { path: '/401', component: () => import('@/views/error-page/401.vue'), meta: { hidden: true } },
   {

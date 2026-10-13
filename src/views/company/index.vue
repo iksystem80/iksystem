@@ -38,14 +38,18 @@
           <template #default="{ row }">
 
             <el-tag :type="
-              row.isActive
-                ? 'success'
-                : 'danger'
+              row.isSuspended
+                ? 'warning'
+                : row.isActive
+                  ? 'success'
+                  : 'danger'
             ">
               {{
-                row.isActive
-                  ? 'Active'
-                  : 'Inactive'
+                row.isSuspended
+                  ? 'Suspended'
+                  : row.isActive
+                    ? 'Active'
+                    : 'Inactive'
               }}
             </el-tag>
 
@@ -53,7 +57,7 @@
         </el-table-column>
 
         <el-table-column label="Actions"
-                         width="260"
+                         width="330"
                          fixed="right">
           <template #default="{ row }">
 
@@ -69,18 +73,25 @@
               Edit
             </el-button>
 
-            <el-button link
-                       :type="
-                         row.isActive
-                           ? 'danger'
-                           : 'success'
-                       "
-                       @click="toggleCompanyStatus(row)">
-              {{
-                row.isActive
-                  ? 'Deactivate'
-                  : 'Activate'
-              }}
+            <el-button v-if="!row.isActive || row.isSuspended"
+                       link
+                       type="success"
+                       @click="setCompanyStatus(row, 'active')">
+              Activate
+            </el-button>
+
+            <el-button v-if="row.isActive || row.isSuspended"
+                       link
+                       type="danger"
+                       @click="setCompanyStatus(row, 'inactive')">
+              Deactivate
+            </el-button>
+
+            <el-button v-if="!row.isSuspended"
+                       link
+                       type="warning"
+                       @click="setCompanyStatus(row, 'suspended')">
+              Suspend
             </el-button>
 
           </template>
@@ -225,9 +236,13 @@
           <el-input v-model="editForm.code" />
         </el-form-item>
 
-        <el-form-item label="Active">
+        <el-form-item label="Status">
 
-          <el-switch v-model="editForm.isActive" />
+          <el-select v-model="editForm.status" style="width: 100%">
+            <el-option label="Active" value="active" />
+            <el-option label="Inactive" value="inactive" />
+            <el-option label="Suspended" value="suspended" />
+          </el-select>
 
         </el-form-item>
 
@@ -271,9 +286,10 @@ import {
 import {
   getCompanies,
   createCompany,
-  updateCompany,
-  updateCompanyStatus
+  updateCompany
 } from '@/api/company';
+
+import request from '@/utils/request';
 
 const router =
     useRouter();
@@ -314,7 +330,7 @@ const editForm =
       id: null,
       name: '',
       code: '',
-      isActive: true
+      status: 'active'
     });
 
 const createRules = {
@@ -476,8 +492,12 @@ function editCompany(row) {
       code:
                 row.code || '',
 
-      isActive:
-                row.isActive
+      status:
+                row.isSuspended
+                  ? 'suspended'
+                  : row.isActive
+                    ? 'active'
+                    : 'inactive'
     }
   );
 
@@ -499,8 +519,8 @@ async function saveCompanyUpdate() {
         code:
                     editForm.code,
 
-        isActive:
-                    editForm.isActive
+        status:
+                    editForm.status
       }
     );
 
@@ -524,37 +544,52 @@ async function saveCompanyUpdate() {
   }
 }
 
-async function toggleCompanyStatus(row) {
-  try {
-    const newStatus =
-            !row.isActive;
+async function setCompanyStatus(row, status) {
+  const actionLabel =
+        status === 'active'
+          ? 'Activate'
+          : status === 'suspended'
+            ? 'Suspend'
+            : 'Deactivate';
 
+  try {
     await ElMessageBox.confirm(
-      newStatus
-        ? 'Activate this company?'
-        : 'Deactivate this company?',
+      `${actionLabel} this company?`,
       'Confirm',
       {
-        type: 'warning'
+        type:
+                status === 'suspended'
+                  ? 'warning'
+                  : status === 'inactive'
+                    ? 'warning'
+                    : 'info'
       }
     );
 
-    await updateCompanyStatus(
-      row.id,
-      newStatus
-    );
+    await request({
+      url: `/company/status/${row.id}`,
+      method: 'patch',
+      data: {
+        status
+      }
+    });
 
     ElMessage.success(
-      'Company status updated.'
+      `Company ${status}.`
     );
 
     await loadCompanies();
   } catch (error) {
     if (
       error !== 'cancel' &&
-            error !== 'close'
+      error !== 'close'
     ) {
       console.error(error);
+
+      ElMessage.error(
+        error?.response?.data?.message ||
+                'Unable to update company status.'
+      );
     }
   }
 }

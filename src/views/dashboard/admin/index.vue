@@ -1,5 +1,8 @@
 <template>
   <div class="dashboard-editor-container">
+    <!-- Current Employee Sessions -->
+    <CurrentEmployeeSessions v-if="canViewCurrentEmployeeSessions" />
+
     <!-- Dashboard Statistics -->
     <PanelGroup @handleSetLineChartData="handleSetLineChartData" />
     <!-- Current Customers -->
@@ -32,6 +35,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import PanelGroup from '../components/panelgroup';
+import CurrentEmployeeSessions from '../components/currentemployeesessions';
 import CurrentCustomer from '../../components/currentcustomer';
 import PieChart from '../components/piechart';
 import BarChart from '../components/barchart';
@@ -48,7 +52,12 @@ const canViewCustomers = computed(() => {
   if (roleName === 'owner' || roleName === 'admin') {
     return true;
   }
-  return (userStore.permissions || []).includes('customers.read');
+  return (userStore.permissions || []).includes('customers');
+});
+
+const canViewCurrentEmployeeSessions = computed(() => {
+  const roleName = String(userStore.roleName || '').trim().toLowerCase();
+  return roleName === 'owner' || roleName === 'admin';
 });
 
 function handleSetLineChartData(type) {

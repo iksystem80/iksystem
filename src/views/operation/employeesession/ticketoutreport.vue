@@ -217,7 +217,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import request from '@/utils/request';
-
+import PhotoPreviewIcon from '@/components/photopreviewicon/index.vue'
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();

@@ -12,6 +12,25 @@
           </h2>
           <div class="page-subtitle">
             {{ company?.code || '' }}
+            <el-tag
+              v-if="company"
+              size="small"
+              :type="
+                company.isSuspended
+                  ? 'warning'
+                  : company.isActive
+                    ? 'success'
+                    : 'danger'
+              "
+            >
+              {{
+                company.isSuspended
+                  ? 'Suspended'
+                  : company.isActive
+                    ? 'Active'
+                    : 'Inactive'
+              }}
+            </el-tag>
           </div>
         </div>
       </div>
@@ -33,19 +52,56 @@
             <el-table-column label="Status" width="120">
               <template #default="{ row }">
                 <el-tag :type="
-                  row.isActive
-                    ? 'success'
-                    : 'danger'
+                  row.isSuspended
+                    ? 'warning'
+                    : row.isActive
+                      ? 'success'
+                      : 'danger'
                 ">
                   {{
-                    row.isActive
-                      ? 'Active'
-                      : 'Inactive'
+                    row.isSuspended
+                      ? 'Suspended'
+                      : row.isActive
+                        ? 'Active'
+                        : 'Inactive'
                   }}
                 </el-tag>
 
               </template>
 
+            </el-table-column>
+
+            <el-table-column label="Actions"
+                             width="250"
+                             align="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="!row.isActive || row.isSuspended"
+                  link
+                  type="success"
+                  @click="setLocationStatus(row, 'active')"
+                >
+                  Activate
+                </el-button>
+
+                <el-button
+                  v-if="row.isActive || row.isSuspended"
+                  link
+                  type="danger"
+                  @click="setLocationStatus(row, 'inactive')"
+                >
+                  Deactivate
+                </el-button>
+
+                <el-button
+                  v-if="!row.isSuspended"
+                  link
+                  type="warning"
+                  @click="setLocationStatus(row, 'suspended')"
+                >
+                  Suspend
+                </el-button>
+              </template>
             </el-table-column>
 
           </el-table>
@@ -177,7 +233,8 @@ import {
 } from 'vue-router';
 
 import {
-  ElMessage
+  ElMessage,
+  ElMessageBox
 } from 'element-plus';
 
 import {
@@ -186,7 +243,8 @@ import {
 
 import {
   getCompanyLocations,
-  createLocation
+  createLocation,
+  updateLocationStatus
 } from '@/api/location';
 
 import {
@@ -369,6 +427,51 @@ async function saveLocation() {
   } finally {
     savingLocation.value =
             false;
+  }
+}
+
+async function setLocationStatus(row, status) {
+  const actionLabel =
+        status === 'active'
+          ? 'Activate'
+          : status === 'suspended'
+            ? 'Suspend'
+            : 'Deactivate';
+
+  try {
+    await ElMessageBox.confirm(
+      `${actionLabel} ${row.name}?`,
+      'Confirm',
+      {
+        type:
+          status === 'active'
+            ? 'info'
+            : 'warning'
+      }
+    );
+
+    await updateLocationStatus(
+      row.id,
+      status
+    );
+
+    ElMessage.success(
+      `Location ${status}.`
+    );
+
+    await loadLocations();
+  } catch (error) {
+    if (
+      error !== 'cancel' &&
+      error !== 'close'
+    ) {
+      console.error(error);
+
+      ElMessage.error(
+        error?.response?.data?.message ||
+          'Unable to update location status.'
+      );
+    }
   }
 }
 

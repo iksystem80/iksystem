@@ -28,6 +28,30 @@
           <el-switch v-model="form.isActive" active-text="Active" inactive-text="Inactive" />
         </el-form-item>
       </el-col>
+
+      <el-col v-if="isAdminRole" :span="24">
+        <el-form-item label="Additional Location Access">
+          <el-select
+            v-model="form.additionalLocationIds"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+            placeholder="Select additional locations"
+            style="width:100%"
+          >
+            <el-option
+              v-for="location in availableAdditionalLocations"
+              :key="location.ID ?? location.id"
+              :label="location.name"
+              :value="Number(location.ID ?? location.id)"
+            />
+          </el-select>
+          <div class="form-hint">
+            Primary location: {{ primaryLocationName }}. Select only the other locations this Admin may access.
+          </div>
+        </el-form-item>
+      </el-col>
     </el-row>
     <div class="actions">
       <el-button @click="emit('close')">Cancel</el-button>
@@ -56,7 +80,32 @@ const isEdit = computed(() => !!props.employee?.id);
 
 const form = reactive({
     username: '', password: '', name: '', email: '', phone: '', jobTitle: '',
-    roleId: null as number | null, locationid: '', avatar: '/upload/profile.png', isActive: true
+    roleId: null as number | null,
+    locationid: '',
+    additionalLocationIds: [] as number[],
+    avatar: '/upload/profile.png',
+    isActive: true
+});
+
+const selectedRoleName = computed(() => {
+    const selected = roles.value.find(role => Number(role.id) === Number(form.roleId));
+    return String(selected?.name || '').trim().toLowerCase();
+});
+
+const isAdminRole = computed(() => selectedRoleName.value === 'admin');
+
+const availableAdditionalLocations = computed(() =>
+    (userStore.locations || []).filter(location =>
+      Number(location.ID ?? location.id) !== Number(form.locationid)
+    )
+);
+
+const primaryLocationName = computed(() => {
+    const location = (userStore.locations || []).find(item =>
+      Number(item.ID ?? item.id) === Number(form.locationid)
+    );
+
+    return location?.name || props.employee?.locationName || userStore.location || 'Current location';
 });
 
 const rules: FormRules = {
@@ -83,6 +132,9 @@ function fillForm() {
     form.jobTitle = row?.jobTitle || '';
     form.roleId = row?.roleId ?? null;
     form.locationid = String(row?.locationId || userStore.locationId);
+    form.additionalLocationIds = Array.isArray(row?.additionalLocationIds)
+      ? row.additionalLocationIds.map(Number)
+      : [];
     form.avatar = row?.avatar || '/upload/profile.png';
     form.isActive = row?.isActive ?? true;
 }
@@ -102,7 +154,11 @@ async function submitForm() {
 
     try {
       saving.value = true;
-      const payload = { ...form, locationid: userStore.locationId };
+      const payload = {
+        ...form,
+        locationid: isEdit.value ? form.locationid : userStore.locationId,
+        additionalLocationIds: isAdminRole.value ? form.additionalLocationIds : []
+      };
 
       if (isEdit.value) {
         await updateemployee(props.employee.id, payload);
@@ -123,6 +179,19 @@ async function submitForm() {
 }
 
 watch(() => props.employee, fillForm, { immediate: true });
+watch(isAdminRole, value => {
+    if (!value) form.additionalLocationIds = [];
+});
 onMounted(loadRoles);
 </script>
+
+<style scoped>
+.form-hint {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--el-text-color-secondary);
+}
+</style>
 

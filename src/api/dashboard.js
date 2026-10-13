@@ -17,3 +17,14 @@ export function getMatchPointsByEmployee(locationid) {
     }
   });
 }
+
+export function getActiveEmployeeSessions(locationid) {
+  return request({
+    url: '/dashboard/active-employee-sessions',
+    method: 'get',
+    params: {
+      locationid
+    }
+  });
+}
+

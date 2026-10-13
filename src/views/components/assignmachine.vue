@@ -24,6 +24,11 @@
                 {{ formatPhone(customer.phone) }}
               </p>
             </div>
+
+            <div class="desktop-match-point">
+              <span class="match-point-label">Match Point</span>
+              <PointsBadge :points="matchPoints" />
+            </div>
           </div>
           <el-alert v-if="matchRuleBlocked"
                     class="match-rule-blocked-alert"
@@ -34,6 +39,11 @@
 
           <div v-if="!matchRuleBlocked" style="margin-top:25px">
             <el-form ref="pointFormRef" :model="pointForm" :rules="formRules" label-position="top" class="point-form">
+              <div class="mobile-match-point">
+                <span class="match-point-label">Match Point</span>
+                <PointsBadge :points="matchPoints" />
+              </div>
+
               <el-row :gutter="16">
                 <!-- Machine Number -->
                 <el-col :xs="24" :sm="12">
@@ -42,24 +52,6 @@
                       <template #prefix>
                         <el-icon>
                           <Monitor />
-                        </el-icon>
-                      </template>
-                    </el-input>
-                  </el-form-item>
-                </el-col>
-
-                <!-- Points -->
-                <el-col :xs="24"
-                        :sm="12">
-                  <el-form-item label="Match Point"
-                                prop="points">
-                    <el-input v-model="pointForm.points"
-                              placeholder="Enter match points"
-                              clearable
-                              :disabled="matchRuleBlocked || eligibilityLoading">
-                      <template #prefix>
-                        <el-icon>
-                          <Coin />
                         </el-icon>
                       </template>
                     </el-input>
@@ -257,7 +249,7 @@
       <div class="action-summary">
         <span>Points</span>
         <strong>
-          {{ pointForm.points}}
+          {{ matchPoints }}
         </strong>
       </div>
       <div class="action-buttons">
@@ -291,6 +283,7 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { formatPhone } from '@/utils/phone';
 import CameraApp from '@/components/mycamera';
+import PointsBadge from '@/components/pointsbadge/index.vue';
 import { getmachinebynumber } from '@/api/machine';
 import { saveassignmachine } from '@/api/customer';
 import { getMatchEligibility, matchEligibilityMessage } from '@/utils/matchrules';
@@ -305,7 +298,6 @@ const defaultForm = {
         customerid: null,
         machineid: null,
         machinenumber: null,
-        points: null,
         assignedby: userStore.userId,
         locationid: userStore.locationId
 };
@@ -329,9 +321,6 @@ const emit = defineEmits(['closed']);
 const formRules = {
         machinenumber: [
           { required: true, message: 'machine number is required', trigger: 'blur' }
-        ],
-        points: [
-          { required: true, message: 'point is required', trigger: 'blur' }
         ]
 };
 /* =========================================
@@ -343,6 +332,12 @@ const props = defineProps({
           type: Object,
           required: true
         }
+});
+
+const matchPoints = computed(() => {
+        const value = props.customer?.matchPoints ?? props.customer?.points ?? 0;
+        const number = Number(value);
+        return Number.isFinite(number) ? number : 0;
 });
 
 function handleCapturedImage(image) {
@@ -540,3 +535,36 @@ onBeforeUnmount(() => {
 });
 </script>
 
+
+<style scoped>
+.desktop-match-point {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.match-point-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
+}
+
+.mobile-match-point {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .desktop-match-point {
+    display: none;
+  }
+
+  .mobile-match-point {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+}
+</style>

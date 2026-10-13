@@ -9,11 +9,12 @@ import { ElMessage } from 'element-plus';
 
 NProgress.configure({ showSpinner: false });
 
-const whiteList = ['/login', '/auth-redirect'];
+const whiteList = ['/login', '/auth-redirect', '/suspended', '/deactivated'];
 const CHECKIN_PATH = '/customercheckin';
+const SYSTEM_ADMIN_HOME = '/system/companies';
 
 router.beforeEach(async (to, _from, next) => {
-  
+
   NProgress.start();
   document.title = getPageTitle(to.meta.title);
 
@@ -35,7 +36,9 @@ router.beforeEach(async (to, _from, next) => {
   if (to.path === '/login') {
     NProgress.done();
 
-    if (userStore.infoLoaded && userStore.isCheckIn) {
+    if (userStore.infoLoaded && userStore.isSystemAdmin) {
+      next({ path: SYSTEM_ADMIN_HOME });
+    } else if (userStore.infoLoaded && userStore.isCheckIn) {
       next({ path: CHECKIN_PATH });
     } else {
       next({ path: '/' });
@@ -67,13 +70,32 @@ router.beforeEach(async (to, _from, next) => {
 
       permissionStore.setRoutesLoaded(true);
 
+      if (
+        userStore.isSystemAdmin &&
+        (to.path === '/' || to.path === '/dashboard')
+      ) {
+        next({ path: SYSTEM_ADMIN_HOME, replace: true });
+        return;
+      }
+
       if (userStore.isCheckIn && to.path !== CHECKIN_PATH) {
-        next({path: CHECKIN_PATH, replace: true });
+        next({ path: CHECKIN_PATH, replace: true });
         return;
       }
 
       next({
         ...to,
+        replace: true
+      });
+      return;
+    }
+
+    if (
+      userStore.isSystemAdmin &&
+      (to.path === '/' || to.path === '/dashboard')
+    ) {
+      next({
+        path: SYSTEM_ADMIN_HOME,
         replace: true
       });
       return;

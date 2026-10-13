@@ -107,10 +107,23 @@ export const useUserStore = defineStore('user', () => {
     permissionStore.resetRoutes();
     resetRouter();
 
-    const response = await apiLogin({
-      username: userInfo.username.trim(),
-      password: userInfo.password
-    });
+    let response;
+
+    try {
+      response = await apiLogin({
+        username: userInfo.username.trim(),
+        password: userInfo.password
+      });
+    } catch (error: any) {
+      const accessStatus =
+        accessStatusFromError(error);
+
+      if (accessStatus) {
+        await forceAccessLogout(accessStatus);
+      }
+
+      throw error;
+    }
 
     token.value = response.token || '';
     userId.value = String(response.userid || '');
@@ -137,16 +150,30 @@ export const useUserStore = defineStore('user', () => {
     setUserId(userId.value);
 
     if (response.locationid) {
-      initializeSocketListeners(response.locationid);
+      initializeSocketListeners(response.locationid, response.companyid);
     }
   }
 
   async function getInfo() {
     //console.log('get info called')
-    const response = await apiGetInfo(
-      token.value,
-      userId.value
-    );
+    let response;
+
+    try {
+      response = await apiGetInfo(
+        token.value,
+        userId.value,
+        locationId.value
+      );
+    } catch (error: any) {
+      const accessStatus =
+        accessStatusFromError(error);
+
+      if (accessStatus) {
+        await forceAccessLogout(accessStatus);
+      }
+
+      throw error;
+    }
 
     if (!response?.data) {
       throw new Error(
@@ -173,14 +200,20 @@ export const useUserStore = defineStore('user', () => {
 
     companyName.value = data.companyname || '';
 
-    if (!locationId.value) {
-      locationId.value = data.locationid != null ? String(data.locationid) : '';
+    locationId.value =
+      data.locationid != null
+        ? String(data.locationid)
+        : '';
 
-      location.value = data.location || '';
-      allowfaceCheckin.value = Boolean(data.allowfacecheckin);
-    }
+    location.value = data.location || '';
+    allowfaceCheckin.value = Boolean(data.allowfacecheckin);
 
     locations.value = Array.isArray(response.locations) ? response.locations : [];
+
+    initializeSocketListeners(
+      locationId.value,
+      companyId.value
+    );
 
     infoLoaded.value = true;
     return data;
@@ -215,15 +248,124 @@ export const useUserStore = defineStore('user', () => {
   ): Promise<void> {
     locationId.value = String(locid || '');
     location.value = locationname || '';
+    infoLoaded.value = false;
 
     cleanupSocket();
 
     if (locid) {
-      initializeSocketListeners(locid);
+      initializeSocketListeners(locid, companyId.value);
     }
 
     await getInfo();
     await rebuildRoutes();
+
+    // Re-resolve navigation using the newly loaded location permissions.
+    await router.replace('/');
+  }
+
+  function statusRoute(
+    scope: string,
+    status: string,
+    displayName = ''
+  ) {
+    return {
+      path:
+        status === 'suspended'
+          ? '/suspended'
+          : '/deactivated',
+      query: {
+        scope:
+          scope === 'company'
+            ? 'company'
+            : 'location',
+        ...(displayName
+          ? { name: displayName }
+          : {})
+      }
+    };
+  }
+
+  async function forceAccessLogout({
+    scope = 'location',
+    status = 'inactive',
+    name: displayName = ''
+  } = {}): Promise<void> {
+    const target = statusRoute(
+      String(scope),
+      String(status),
+      String(displayName || '')
+    );
+
+    cleanupSocket();
+
+    removeToken();
+    removeUserId();
+
+    const permissionStore = usePermissionStore();
+    const tagsViewStore = useTagsViewStore();
+
+    permissionStore.resetRoutes();
+    tagsViewStore.delAllViews();
+
+    clearUserState();
+    resetRouter();
+
+    await router.replace(target);
+  }
+
+  function accessStatusFromError(error: any) {
+    const data = error?.response?.data || {};
+    const status = String(data.statusType || '').trim().toLowerCase();
+    const scope = String(data.statusScope || '').trim().toLowerCase();
+
+    if (
+      !['inactive', 'suspended'].includes(status) ||
+      !['company', 'location'].includes(scope)
+    ) {
+      return null;
+    }
+
+    return {
+      scope,
+      status,
+      name: String(data.statusName || '').trim()
+    };
+  }
+
+  async function refreshAvailableLocations(): Promise<void> {
+    if (
+      !token.value ||
+      !userId.value ||
+      isSystemAdmin.value
+    ) {
+      return;
+    }
+
+    try {
+      const response = await apiGetInfo(
+        token.value,
+        userId.value,
+        locationId.value
+      );
+
+      locations.value =
+        Array.isArray(response?.locations)
+          ? response.locations
+          : [];
+    } catch (error: any) {
+      const accessStatus =
+        accessStatusFromError(error);
+
+      if (accessStatus) {
+        await forceAccessLogout(accessStatus);
+        return;
+      }
+
+      console.error(
+        'Unable to refresh available locations:',
+        error
+      );
+    }
   }
 
   function clearUserState(): void {
@@ -357,6 +499,8 @@ export const useUserStore = defineStore('user', () => {
     resetToken,
     changeLocation,
     rebuildRoutes,
+    refreshAvailableLocations,
+    forceAccessLogout,
 
     isClockedIn,
     isClocked,

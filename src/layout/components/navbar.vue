@@ -115,7 +115,7 @@
             </router-link>
 
             <!-- LOCATIONS -->
-            <template v-if="userStore.isOwner && locations?.length">
+            <template v-if="userStore.isOwnerOrAdmin && locations?.length">
 
               <el-dropdown-item disabled class="section-title">
                 Locations

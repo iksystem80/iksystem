@@ -23,14 +23,14 @@
           <div class="customer-name" @click="openCustomer(row)">
             {{ row.fullname }}
           </div>
-          <div>
-            <el-tag class="points-tag" type="warning" effect="light">
+          <div style="margin-top: 6px;">
+            <PointsBadge :points="row.points" />
+            <!--<el-tag class="points-tag" type="warning" effect="light">
               <el-icon>
                 <Coin />
               </el-icon>
-
               {{ Number(row.points || 0).toLocaleString() }} PTS
-            </el-tag>
+            </el-tag>-->
           </div>
         </span>
         <!-- CHECK-IN TIME -->
@@ -72,12 +72,14 @@
               {{ row.approvedby }}
             </template>
 
-            <el-image v-if="row.ImageUrl"
-                      src="/src/assets/viewphoto.png"
-                      class="view-photo"
-                      :preview-src-list="[row.ImageUrl]"
-                      fit="cover"
-                      preview-teleported />
+            <PhotoPreviewIcon v-if="row.ImageUrl" :src="row.ImageUrl" class="view-photo"/>
+
+            <!--<el-image v-if="row.ImageUrl"
+            src="/src/assets/viewphoto.png"
+            class="view-photo"
+            :preview-src-list="[row.ImageUrl]"
+            fit="cover"
+            preview-teleported />-->
 
           </span>
 
@@ -123,20 +125,16 @@
 
 <script setup lang="ts">
 import {
-      computed,
-      onBeforeUnmount,
-      onMounted,
-      ref,
-      watch
+        computed,
+        onBeforeUnmount,
+        onMounted,
+        ref,
+        watch
 } from 'vue';
 
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-
-import {
-      WarningFilled
-} from '@element-plus/icons-vue';
-
+import PhotoPreviewIcon from '@/components/photopreviewicon/index.vue'
 import PanThumb from '@/components/panthumb';
 import assignmachine from '../components/assignmachine';
 
@@ -144,6 +142,7 @@ import { useUserStore } from '@/store/modules/user';
 import { useCheckinStore } from '@/store/modules/checkin';
 
 import { getcheckin } from '@/api/customer';
+import PointsBadge from '@/components/pointsbadge/index.vue';
 
 const router = useRouter();
 
@@ -158,148 +157,148 @@ const selectedCustomer = ref(null);
 const checkinData = ref<any[]>([]);
 
 /* ============================================================
-           FILTER
+             FILTER
 ============================================================ */
 
 const statusFilter = ref('pending');
 
 const filterOptions = [
-      {
-        label: 'Pending',
-        value: 'pending'
-      },
-      {
-        label: 'Match',
-        value: 'approved'
-      },
-      {
-        label: 'All',
-        value: 'all'
-      }
+        {
+          label: 'Pending',
+          value: 'pending'
+        },
+        {
+          label: 'Match',
+          value: 'approved'
+        },
+        {
+          label: 'All',
+          value: 'all'
+        }
 ];
 
 const filteredCheckinData = computed(() => {
-      if (statusFilter.value === 'pending') {
-        return checkinData.value.filter(
-          row => !row.status
-        );
-      }
+        if (statusFilter.value === 'pending') {
+          return checkinData.value.filter(
+            row => !row.status
+          );
+        }
 
-      if (statusFilter.value === 'approved') {
-        return checkinData.value.filter(
-          row => Boolean(row.status)
-        );
-      }
+        if (statusFilter.value === 'approved') {
+          return checkinData.value.filter(
+            row => Boolean(row.status)
+          );
+        }
 
-      return checkinData.value;
+        return checkinData.value;
 });
 
 const emptyDescription = computed(() => {
-      if (statusFilter.value === 'pending') {
-        return 'No pending check-ins.';
-      }
+        if (statusFilter.value === 'pending') {
+          return 'No pending check-ins.';
+        }
 
-      if (statusFilter.value === 'approved') {
-        return 'No matched check-ins.';
-      }
+        if (statusFilter.value === 'approved') {
+          return 'No matched check-ins.';
+        }
 
-      return 'No customer check-ins found.';
+        return 'No customer check-ins found.';
 });
 
 /* ============================================================
-           LOAD CHECK-INS
+             LOAD CHECK-INS
 ============================================================ */
 
 async function loadCheckIn() {
-      loading.value = true;
+        loading.value = true;
 
-      try {
-        const locationid =
-                    userStore.locationId;
+        try {
+          const locationid =
+                      userStore.locationId;
 
-        const response =
-                    await getcheckin(
-                      locationid
-                    );
+          const response =
+                      await getcheckin(
+                        locationid
+                      );
 
-        if (response.success) {
-          checkinData.value =
-                        response.data || [];
-        } else {
+          if (response.success) {
+            checkinData.value =
+                          response.data || [];
+          } else {
+            checkinData.value = [];
+          }
+        } catch (error: any) {
+          ElMessage.error(
+            error?.response?.data?.message ||
+                      error?.message ||
+                      'Failed to load check in'
+          );
+
           checkinData.value = [];
+        } finally {
+          loading.value = false;
         }
-      } catch (error: any) {
-        ElMessage.error(
-          error?.response?.data?.message ||
-                    error?.message ||
-                    'Failed to load check in'
-        );
-
-        checkinData.value = [];
-      } finally {
-        loading.value = false;
-      }
 }
 
 /* ============================================================
-           CUSTOMER DETAIL
+             CUSTOMER DETAIL
 ============================================================ */
 
 function openCustomer(row: any) {
-      router.push({
-        name: 'Profile',
-        params: {
-          id: row.id
-        }
-      });
+        router.push({
+          name: 'Profile',
+          params: {
+            id: row.id
+          }
+        });
 }
 
 /* ============================================================
-           ASSIGN MACHINE
+             ASSIGN MACHINE
 ============================================================ */
 
 function openAssignMachine(row: any) {
-      selectedCustomer.value = {
-        ...row
-      };
+        selectedCustomer.value = {
+          ...row
+        };
 
-      dialogFormVisible.value = true;
+        dialogFormVisible.value = true;
 }
 
 async function handleClick() {
-      dialogFormVisible.value = false;
+        dialogFormVisible.value = false;
 }
 
 function handleClose() {
-      selectedCustomer.value = null;
+        selectedCustomer.value = null;
 
-      loadCheckIn();
+        loadCheckIn();
 }
 
 /* ============================================================
-           LIFECYCLE
+             LIFECYCLE
 ============================================================ */
 
 onMounted(() => {
-      loadCheckIn();
+        loadCheckIn();
 });
 
 onBeforeUnmount(() => {
-      // Socket cleanup can be added here if required.
+        // Socket cleanup can be added here if required.
 });
 
 watch(
-      () => checkinStore.refreshKey,
-      () => {
-        loadCheckIn();
-      }
+        () => checkinStore.refreshKey,
+        () => {
+          loadCheckIn();
+        }
 );
 
 watch(
-      () => userStore.locationId,
-      () => {
-        loadCheckIn();
-      }
+        () => userStore.locationId,
+        () => {
+          loadCheckIn();
+        }
 );
 </script>
 
