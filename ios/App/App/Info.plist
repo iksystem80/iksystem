@@ -72,5 +72,7 @@
 <string>IK uses the photo library only when selecting or processing customer photos.</string>
 <key>NSPhotoLibraryAddUsageDescription</key>
 <string>IK may save captured customer photos to the photo library when requested.</string>
+<key>NFCReaderUsageDescription</key>
+<string>IK uses NFC to read machine and ticket tags.</string>
 </dict>
 </plist>
