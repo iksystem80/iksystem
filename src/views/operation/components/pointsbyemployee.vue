@@ -5,23 +5,6 @@
     <!-- ===================================================== -->
     <el-card shadow="never" class="toolbar-card">
       <el-row :gutter="15">
-        <el-col :xs="24" :sm="12" :md="8">
-          <div class="filter-label">
-            Employee
-          </div>
-          <el-select v-model="selectedEmployee" placeholder="Select employee" style="width: 100%">
-            <el-option v-for="item in employees" :key="item.id" :label="item.name" :value="item.id">
-              <div class="employee-option">
-                <el-avatar :size="26" :src="item.avatar">
-                  {{ getInitial(item.name) }}
-                </el-avatar>
-                <span style="margin-left:10px">
-                  {{ item.name }}
-                </span>
-              </div>
-            </el-option>
-          </el-select>
-        </el-col>
         <el-col :xs="24" :sm="8" :md="5">
           <div class="filter-label">
             Period
@@ -35,40 +18,88 @@
         </el-col>
       </el-row>
     </el-card>
+
+    <!-- ===================================================== -->
+    <!-- EMPLOYEE INITIAL / AVATAR SELECTOR -->
+    <!-- ===================================================== -->
+    <el-card shadow="never" class="employee-banner pointwatch-employee-banner">
+      <div class="pointwatch-banner-shell"
+           :class="{ 'is-selected': !!selectedEmployeeDetails }">
+
+        <TransitionGroup name="employee-shift"
+                         tag="div"
+                         class="pointwatch-employee-stage">
+
+          <button v-for="item in displayedEmployees"
+                  :key="item.id"
+                  type="button"
+                  class="pointwatch-employee-choice"
+                  :class="{ 'is-selected': !!selectedEmployeeDetails }"
+                  :title="item.name"
+                  @click="selectEmployee(item)">
+
+            <el-badge :value="employeeEntryCount(item.id)"
+                      :hidden="!!selectedEmployeeDetails"
+                      class="pointwatch-employee-badge">
+              <el-avatar :size="selectedEmployeeDetails ? 56 : 40"
+                         :src="item.avatar">
+                {{ getInitial(item.name) }}
+              </el-avatar>
+            </el-badge>
+
+            <div v-if="selectedEmployeeDetails"
+                 class="pointwatch-selected-text">
+              <h2>{{ item.name }}</h2>
+              <div class="employee-period">
+                Activity from the last {{ days }} days
+              </div>
+            </div>
+
+            <span v-else class="pointwatch-employee-name">
+              {{ item.name }}
+            </span>
+          </button>
+        </TransitionGroup>
+
+        <div v-if="selectedEmployeeDetails"
+             class="points-employee-banner-actions">
+
+
+          <el-button class="pointwatch-view-all"
+                     link
+                     @click="clearEmployee">
+            view all
+          </el-button>
+          <el-tag v-if="report.summary.activeSessions > 0"
+                  type="success"
+                  effect="dark"
+                  size="large"
+                  round
+                  class="employee-tag">
+            <el-icon><VideoPlay /></el-icon>
+            <span>Working</span>
+          </el-tag>
+          <el-tag v-else-if="report.employee"
+                  type="info"
+                  size="large"
+                  round>
+            Clocked Out
+          </el-tag>
+        </div>
+
+        <div v-if="!selectedEmployeeDetails && !employees.length"
+             class="employee-period">
+          No employees found for this location.
+        </div>
+      </div>
+    </el-card>
     <!-- ===================================================== -->
     <!-- REPORT CONTENT -->
     <!-- ===================================================== -->
     <div v-loading="loading" element-loading-text="Loading employee activity..." class="report-content">
-      <el-empty v-if="!report.employee" description="Select an employee to view point activity." />
+      <el-empty v-if="!selectedEmployee" description="Select an employee above to view point activity." />
       <template v-else>
-        <!-- =================================================== -->
-        <!-- EMPLOYEE HEADER -->
-        <!-- =================================================== -->
 
-        <el-card shadow="never" class="employee-banner">
-          <div class="employee-header">
-            <div class="employee-profile">
-              <el-avatar :size="56" :src="report.employee.avatar">
-                {{ getInitial(report.employee.name) }}
-              </el-avatar>
-              <div class="employee-profile-text">
-                <h2>{{ report.employee.name }}</h2>
-                <div class="employee-period">
-                  Activity from the last {{ days }} days
-                </div>
-              </div>
-            </div>
-            <el-tag v-if="report.summary.activeSessions > 0" type="success" effect="dark" size="large" round class="employee-tag">
-              <el-icon>
-                <VideoPlay />
-              </el-icon>
-              <span>Working</span>
-            </el-tag>
-            <el-tag v-else type="info" size="large" round>
-              Clocked Out
-            </el-tag>
-          </div>
-        </el-card>
         <!-- =================================================== -->
         <!-- SUMMARY -->
         <!-- =================================================== -->
@@ -605,6 +636,7 @@ const employees = ref([]);
 const selectedEmployee = ref(null);
 const days = ref(14);
 const loading = ref(false);
+const employeeEntryCounts = ref({});
 
 const report = ref({
       employee: null,
@@ -626,6 +658,90 @@ const selectedSession = ref(null);
 const sessionEntries = ref([]);
 const sessionLoading = ref(false);
 
+const selectedEmployeeDetails = computed(() =>
+      selectedEmployee.value == null
+        ? null
+        : employees.value.find(
+            item =>
+              String(item.id) ===
+              String(selectedEmployee.value)
+          ) || null
+);
+
+const displayedEmployees = computed(() =>
+      selectedEmployeeDetails.value
+        ? [selectedEmployeeDetails.value]
+        : employees.value
+);
+
+const selectEmployee = item => {
+      if (selectedEmployeeDetails.value) {
+        return;
+      }
+
+      selectedEmployee.value = item.id;
+};
+
+const clearEmployee = () => {
+      selectedEmployee.value = null;
+
+      report.value = {
+        employee: null,
+        summary: {
+          daysWorked: 0,
+          totalSessions: 0,
+          pointsGiven: 0,
+          totalEntries: 0,
+          totalWorkingHours: 0,
+          activeSessions: 0
+        },
+        sessions: []
+      };
+};
+
+const employeeEntryCount = employeeId =>
+      employeeEntryCounts.value[String(employeeId)] || 0;
+
+const loadEmployeeEntryCounts = async () => {
+      if (
+        !props.locationId ||
+        !employees.value.length
+      ) {
+        employeeEntryCounts.value = {};
+        return;
+      }
+
+      const results = await Promise.allSettled(
+        employees.value.map(item =>
+          getPointsByEmployee(
+            item.id,
+            props.locationId,
+            days.value
+          )
+        )
+      );
+
+      const counts = {};
+
+      results.forEach((result, index) => {
+        const employeeId =
+          employees.value[index]?.id;
+
+        if (employeeId == null) {
+          return;
+        }
+
+        counts[String(employeeId)] =
+          result.status === 'fulfilled'
+            ? Number(
+                result.value?.data?.summary?.totalEntries || 0
+              )
+            : 0;
+      });
+
+      employeeEntryCounts.value = counts;
+};
+
 // ============================================================
 // EMPLOYEES
 // ============================================================
@@ -641,16 +757,40 @@ const loadEmployees = async () => {
                       props.locationId
                     );
 
-        employees.value =
-                    response.data ?? [];
+        employees.value = (response.data ?? []).filter(item => {
+          const rawRole =
+            item.roleName ??
+            item.role ??
+            item.roles ??
+            '';
+
+          const values = Array.isArray(rawRole)
+            ? rawRole
+            : String(rawRole)
+                .split(',')
+                .map(value => value.trim())
+                .filter(Boolean);
+
+          return values.some(
+            value =>
+              String(value)
+                .trim()
+                .toLowerCase() === 'employee'
+          );
+        });
 
         if (
-          !selectedEmployee.value &&
-                    employees.value.length
+          selectedEmployee.value != null &&
+          !employees.value.some(
+            item =>
+              String(item.id) ===
+              String(selectedEmployee.value)
+          )
         ) {
-          selectedEmployee.value =
-                        employees.value[0].id;
+          clearEmployee();
         }
+
+        await loadEmployeeEntryCounts();
       } catch (error) {
         ElMessage.error(
           error.response?.data?.message ||
@@ -801,6 +941,7 @@ watch(
           return;
         }
 
+        clearEmployee();
         await loadEmployees();
       },
       {
@@ -809,15 +950,25 @@ watch(
 );
 
 watch(
-      [
-        selectedEmployee,
-        days
-      ],
+      selectedEmployee,
       () => {
         if (
           selectedEmployee.value
         ) {
           loadReport();
+        }
+      }
+);
+
+watch(
+      days,
+      async () => {
+        await loadEmployeeEntryCounts();
+
+        if (
+          selectedEmployee.value
+        ) {
+          await loadReport();
         }
       }
 );

@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
 
 const Layout = (): RouteComponent => import('@/layout/index.vue');
+// const Layout2 = (): RouteComponent => import('@/layout2/index.vue');
 
 export const constantRoutes: RouteRecordRaw[] = [
   {
@@ -581,6 +582,16 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/profile/index.vue'),
         name: 'Profile',
         meta: { title: 'Profile', icon: 'user', noCache: true }
+      },
+      {
+        path: 'userprofile',
+        component: () => import('@/views/profile/userprofile.vue'),
+        name: 'UserProfile',
+        meta: {
+          title: 'My Profile',
+          noCache: true,
+          hidden: true
+        }
       }
     ]
   },

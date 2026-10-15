@@ -615,6 +615,7 @@ async function load() {
                         const response = await getEmployeeFinance(locationId.value);
                         const d = response.data || {};
                         session.value = d.session || null; employee.value = d.employee || null; summary.value = d.summary || {};
+                        userStore.setEmployeeBalance(summary.value.balance);
                         transactions.value = d.transactions || []; pending.value = d.pending || [];
                         pendingAdminFunding.value = d.pendingAdminFunding || [];
                         recipients.value = d.recipients || []; adminRecipients.value = d.adminRecipients || []; expenseTypes.value = d.expenseTypes || []; creditTypes.value = d.creditTypes || [];
@@ -638,6 +639,7 @@ async function refreshFinanceLive() {
                         session.value = d.session || null;
                         employee.value = d.employee || employee.value;
                         summary.value = d.summary || {};
+                        userStore.setEmployeeBalance(summary.value.balance);
                         transactions.value = d.transactions || [];
                         pending.value = d.pending || [];
                         pendingAdminFunding.value = d.pendingAdminFunding || [];
@@ -964,6 +966,7 @@ async function openCloseSession() {
 
                         session.value = d.session || null;
                         summary.value = d.summary || {};
+                        userStore.setEmployeeBalance(summary.value.balance);
                         recipients.value = d.recipients || [];
                         adminRecipients.value = d.adminRecipients || [];
 

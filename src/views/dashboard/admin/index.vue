@@ -79,7 +79,6 @@ onMounted(async () => {
       const isClockedIn = response.data?.clockedIn === true;
 
       userStore.setClockedIn(isClockedIn);
-     
       // console.log('isClockedIn: ' + userStore.isClockedIn);
 
       if (!isClockedIn) {

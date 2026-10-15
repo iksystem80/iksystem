@@ -7,19 +7,7 @@
           <div class="filter-label">Date</div>
           <el-date-picker v-model="selectedDate" type="date" value-format="YYYY-MM-DD" format="MMM DD, YYYY" placeholder="Select date" style="width: 100%" />
         </el-col>
-        <el-col :xs="24" :sm="8" :md="6">
-          <div class="filter-label">Employee</div>
-          <el-select v-model="selectedEmployee" clearable placeholder="All employees" style="width: 100%">
-            <template #prefix>
-              <el-icon><User /></el-icon>
-            </template>
-            <el-option v-for="item in employees"
-                       :key="item.id"
-                       :label="item.name"
-                       :value="item.id" />
-          </el-select>
-        </el-col>
-        <el-col :xs="24" :sm="8" :md="12">
+        <el-col :xs="24" :sm="16" :md="18">
           <div class="filter-label">Search</div>
           <el-input v-model="search"
                     clearable
@@ -32,15 +20,56 @@
       </el-row>
     </el-card>
 
-    <!-- Selected employee banner: hidden for All employees. -->
-    <el-card v-if="selectedEmployeeDetails" shadow="never" class="employee-banner">
-      <div class="employee-header">
-        <div class="employee-profile">
-          <el-avatar :size="56" :src="selectedEmployeeDetails.avatar">{{ getInitial(selectedEmployeeDetails.name) }}</el-avatar>
-          <div class="employee-profile-text">
-            <h2>{{ selectedEmployeeDetails.name }}</h2>
-            <div class="employee-period">Point activity for {{ displayDate }}</div>
-          </div>
+    <!-- Employee selector / selected employee banner -->
+    <el-card shadow="never" class="employee-banner pointwatch-employee-banner">
+      <div class="pointwatch-banner-shell"
+           :class="{ 'is-selected': !!selectedEmployeeDetails }">
+
+        <TransitionGroup name="employee-shift"
+                         tag="div"
+                         class="pointwatch-employee-stage">
+
+          <button v-for="item in displayedEmployees"
+                  :key="item.id"
+                  type="button"
+                  class="pointwatch-employee-choice"
+                  :class="{ 'is-selected': !!selectedEmployeeDetails }"
+                  :title="item.name"
+                  @click="selectEmployee(item)">
+
+            <el-badge :value="employeeEntryCount(item.id)"
+                      :hidden="!!selectedEmployeeDetails"
+                      class="pointwatch-employee-badge">
+              <el-avatar :size="selectedEmployeeDetails ? 56 : 40"
+                         :src="item.avatar">
+                {{ getInitial(item.name) }}
+              </el-avatar>
+            </el-badge>
+
+            <div v-if="selectedEmployeeDetails"
+                 class="pointwatch-selected-text">
+              <h2>{{ item.name }}</h2>
+              <div class="employee-period">
+                Point activity for {{ displayDate }}
+              </div>
+            </div>
+
+            <span v-else class="pointwatch-employee-name">
+              {{ item.name }}
+            </span>
+          </button>
+        </TransitionGroup>
+
+        <el-button v-if="selectedEmployeeDetails"
+                   class="pointwatch-view-all"
+                   link
+                   @click="selectedEmployee = null">
+          view all
+        </el-button>
+
+        <div v-if="!selectedEmployeeDetails && !employees.length"
+             class="employee-period">
+          No employees found for this location.
         </div>
       </div>
     </el-card>
@@ -283,7 +312,19 @@ const employees = ref([]);
 const entries = ref([]);
 
 const selectedEmployeeDetails = computed(() => selectedEmployee.value == null ? null : employees.value.find(item => String(item.id) === String(selectedEmployee.value)) || null);
+
+const displayedEmployees = computed(() =>
+    selectedEmployeeDetails.value
+      ? [selectedEmployeeDetails.value]
+      : employees.value
+);
+
 const getInitial = value => String(value || '?').trim().charAt(0).toUpperCase();
+
+const selectEmployee = item => {
+    if (selectedEmployeeDetails.value) return;
+    selectedEmployee.value = item.id;
+};
 
 const loading = ref(false);
 
@@ -296,8 +337,38 @@ const loadEmployees = async () => {
                     props.locationId
                   );
 
-      employees.value =
-                  response.data ?? [];
+      employees.value = (response.data ?? []).filter(item => {
+        const rawRole =
+          item.roleName ??
+          item.role ??
+          item.roles ??
+          '';
+
+        const values = Array.isArray(rawRole)
+          ? rawRole
+          : String(rawRole)
+              .split(',')
+              .map(value => value.trim())
+              .filter(Boolean);
+
+        return values.some(
+          value =>
+            String(value)
+              .trim()
+              .toLowerCase() === 'employee'
+        );
+      });
+
+      if (
+        selectedEmployee.value != null &&
+        !employees.value.some(
+          item =>
+            String(item.id) ===
+            String(selectedEmployee.value)
+        )
+      ) {
+        selectedEmployee.value = null;
+      }
     } catch (error) {
       ElMessage.error(
         error.response?.data?.message ||
@@ -334,6 +405,27 @@ const loadEntries = async () => {
       loading.value = false;
     }
 };
+
+const employeeEntryCounts = computed(() => {
+    const counts = new Map();
+
+    for (const item of entries.value) {
+      const key = String(item.employeeId ?? '');
+      if (!key) continue;
+
+      counts.set(
+        key,
+        (counts.get(key) || 0) + 1
+      );
+    }
+
+    return counts;
+});
+
+const employeeEntryCount = employeeId =>
+    employeeEntryCounts.value.get(
+      String(employeeId)
+    ) || 0;
 
 const filteredEntries = computed(() => {
     let data = entries.value;
@@ -424,6 +516,7 @@ watch(
     async value => {
       if (!value) return;
 
+      selectedEmployee.value = null;
       await loadEmployees();
       await loadEntries();
     },

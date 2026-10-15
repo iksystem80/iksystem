@@ -145,6 +145,117 @@
             </div>
           </el-card>
         </div>
+
+        <el-card shadow="never" class="panel space-top">
+          <template #header>
+            <div class="cash-header-actions">
+              <div>
+                <strong>Current Employee Money Trail</strong>
+                <div class="hint">Employee cash flow not yet included in a Reading Session.</div>
+              </div>
+            </div>
+          </template>
+
+          <div v-loading="moneyTrailLoading">
+            <el-empty v-if="!moneyTrailLoading && !currentMoneyTrail.length"
+                      description="No current employee sessions awaiting Reading Session coverage"
+                      :image-size="70" />
+
+            <div v-else class="weekly-report-table-wrap">
+              <el-table :data="currentMoneyTrail"
+                        size="small"
+                        style="width:100%">
+                <el-table-column label="Employee / Session" min-width="230">
+                  <template #default="{ row }">
+                    <div class="money-trail-employee-wrap">
+                      <span class="money-trail-status-bar"
+                            :class="row.status === 'ACTIVE' ? 'is-active' : 'is-closed'"
+                            :title="row.status === 'ACTIVE' ? 'Active' : 'Closed'"></span>
+
+                      <div class="money-trail-employee">
+                        <div class="money-trail-employee-line">
+                          <strong>{{ row.employeeName }}</strong>
+                          <span>Session #{{ row.id }}</span>
+                        </div>
+
+                        <span class="money-trail-date">
+                          {{ moneyTrailDate(row.clockIn) }}
+                          · {{ moneyTrailTime(row.clockIn) }}
+                          <template v-if="row.clockOut"> - {{ moneyTrailTime(row.clockOut) }}</template>
+                        </span>
+                      </div>
+                    </div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Opening Bank" width="130" align="right">
+                  <template #default="{ row }">
+                    {{ money(row.opening) }}
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Credits" width="120" align="right">
+                  <template #default="{ row }">
+                    <strong class="credit">+{{ money(row.received) }}</strong>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Expense" width="120" align="right">
+                  <template #default="{ row }">
+                    <strong class="debit">-{{ money(row.expenses) }}</strong>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Calculated" width="130" align="right">
+                  <template #default="{ row }">
+                    <strong>{{ money(row.calculatedBalance) }}</strong>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Actual" width="120" align="right">
+                  <template #default="{ row }">
+                    <strong>{{ row.actualCash == null ? '—' : money(row.actualCash) }}</strong>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Short / Over" width="125" align="right">
+                  <template #default="{ row }">
+                    <strong v-if="row.variance != null"
+                            :class="Number(row.variance) < 0 ? 'debit' : Number(row.variance) > 0 ? 'credit' : ''">
+                      {{ signedMoney(row.variance) }}
+                    </strong>
+                    <span v-else>—</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="Cash Destination" min-width="180">
+                  <template #default="{ row }">
+                    <el-tag v-if="row.destinationType === 'EMPLOYEE_PENDING'"
+                            type="warning"
+                            effect="plain"
+                            round>
+                      {{ row.destination }}
+                    </el-tag>
+                    <el-tag v-else-if="row.destinationType === 'EMPLOYEE_ACCEPTED'"
+                            type="success"
+                            effect="plain"
+                            round>
+                      {{ row.destination }}
+                    </el-tag>
+                    <el-tag v-else-if="row.destinationType === 'ADMIN_CUSTODY'"
+                            type="primary"
+                            effect="plain"
+                            round>
+                      {{ row.destination }}
+                    </el-tag>
+                    <span v-else>{{ row.destination }}</span>
+                  </template>
+                </el-table-column>
+
+              </el-table>
+            </div>
+          </div>
+        </el-card>
       </el-tab-pane>
 
       <el-tab-pane label="Session Funding" name="funding">
@@ -315,6 +426,8 @@ const transactionCreditTypes = ref([]);
 const transactionExpenseTypes = ref([]);
 const transactionTypesLoading = ref(false);
 const adminLedger = ref([]);
+const currentMoneyTrail = ref([]);
+const moneyTrailLoading = ref(false);
 const adminFunding = ref({ touserid: null, fundingtype: 'BUSINESS_SUPPORT', amount: '', notes: '' });
 const editFundingOpen = ref(false);
 const editFunding = ref({ id: null, touserid: null, fundingtype: 'INITIAL_OPENING', amount: '', notes: '' });
@@ -322,7 +435,28 @@ const newExpenseType = ref('');
 const adminTab = ref('overview');
 const activeTypes = computed(() => expenseTypes.value.filter(x => x.isActive));
 const money = value => Number(value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-const dateTime = value => value ? new Date(value).toLocaleString() : '—'; const errorText = e => e?.response?.data?.message || e?.message || 'Request failed.';
+const dateTime = value => value ? new Date(value).toLocaleString() : '—';
+const moneyTrailDate = value => {
+      if (!value) return '—';
+      return new Date(value).toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+      });
+};
+const moneyTrailTime = value => {
+      if (!value) return '—';
+      return new Date(value).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+};
+const signedMoney = value => {
+      const amount = Number(value || 0);
+      if (amount === 0) return money(0);
+      return `${amount > 0 ? '+' : '−'}${money(Math.abs(amount))}`;
+};
+const errorText = e => e?.response?.data?.message || e?.message || 'Request failed.';
 const validAmount = (v, allowZero = false) => /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(v).trim()) && (Number(v) > 0 || (allowZero && Number(v) === 0));
 
 const adminCreditTransactions = computed(() =>
@@ -394,6 +528,30 @@ async function loadAdminLedger() {
       } catch (e) {
         adminLedger.value = [];
         ElMessage.error(errorText(e));
+      }
+}
+
+async function loadCurrentMoneyTrail() {
+      if (!isAdmin.value || !locationId.value) {
+        currentMoneyTrail.value = [];
+        return;
+      }
+
+      try {
+        moneyTrailLoading.value = true;
+
+        const response = await request({
+          url: '/employeefinance/admin/current-money-trail',
+          method: 'get',
+          params: { locationid: locationId.value }
+        });
+
+        currentMoneyTrail.value = response?.data || [];
+      } catch (e) {
+        currentMoneyTrail.value = [];
+        ElMessage.error(errorText(e));
+      } finally {
+        moneyTrailLoading.value = false;
       }
 }
 
@@ -493,7 +651,7 @@ async function saveAdminCashTransaction() {
           notes: ''
         };
 
-        await Promise.all([loadCustody(), loadAdminLedger()]);
+        await Promise.all([loadCustody(), loadAdminLedger(), loadCurrentMoneyTrail()]);
       } catch (e) {
         ElMessage.error(errorText(e));
       } finally {
@@ -502,7 +660,7 @@ async function saveAdminCashTransaction() {
 }
 
 async function refreshBalances() {
-      await Promise.all([loadAdminOverview(), loadCustody(), loadAdminLedger()]);
+      await Promise.all([loadAdminOverview(), loadCustody(), loadAdminLedger(), loadCurrentMoneyTrail()]);
 }
 
 let realtimeRefreshRunning = false;
@@ -674,7 +832,63 @@ watch(adminTransactionMode, mode => {
 watch(adminTab, value => {
       if (!['overview', 'funding', 'expenses'].includes(value)) adminTab.value = 'overview';
 });
-watch(locationId, () => { ++custodyRequestId; custodyLoaded.value = false; custodyLoading.value = false; custodyError.value = ''; custodyAccounts.value = []; custodyViewerId.value = null; adminLedger.value = []; load(); });
+watch(locationId, () => { ++custodyRequestId; custodyLoaded.value = false; custodyLoading.value = false; custodyError.value = ''; custodyAccounts.value = []; custodyViewerId.value = null; adminLedger.value = []; currentMoneyTrail.value = []; load(); });
 onMounted(load);
 </script>
 
+
+
+<style scoped>
+.money-trail-employee-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.money-trail-employee {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1.35;
+}
+
+.money-trail-employee-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.money-trail-employee-line > strong {
+  font-weight: 600;
+}
+
+.money-trail-employee-line > span,
+.money-trail-employee > span {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.money-trail-date {
+  margin-top: 1px;
+}
+
+.money-trail-status-bar {
+  display: inline-block;
+  flex: 0 0 3px;
+  width: 3px;
+  align-self: stretch;
+  min-height: 38px;
+  border-radius: 3px;
+  background: var(--el-border-color);
+}
+
+.money-trail-status-bar.is-active {
+  background: var(--el-color-success);
+}
+
+.money-trail-status-bar.is-closed {
+  background: var(--el-border-color-darker);
+}
+</style>

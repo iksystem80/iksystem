@@ -85,7 +85,7 @@
 
           <!-- PENDING -->
           <span v-else>
-            <el-button v-if="userStore.isClockedIn"
+            <el-button  v-if="userStore.isClockedIn && Number(userStore.employeeBalance || 0) > 0"
                        type="warning"
                        round
                        :icon="WarningFilled"

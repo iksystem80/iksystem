@@ -14,6 +14,7 @@ import { useTagsViewStore } from './tagsview';
 import { usePermissionStore } from './permission';
 import { initializeSocketListeners, cleanupSocket } from '@/services/socketlisteners';
 import { getClockStatus } from '@/api/employeesession';
+import { getEmployeeFinance } from '@/api/employeefinance';
 
 interface LoginInfo {
   username: string
@@ -24,6 +25,7 @@ export const useUserStore = defineStore('user', () => {
   const token = ref<string>(getToken());
   const userId = ref<string>(getUserId());
 
+  const username = ref('');
   const name = ref('');
   const avatar = ref('');
 
@@ -75,8 +77,72 @@ export const useUserStore = defineStore('user', () => {
   const isClockedIn = computed(() => isClocked.value);
   const activeClockSession = ref(null);
 
+  // Employee menu access is based on the current active-session bank balance.
+  const employeeBalance = ref(0);
+  const employeeBalanceLoaded = ref(false);
+  const employeeBalanceLoading = ref(false);
+
   function setClockedIn(value) {
     isClocked.value = Boolean(value);
+
+    if (!isClocked.value) {
+      employeeBalance.value = 0;
+      employeeBalanceLoaded.value = true;
+    }
+  }
+
+  function setEmployeeBalance(value: unknown) {
+    const nextBalance = Number(value || 0);
+
+    employeeBalance.value =
+      Number.isFinite(nextBalance)
+        ? nextBalance
+        : 0;
+
+    employeeBalanceLoaded.value = true;
+  }
+
+  async function loadEmployeeBalance() {
+    if (!isEmployee.value) {
+      employeeBalance.value = 0;
+      employeeBalanceLoaded.value = true;
+      return;
+    }
+
+    if (
+      !isClockedIn.value ||
+      !locationId.value
+    ) {
+      employeeBalance.value = 0;
+      employeeBalanceLoaded.value = true;
+      return;
+    }
+
+    try {
+      employeeBalanceLoading.value = true;
+      employeeBalanceLoaded.value = false;
+
+      const response =
+        await getEmployeeFinance(
+          locationId.value
+        );
+
+      setEmployeeBalance(
+        response?.data?.summary?.balance
+      );
+    } catch (error) {
+      console.error(
+        'Unable to load employee balance:',
+        error
+      );
+
+      // Fail closed: until finance can be verified,
+      // the sidebar will expose Transaction only.
+      employeeBalance.value = 0;
+      employeeBalanceLoaded.value = true;
+    } finally {
+      employeeBalanceLoading.value = false;
+    }
   }
 
   function isSystemAdminPermission(permission: string): boolean {
@@ -193,6 +259,7 @@ export const useUserStore = defineStore('user', () => {
 
     permissions.value = Array.isArray(data.permissions) ? data.permissions : [];
 
+    username.value = data.username || '';
     name.value = data.name || '';
     avatar.value = data.avatar || '';
 
@@ -249,6 +316,9 @@ export const useUserStore = defineStore('user', () => {
     locationId.value = String(locid || '');
     location.value = locationname || '';
     infoLoaded.value = false;
+
+    employeeBalance.value = 0;
+    employeeBalanceLoaded.value = false;
 
     cleanupSocket();
 
@@ -372,6 +442,7 @@ export const useUserStore = defineStore('user', () => {
     token.value = '';
     userId.value = '';
 
+    username.value = '';
     name.value = '';
     avatar.value = '';
 
@@ -390,6 +461,10 @@ export const useUserStore = defineStore('user', () => {
 
     isClocked.value = false;
     activeClockSession.value = null;
+
+    employeeBalance.value = 0;
+    employeeBalanceLoaded.value = false;
+    employeeBalanceLoading.value = false;
 
     infoLoaded.value = false;
   }
@@ -447,8 +522,18 @@ export const useUserStore = defineStore('user', () => {
           userId.value
         );
 
-      isClocked.value =Boolean(response?.data?.clockedIn);
+      isClocked.value = Boolean(response?.data?.clockedIn);
       activeClockSession.value = response?.data?.session || null;
+
+      if (
+        isEmployee.value &&
+        isClocked.value
+      ) {
+        await loadEmployeeBalance();
+      } else {
+        employeeBalance.value = 0;
+        employeeBalanceLoaded.value = true;
+      }
     } catch (error) {
       console.error(
         'Unable to load clock status:',
@@ -457,6 +542,9 @@ export const useUserStore = defineStore('user', () => {
 
       isClocked.value = false;
       activeClockSession.value = null;
+
+      employeeBalance.value = 0;
+      employeeBalanceLoaded.value = true;
     }
   }
 
@@ -464,6 +552,7 @@ export const useUserStore = defineStore('user', () => {
     token,
     userId,
 
+    username,
     name,
     avatar,
 
@@ -506,7 +595,13 @@ export const useUserStore = defineStore('user', () => {
     isClocked,
     activeClockSession,
     setClockedIn,
-    loadClockStatus
+    loadClockStatus,
+
+    employeeBalance,
+    employeeBalanceLoaded,
+    employeeBalanceLoading,
+    setEmployeeBalance,
+    loadEmployeeBalance
   };
 });
 

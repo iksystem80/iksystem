@@ -23,10 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import router, { resetRouter } from '@/router';
 
 import Logo from './logo.vue';
 import SidebarItem from './sidebaritem.vue';
@@ -57,22 +56,65 @@ const variables = {
 };
 
 // ============================================================
+// EMPLOYEE ACCESS STATE
+// ============================================================
+
+async function refreshEmployeeAccess() {
+  if (!userStore.isEmployee) {
+    return;
+  }
+
+  await userStore.loadClockStatus();
+}
+
+onMounted(() => {
+  void refreshEmployeeAccess();
+});
+
+watch(
+  () => userStore.locationId,
+  () => {
+    if (userStore.isEmployee) {
+      void refreshEmployeeAccess();
+    }
+  }
+);
+
+// ============================================================
 // SIDEBAR ROUTES
 // ============================================================
 
 const sidebarRoutes = computed(() => {
-  userStore.loadClockStatus()
-
-  //console.log('employee Clock in? ' + userStore.isClockedIn)
   // Clocked-out employees cannot access the normal application menu.
+  if (
+    userStore.isEmployee &&
+    !userStore.isClockedIn
+  ) {
+    return [];
+  }
 
-   if (userStore.isEmployee && !userStore.isClockedIn) {
-      return [];
-    }
+  // A clocked-in employee with no current bank balance can use only
+  // Transaction so they can receive/enter an Opening Bank or Add Bank.
+  //
+  // While the balance is still loading we also expose Transaction only.
+  // This prevents the rest of the menu briefly appearing before finance
+  // has been verified.
+  if (
+    userStore.isEmployee &&
+    (
+      !userStore.employeeBalanceLoaded ||
+      Number(userStore.employeeBalance || 0) <= 0
+    )
+  ) {
+    return permissionRoutes.value.filter(
+      route => route.path === '/transaction'
+    );
+  }
 
   // System Admin only sees the System section.
   if (userStore.isSystemAdmin) {
-    return permissionRoutes.value.filter(route => route.path === '/system'
+    return permissionRoutes.value.filter(
+      route => route.path === '/system'
     );
   }
 

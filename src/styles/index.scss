@@ -15515,3 +15515,239 @@ html[data-theme='dark'] .assign-machine-page {
     }
 }
 
+/* ============================================================
+   POINT WATCHING - EMPLOYEE PICKER / SELECTED EMPLOYEE MOTION
+   ============================================================ */
+
+.pointwatch-employee-banner {
+    overflow: hidden;
+}
+
+.pointwatch-employee-banner .el-card__body {
+    padding-top: 18px;
+    padding-bottom: 18px;
+}
+
+.pointwatch-banner-shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    width: 100%;
+}
+
+.pointwatch-employee-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 56px;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+.pointwatch-employee-stage::-webkit-scrollbar {
+    display: none;
+}
+
+.pointwatch-employee-choice {
+    appearance: none;
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 52px;
+    height: 56px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--employee-banner-text-primary);
+    cursor: pointer;
+    font: inherit;
+    transition:
+        transform .32s cubic-bezier(.2,.8,.2,1),
+        opacity .22s ease;
+}
+
+.pointwatch-employee-choice.is-selected {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+    min-width: 0;
+    width: auto;
+    cursor: default;
+}
+
+.pointwatch-employee-choice .el-avatar {
+    flex-shrink: 0;
+    background-color: var(--el-color-primary) !important;
+    color: var(--el-color-white) !important;
+    border: 2px solid rgba(255, 255, 255, .18);
+    transition:
+        width .32s cubic-bezier(.2,.8,.2,1),
+        height .32s cubic-bezier(.2,.8,.2,1),
+        transform .22s ease,
+        border-color .22s ease;
+}
+
+.pointwatch-employee-choice:not(.is-selected):hover .el-avatar {
+    transform: scale(1.04);
+    border-color: rgba(255, 255, 255, .48);
+}
+
+.pointwatch-employee-name {
+    display: block;
+    max-width: 70px;
+    overflow: hidden;
+    color: var(--employee-banner-text-secondary);
+    font-size: 10px;
+    line-height: 1.1;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pointwatch-selected-text {
+    min-width: 0;
+    text-align: left;
+}
+
+.pointwatch-selected-text h2 {
+    margin: 0;
+    color: var(--employee-banner-text-primary);
+    font-size: 18px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.pointwatch-employee-badge .el-badge__content {
+    min-width: 18px;
+    height: 18px;
+    line-height: 14px;
+    padding: 0 4px;
+    border: 1px solid var(--employee-banner-gradient-start);
+    background: var(--el-color-success);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .24);
+}
+
+/* Badge overlaps the top-right avatar border. */
+.pointwatch-employee-badge .el-badge__content.is-fixed {
+    top: 0px;
+    right: 0px;
+    transform: translateY(0) translateX(30%);
+}
+
+.pointwatch-view-all {
+    flex: 0 0 auto;
+    margin-left: 14px;
+    color: var(--employee-banner-text-secondary) !important;
+    font-size: 12px;
+}
+
+.pointwatch-view-all:hover {
+    color: var(--employee-banner-text-primary) !important;
+}
+
+/*
+  Vue TransitionGroup FLIP:
+  when employee #2/#3/etc. is selected, the other employees fade out
+  and the selected employee physically slides into the left profile position.
+*/
+.employee-shift-move {
+    transition: transform .38s cubic-bezier(.2,.8,.2,1);
+}
+
+.employee-shift-enter-active,
+.employee-shift-leave-active {
+    transition:
+        opacity .22s ease,
+        transform .28s cubic-bezier(.2,.8,.2,1);
+}
+
+.employee-shift-enter-from,
+.employee-shift-leave-to {
+    opacity: 0;
+    transform: scale(.82);
+}
+
+.employee-shift-leave-active {
+    position: absolute;
+}
+
+@media (max-width: 767px) {
+    .pointwatch-employee-stage {
+        gap: 13px;
+    }
+
+    .pointwatch-employee-choice {
+        min-width: 46px;
+    }
+
+    .pointwatch-employee-choice.is-selected {
+        gap: 12px;
+    }
+
+    .pointwatch-employee-name {
+        max-width: 58px;
+        font-size: 9px;
+    }
+
+    .pointwatch-selected-text h2 {
+        font-size: 17px;
+    }
+
+    .pointwatch-view-all {
+        margin-left: 8px;
+        flex-shrink: 0;
+    }
+}
+
+/* Points By Employee - two compact rows inside the existing banner height */
+.points-employee-banner-actions {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    flex: 0 0 auto;
+    height: 56px;
+    gap: 2px;
+    margin-left: auto;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.points-employee-banner-actions .el-tag {
+    flex: 0 0 auto;
+    height: 28px;
+    line-height: 26px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.points-employee-banner-actions .pointwatch-view-all {
+    flex: 0 0 auto;
+    height: 18px;
+    min-height: 18px;
+    margin-left: 0;
+    padding: 0;
+    line-height: 18px;
+    font-size: 11px;
+}
+
+@media (max-width: 767px) {
+    .points-employee-banner-actions {
+        height: 56px;
+        gap: 1px;
+        margin-left: 8px;
+    }
+}
+
