@@ -45,6 +45,10 @@
                          :src="item.avatar">
                 {{ getInitial(item.name) }}
               </el-avatar>
+              <span v-if="employeeIsClockedIn(item.id)"
+                    class="pointwatch-online-dot"
+                    title="Clocked in"
+                    aria-label="Clocked in"></span>
             </el-badge>
 
             <div v-if="selectedEmployeeDetails"
@@ -70,21 +74,6 @@
                      @click="clearEmployee">
             view all
           </el-button>
-          <el-tag v-if="report.summary.activeSessions > 0"
-                  type="success"
-                  effect="dark"
-                  size="large"
-                  round
-                  class="employee-tag">
-            <el-icon><VideoPlay /></el-icon>
-            <span>Working</span>
-          </el-tag>
-          <el-tag v-else-if="report.employee"
-                  type="info"
-                  size="large"
-                  round>
-            Clocked Out
-          </el-tag>
         </div>
 
         <div v-if="!selectedEmployeeDetails && !employees.length"
@@ -152,7 +141,7 @@
               <div class="summary-stat-layout">
                 <div class="summary-stat-icon"><el-icon><Timer /></el-icon></div>
                 <div class="summary-stat-content">
-                  <el-statistic title="Working Hours" :value="Number(report.summary.totalWorkingHours || 0).toFixed(2)" />
+                  <el-statistic title="Working Hours" :value="Number(report.summary.totalWorkingHours || 0)" :precision="2" />
 
                 </div>
               </div>
@@ -173,20 +162,21 @@
         <!-- =================================================== -->
         <!-- SESSIONS -->
         <!-- =================================================== -->
-        <div class="section-heading">
-          <div>
-            <strong>
-              Employee Sessions
-            </strong>
-            <div class="small-text">
-              Click a session to view customers and points assigned during that session.
+        <el-card shadow="never" class="table-card session-list-card app-table-card">
+          <template #header>
+            <div class="app-table-card-header">
+              <el-icon><Tickets /></el-icon>
+              <div class="app-table-card-title">
+                <strong>Employee Sessions</strong>
+                <div class="small-text">
+                  Click a session to view customers and points assigned during that session.
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </template>
 
-        <el-card shadow="never" class="table-card session-list-card">
           <el-empty v-if="report.sessions.length === 0"
-                    description="No employee sessions found." class="small-empty" />
+                    description="No employee sessions found." class="small-empty app-table-empty" />
 
           <!-- ================================================= -->
           <!-- DESKTOP -->
@@ -194,6 +184,7 @@
 
           <el-table v-else-if="device !== 'mobile'"
                     :data="report.sessions"
+                    class="app-data-table is-compact"
                     style="width: 100%"
                     @row-click="openSession">
             <el-table-column label="Date"
@@ -295,9 +286,9 @@
             <el-table-column width="70"
                              align="right">
               <template #default>
-                <el-button circle
-                           text
-                           :icon="ArrowRight" />
+                <el-button circletext class="el-button el-button--default is-circle is-text">
+                  <el-icon><ArrowRight /></el-icon>
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -339,8 +330,9 @@
 
                 <el-button circle
                            text
-                           :icon="ArrowRight"
-                           class="session-view-button" />
+                           class="session-view-button">
+                  <el-icon><ArrowRight /></el-icon>
+                </el-button>
               </div>
 
               <div class="session-tags">
@@ -418,12 +410,12 @@
     <!-- ===================================================== -->
 
     <el-drawer v-model="sessionDrawer"
-               :size="device === 'mobile' ? '100%' : '72%'"
+               :size="device === 'mobile' ? '100%' : 'min(100%, max(50%, 720px))'"
                destroy-on-close>
       <template #header>
         <div v-if="selectedSession">
           <strong>
-            Session Details
+            Point Entries
           </strong>
 
           <div class="small-text">
@@ -440,7 +432,7 @@
         </div>
       </template>
 
-      <el-descriptions v-if="selectedSession"
+      <!--<el-descriptions v-if="selectedSession"
                        :column="4"
                        border
                        class="session-summary">
@@ -479,7 +471,7 @@
             }}
           </el-tag>
         </el-descriptions-item>
-      </el-descriptions>
+      </el-descriptions>-->
 
       <el-skeleton v-if="sessionLoading"
                    :rows="8"
@@ -494,8 +486,10 @@
                 :key="item.id"
                 :xs="24"
                 :sm="12"
+                :md="8"
                 :lg="8"
-                class="entry-column">
+                :xl="8"
+                class="section-column">
           <el-card shadow="hover" class="toolbar-card">
             <!-- CUSTOMER -->
             <div class="section-heading">
@@ -584,16 +578,6 @@ import {
 } from 'vue';
 
 import {
-      ArrowRight,
-      VideoPlay,
-      Calendar,
-      Tickets,
-      Coin,
-      Document,
-      Timer
-} from '@element-plus/icons-vue';
-
-import {
       ElMessage
 } from 'element-plus';
 
@@ -637,6 +621,7 @@ const selectedEmployee = ref(null);
 const days = ref(14);
 const loading = ref(false);
 const employeeEntryCounts = ref({});
+const employeeActiveSessions = ref({});
 
 const report = ref({
       employee: null,
@@ -702,12 +687,16 @@ const clearEmployee = () => {
 const employeeEntryCount = employeeId =>
       employeeEntryCounts.value[String(employeeId)] || 0;
 
+const employeeIsClockedIn = employeeId =>
+      (employeeActiveSessions.value[String(employeeId)] || 0) > 0;
+
 const loadEmployeeEntryCounts = async () => {
       if (
         !props.locationId ||
         !employees.value.length
       ) {
         employeeEntryCounts.value = {};
+        employeeActiveSessions.value = {};
         return;
       }
 
@@ -722,6 +711,7 @@ const loadEmployeeEntryCounts = async () => {
       );
 
       const counts = {};
+      const activeSessions = {};
 
       results.forEach((result, index) => {
         const employeeId =
@@ -737,9 +727,15 @@ const loadEmployeeEntryCounts = async () => {
                 result.value?.data?.summary?.totalEntries || 0
               )
             : 0;
+
+        activeSessions[String(employeeId)] =
+          result.status === 'fulfilled'
+            ? Number(result.value?.data?.summary?.activeSessions || 0)
+            : 0;
       });
 
       employeeEntryCounts.value = counts;
+      employeeActiveSessions.value = activeSessions;
 };
 
 // ============================================================
@@ -845,18 +841,14 @@ const openSession = async row => {
       try {
         sessionLoading.value = true;
 
-        const response =
-                    await getPointSessionEntries(
-                      row.id
-                    );
+        const response = await getPointSessionEntries(row.id);
 
-        sessionEntries.value =
-                    response.data ?? [];
+        console.log('here')
+        console.log(response.data)
+
+        sessionEntries.value = response.data ?? [];
       } catch (error) {
-        ElMessage.error(
-          error.response?.data?.message ||
-                    'Unable to load session details.'
-        );
+        ElMessage.error(error.response?.data?.message ||'Unable to load session details.');
       } finally {
         sessionLoading.value = false;
       }

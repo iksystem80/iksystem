@@ -12,9 +12,9 @@
 
           <el-button size="small"
                      type="primary"
-                     :icon="IconDelete"
                      @click="clearAll">
-            Clear All
+            <el-icon><IconDelete /></el-icon>
+            <span>Clear All</span>
           </el-button>
         </div>
       </template>
@@ -73,7 +73,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Delete as IconDelete } from '@element-plus/icons-vue';
+
 import { storeToRefs } from 'pinia';
 import { useErrorLogStore } from '@/store/modules/errorlog';
 const errorLogStore = useErrorLogStore();

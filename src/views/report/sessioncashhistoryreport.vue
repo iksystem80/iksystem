@@ -54,7 +54,7 @@
 
       <div v-else class="mobile-list">
         <el-card v-for="row in rows" :key="row.id" shadow="never" class="mobile-card">
-          <div class="mobile-head"><div><strong>Session #{{ row.id }}</strong><span>{{ row.employeeName }}</span></div><span :class="varianceClass(row.variance)">{{ row.variance == null ? 'Open' : signedMoney(row.variance) }}</span></div>
+          <div class="mobile-head"><div><strong>Session #{{ row.sessionNumber ?? row.id }}</strong><span>{{ row.employeeName }}</span></div><span :class="varianceClass(row.variance)">{{ row.variance == null ? 'Open' : signedMoney(row.variance) }}</span></div>
           <div class="mobile-date">{{ dateTime(row.clockIn) }}</div>
           <div class="mobile-grid">
             <div><span>Opening</span><strong>{{ money(row.opening) }}</strong></div>
@@ -74,7 +74,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, Refresh } from '@element-plus/icons-vue';
+
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';

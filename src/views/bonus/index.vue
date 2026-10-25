@@ -230,32 +230,32 @@
           </el-col>
 
           <el-col :xs="24" :md="14">
-            <el-card shadow="never" class="detail-card camera-card">
-              <template #header>
-                <div>
-                  <strong>Bonus Photo</strong>
-                  <div class="small-text">
-                    Capture the machine screen showing the selected bonus payout.
+              <el-card shadow="never" class="detail-card camera-card">
+                <template #header>
+                  <div>
+                    <strong>Bonus Photo</strong>
+                    <div class="small-text">Capture the machine screen showing the selected bonus payout.</div>
                   </div>
+                </template>
+
+                <div class="camera-capture-summary">
+                  <div v-if="photoPreview" class="camera-capture-preview">
+                    <img :src="photoPreview" alt="Bonus machine screen">
+                    <div class="camera-capture-preview-info">
+                      <strong>Photo captured</strong>
+                      <span>Ready to save</span>
+                    </div>
+                    <el-button @click="retakePhoto">Retake Photo</el-button>
+                  </div>
+
+                  <el-button v-else
+                             type="primary"
+                             class="camera-capture-button"
+                             @click="openPhotoDialog">
+                    Take Photo
+                  </el-button>
                 </div>
-              </template>
-
-              <div v-if="photoPreview" class="photo-preview">
-                <img :src="photoPreview" alt="Bonus machine screen">
-                <el-button @click="retakePhoto">
-                  Retake Photo
-                </el-button>
-              </div>
-
-              <div v-else class="camera-frame">
-                <CameraApp ref="cameraRef"
-                           shape="custom"
-                           width="100%"
-                           height="375px"
-                           border-radius="0 0 2% 2%"
-                           @captured="handleCapturedImage" />
-              </div>
-            </el-card>
+              </el-card>
           </el-col>
         </el-row>
       </div>
@@ -286,11 +286,35 @@
         </div>
       </div>
     </Transition>
+
+    <el-dialog v-model="photoDialogOpen"
+               title="Take Bonus Photo"
+               width="420px"
+               class="extra-match-dialog camera-capture-dialog"
+               destroy-on-close
+               @closed="closePhotoDialog">
+      <div class="extra-match-camera-section">
+        <div class="extra-match-photo-box">
+          <CameraApp v-if="photoDialogOpen"
+                     ref="cameraRef"
+                     shape="custom"
+                     width="100%"
+                     height="100%"
+                     border-radius="12px"
+                     @captured="handleCapturedImage" />
+        </div>
+      </div>
+
+      <div class="extra-match-dialog-actions">
+        <el-button @click="photoDialogOpen = false">Cancel</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import {
         computed,
         nextTick,
@@ -332,6 +356,7 @@ const currentTime = ref('');
 
 const bonusPageRef = ref(null);
 const cameraRef = ref(null);
+const photoDialogOpen = ref(false);
 
 const step = ref(1);
 
@@ -360,6 +385,42 @@ const photoPreview = ref('');
 const machineLoading = ref(false);
 const nfcScanning = ref(false);
 const saving = ref(false);
+
+// Retain a key when a save fails or times out, so retrying the SAME award
+// cannot record a second payout. A changed award/photo gets a new key.
+let pendingBonusSubmission = null;
+
+function createBonusRequestKey() {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return crypto.randomUUID();
+        }
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function bonusSubmissionKey() {
+        const details = [
+          selectedBonus.value.id,
+          selectedPayout.value.id,
+          machine.value.id,
+          customerId.value
+        ].map(String).join(':');
+        const image = photoFile.value;
+
+        if (
+          !pendingBonusSubmission ||
+          pendingBonusSubmission.details !== details ||
+          pendingBonusSubmission.image !== image
+        ) {
+          pendingBonusSubmission = {
+            details,
+            image,
+            key: createBonusRequestKey()
+          };
+        }
+        return pendingBonusSubmission.key;
+}
 
 const actionBarStyle = ref({
         left: '0px',
@@ -738,6 +799,18 @@ async function selectBonus(bonus) {
         scheduleActionBarUpdate();
 }
 
+async function openPhotoDialog() {
+        photoDialogOpen.value = true;
+
+        await nextTick();
+
+        cameraRef.value?.startCamera?.();
+}
+
+function closePhotoDialog() {
+        cameraRef.value?.stopCamera?.();
+}
+
 function handleCapturedImage(image) {
         if (!image) return;
 
@@ -748,14 +821,14 @@ function handleCapturedImage(image) {
         }
 
         photoPreview.value = URL.createObjectURL(image);
+
+
+        photoDialogOpen.value = false;
 }
 
 async function retakePhoto() {
         clearPhoto();
-
-        await nextTick();
-
-        cameraRef.value?.startCamera?.();
+        await openPhotoDialog();
 }
 
 function clearPhoto() {
@@ -808,7 +881,7 @@ async function goBack() {
 }
 
 async function submitBonus() {
-        if (!canSubmit.value) return;
+        if (!canSubmit.value || saving.value) return;
 
         saving.value = true;
 
@@ -826,7 +899,8 @@ async function submitBonus() {
               `bonus-${machine.value.machineNumber}-${Date.now()}.jpg`
           );
 
-          const response = await saveBonusAward(form);
+          const response = await saveBonusAward(form, bonusSubmissionKey());
+          pendingBonusSubmission = null;
 
           ElMessage.success(
             response.message ||
@@ -914,5 +988,6 @@ onBeforeUnmount(async () => {
         );
 
         clearPhoto();
+        closePhotoDialog();
 });
 </script>

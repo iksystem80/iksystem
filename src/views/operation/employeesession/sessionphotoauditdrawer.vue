@@ -3,7 +3,7 @@
     <div class="audit-shell" v-loading="loading">
       <div class="audit-header">
         <div>
-          <span class="audit-kicker">POINTS AUDIT · SESSION #{{ sessionId }}</span>
+          <span class="audit-kicker">POINTS AUDIT · SESSION #{{ sessionDisplayNumber }}</span>
           <strong>{{ selectedIndex >= 0 ? selectedIndex + 1 : 0 }} of {{ entries.length }}</strong>
         </div>
         <div class="audit-header-actions">
@@ -69,7 +69,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import { ArrowLeft, ArrowRight, Check, CircleCheckFilled, Close, CloseBold, Picture } from '@element-plus/icons-vue';
+
 import { getEmployeeSessionPointsReport, updateCustomerMatchReview } from '@/api/employeesession';
 
 const props = defineProps({
@@ -77,6 +77,7 @@ const props = defineProps({
   sessionId: { type: [Number, String], default: null },
   locationId: { type: [Number, String], default: null }
 });
+const sessionDisplayNumber = ref(null);
 const emit = defineEmits(['update:modelValue', 'review-saved']);
 const loading = ref(false);
 const report = ref(null);
@@ -104,6 +105,7 @@ async function loadReport() {
   loading.value = true;
   try {
     const response = await getEmployeeSessionPointsReport(Number(props.sessionId), props.locationId);
+    sessionDisplayNumber.value = response.data?.session?.sessionNumber ?? props.sessionId;
     if (serial !== requestSerial) return;
     report.value = response?.data || null;
     const list = entries.value;

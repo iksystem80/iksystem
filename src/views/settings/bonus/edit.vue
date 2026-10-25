@@ -5,17 +5,18 @@
     <!-- ==================================================== -->
     <div class="page-header">
       <div class="header-left">
-        <el-button circle size="large" :icon="ArrowLeft" class="back-button" @click="router.back()" />
+        <el-button circle class="back-button" @click="router.back()">
+          <el-icon><ArrowLeft /></el-icon>
+        </el-button>
         <div>
-          <h2>
-            {{ isEdit ? 'Edit Bonus' : 'Create Bonus' }}
-          </h2>
-          <span>
+          <h2 class="page-title">{{ isEdit ? 'Edit Bonus' : 'Create Bonus' }}</h2>
+          <p>
             Configure payouts and bonus availability.
-          </span>
+          </p>
         </div>
       </div>
     </div>
+  
     <!-- ==================================================== -->
     <!-- LOADING -->
     <!-- ==================================================== -->
@@ -80,8 +81,9 @@
                     </div>
                   </div>
                 </div>
-                <el-button type="primary" plain size="small" :icon="Plus" @click="addPayout">
-                  Add Payout
+                <el-button type="primary" plain size="small" @click="addPayout">
+                  <el-icon><Plus /></el-icon>
+                  <span>Add Payout</span>
                 </el-button>
               </div>
 
@@ -125,18 +127,18 @@
               <el-button text
                          circle
                          type="danger"
-                         :icon="Delete"
                          class="payout-delete"
-                         @click="removePayout(index)" />
-
+                         @click="removePayout(index)">
+                <el-icon><Delete /></el-icon>
+              </el-button>
             </div>
 
             <el-button type="primary"
                        plain
-                       :icon="Plus"
                        class="full-button"
                        @click="addPayout">
-              Add Payout
+              <el-icon><Plus /></el-icon>
+              <span>Add Payout</span>
             </el-button>
 
           </el-card>
@@ -182,9 +184,9 @@
                 <el-button type="primary"
                            plain
                            size="small"
-                           :icon="Plus"
                            @click="addBlock">
-                  Add Block
+                  <el-icon><Plus /></el-icon>
+                  <span>Add Block</span>
                 </el-button>
 
               </div>
@@ -222,9 +224,8 @@
                 <el-button text
                            circle
                            type="danger"
-                           :icon="Delete"
                            @click="removeBlock(blockIndex)" />
-
+                <el-icon><Delete /></el-icon>
               </div>
 
               <el-divider />
@@ -355,10 +356,10 @@
 
             <el-button type="primary"
                        plain
-                       :icon="Plus"
                        class="full-button"
                        @click="addBlock">
-              Add Time Block
+              <el-icon><Plus /></el-icon>
+              <span>Add Time Block</span>
             </el-button>
 
           </el-card>
@@ -384,10 +385,10 @@
                          type="danger"
                          plain
                          size="large"
-                         :icon="Delete"
                          :loading="deleting"
                          @click="handleDelete">
-                Delete Bonus
+                <el-icon><Delete /></el-icon>
+                <span>Delete Bonus</span>
               </el-button>
 
             </div>
@@ -429,13 +430,6 @@ import {
   onBeforeUnmount
 } from 'vue';
 
-import {
-  ArrowLeft,
-  Plus,
-  Delete,
-  Money,
-  Calendar
-} from '@element-plus/icons-vue';
 
 import {
   ElMessage,

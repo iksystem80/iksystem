@@ -7,7 +7,7 @@
         </el-button>
 
         <div>
-          <h2 class="page-title">Session # {{ session?.id || route.params.sessionId }}</h2>
+          <h2 class="page-title">Session # {{ session?.sessionNumber ?? session?.id ?? route.params.sessionId }}</h2>
           <div class="page-subtitle" v-if="session">
             {{ session.employeeName }}
           </div>
@@ -36,7 +36,7 @@
               </h2>
 
               <div class="employee-period">
-                Session # {{ session.id }}
+                Session # {{ session.sessionNumber ?? session.id }}
               </div>
             </div>
           </div>
@@ -256,7 +256,7 @@
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';

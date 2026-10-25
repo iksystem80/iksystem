@@ -29,6 +29,7 @@
                 <span class="machine-setup-number-badge">
                   {{ row.MachineNumber }}
                 </span>
+
               </template>
             </el-table-column>
             <el-table-column prop="MachineTypeName" label="Machine Type" min-width="150">
@@ -63,21 +64,20 @@
               </template>
             </el-table-column>
 
-            <el-table-column label="Actions"
-                             width="185"
-                             fixed="right">
+            <el-table-column label="Actions" width="126" fixed="right" align="center">
               <template #default="{ row }">
-                <el-button v-if="canManageMachines"
-                           link
-                           type="primary"
-                           @click="openEditMachine(row)">
-                  Edit
-                </el-button>
-
-                <el-button link
-                           @click="openHistory(row)">
-                  History
-                </el-button>
+                <div class="machine-action-buttons">
+                  <el-tooltip v-if="canManageMachines" content="Edit machine" placement="top">
+                    <el-button link class="action-icon-btn" type="primary" @click="openEditMachine(row)">
+                      <el-icon><Edit /></el-icon>
+                    </el-button>
+                  </el-tooltip>
+                  <el-tooltip content="Machine activity history" placement="top">
+                    <el-button link class="action-icon-btn" @click="openHistory(row)">
+                      <el-icon><Clock /></el-icon>
+                    </el-button>
+                  </el-tooltip>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -113,19 +113,20 @@
 
             <el-table-column v-if="canManageTypes"
                              label="Actions"
-                             width="160">
+                             width="110" align="center">
               <template #default="{ row }">
-                <el-button link
-                           type="primary"
-                           @click="openTypeDialog(row)">
-                  Edit
-                </el-button>
-
-                <el-button link
-                           type="danger"
-                           @click="removeType(row)">
-                  Delete
-                </el-button>
+                <div class="machine-action-buttons align-right">
+                  <el-tooltip content="Edit machine type" placement="top">
+                    <el-button link class="action-icon-btn" type="primary" @click="openTypeDialog(row)">
+                      <LcPencil :size="18" />
+                    </el-button>
+                  </el-tooltip>
+                  <el-tooltip content="Delete machine type" placement="top">
+                    <el-button link class="action-icon-btn" type="danger" @click="removeType(row)">
+                      <LcTrash :size="18" />
+                    </el-button>
+                  </el-tooltip>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -164,19 +165,20 @@
 
             <el-table-column v-if="canManageGames"
                              label="Actions"
-                             width="160">
+                             width="110" align="center">
               <template #default="{ row }">
-                <el-button link
-                           type="primary"
-                           @click="openGameDialog(row)">
-                  Edit
-                </el-button>
-
-                <el-button link
-                           type="danger"
-                           @click="removeGame(row)">
-                  Delete
-                </el-button>
+                <div class="machine-action-buttons align-right">
+                  <el-tooltip content="Edit game" placement="top">
+                    <el-button link class="action-icon-btn" type="primary" @click="openGameDialog(row)">
+                      <LcPencil :size="18" />
+                    </el-button>
+                  </el-tooltip>
+                  <el-tooltip content="Delete game" placement="top">
+                    <el-button link class="action-icon-btn" type="danger" @click="removeGame(row)">
+                      <LcTrash :size="18" />
+                    </el-button>
+                  </el-tooltip>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -186,7 +188,7 @@
       <!-- ================================================== -->
       <!-- INITIAL MACHINE READING -->
       <!-- ================================================== -->
-      <el-tab-pane label="Initial Machine Reading" name="initial-readings">
+      <el-tab-pane label="Machine Reading" name="initial-readings">
         <div class="toolbar">
           <el-input v-model="initialReadingSearch"
                     placeholder="Search machine..."
@@ -203,7 +205,7 @@
                   :closable="false"
                   show-icon
                   style="margin-bottom: 16px">
-          These are setup readings only. Saving them does not create a normal Reading Session or any financial transaction.
+          Fields show the latest reading. Use Replace when changing a board or machine: previous records and reports are preserved under the archived Machine ID.
         </el-alert>
 
         <el-card shadow="never" class="table-card machine-setup-table-card">
@@ -217,6 +219,7 @@
                 <span class="machine-setup-number-badge">
                   {{ row.MachineNumber }}
                 </span>
+
               </template>
             </el-table-column>
 
@@ -225,7 +228,7 @@
                 <el-input-number v-model="row.PreviousIn"
                                  :min="0"
                                  :controls="false"
-                                 :disabled="isInactiveMachine(row)"
+                                 :disabled="isInactiveMachine(row) || row.IsSessionReading"
                                  style="width: 100%" />
               </template>
             </el-table-column>
@@ -235,7 +238,7 @@
                 <el-input-number v-model="row.PreviousOut"
                                  :min="0"
                                  :controls="false"
-                                 :disabled="isInactiveMachine(row)"
+                                 :disabled="isInactiveMachine(row) || row.IsSessionReading"
                                  style="width: 100%" />
               </template>
             </el-table-column>
@@ -245,7 +248,7 @@
                 <el-input-number v-model="row.CurrentIn"
                                  :min="0"
                                  :controls="false"
-                                 :disabled="isInactiveMachine(row)"
+                                 :disabled="isInactiveMachine(row) || row.IsSessionReading"
                                  style="width: 100%" />
               </template>
             </el-table-column>
@@ -255,7 +258,7 @@
                 <el-input-number v-model="row.CurrentOut"
                                  :min="0"
                                  :controls="false"
-                                 :disabled="isInactiveMachine(row)"
+                                 :disabled="isInactiveMachine(row) || row.IsSessionReading"
                                  style="width: 100%" />
               </template>
             </el-table-column>
@@ -268,32 +271,32 @@
               </template>
             </el-table-column>
 
-            <el-table-column v-if="canManageMachines"
-                             label="Actions"
-                             width="235"
-                             fixed="right">
+            <el-table-column label="Actions" width="194" align="center">
               <template #default="{ row }">
-                <el-button link
-                           type="primary"
-                           :loading="savingInitialMachineId === row.ID"
-                           :disabled="isInactiveMachine(row)"
-                           @click="saveInitialReading(row)">
-                  Save
-                </el-button>
-
-                <el-button link
-                           type="warning"
-                           :disabled="!row.InitialReadingId"
-                           @click="resetInitialReading(row)">
-                  Reset
-                </el-button>
-
-                <el-button link
-                           type="danger"
-                           :disabled="isInactiveMachine(row)"
-                           @click="deactivateInitialMachine(row)">
-                  Delete
-                </el-button>
+                <div class="machine-action-buttons align-right">
+                    <el-button v-if="row.ReplacedMachineId" link  type="info" @click="openArchivedReadingHistory(row)" title="Archived reading history">
+                      <LcFolderBookmark :size="18" />
+                    </el-button>
+                    <el-button link  @click="openReadingHistory(row)" title="View reading history">
+                      <LcHistory :size="18"/>
+                    </el-button>
+                    <el-button link  type="primary" title="Save initial reading"
+                               :loading="savingInitialMachineId === row.ID"
+                               :disabled="isInactiveMachine(row) || row.IsSessionReading"
+                               @click="saveInitialReading(row)">
+                      <LcSaveCheck :size="18"/>
+                    </el-button>
+                    <el-button link type="warning" title="Reset"
+                               :disabled="isInactiveMachine(row)"
+                               @click="replaceMachine(row)">
+                      <LcRefreshCcw :size="18" />
+                    </el-button>
+                    <!--<el-button link type="danger" title="Deactivate machine"
+                               :disabled="isInactiveMachine(row)"
+                               @click="deactivateInitialMachine(row)">
+                      <LcTrash :size="18"/>
+                    </el-button>-->
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -492,6 +495,24 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="readingHistoryVisible"
+               :title="`Reading History · Machine #${readingHistoryMachine}`"
+               width="min(1100px, 96%)"
+               destroy-on-close>
+      <el-table v-loading="readingHistoryLoading" :data="readingHistoryRows" border max-height="62vh" empty-text="No readings recorded">
+        <el-table-column label="Date / Time" min-width="175">
+          <template #default="{ row }">{{ formatDateTime(row.readingAt) }}</template>
+        </el-table-column>
+        <el-table-column label="Session" min-width="125">
+          <template #default="{ row }">{{ row.sessionId == null ? 'Initial' : `#${row.sessionNumber ?? row.sessionId}` }}</template>
+        </el-table-column>
+        <el-table-column prop="previousIn" label="Previous IN" min-width="120" />
+        <el-table-column prop="previousOut" label="Previous OUT" min-width="120" />
+        <el-table-column prop="currentIn" label="Current IN" min-width="120" />
+        <el-table-column prop="currentOut" label="Current OUT" min-width="120" />
+      </el-table>
+    </el-dialog>
+
     <!-- ==================================================== -->
     <!-- HISTORY -->
     <!-- ==================================================== -->
@@ -553,13 +574,13 @@ import {
       watch
 } from 'vue';
 
+import { ElMessage,ElMessageBox } from 'element-plus';
 import {
-      ElMessage,
-      ElMessageBox
-} from 'element-plus';
-
+  FolderBookmark as LcFolderBookmark, History as LcHistory, SaveCheck as LcSaveCheck, RefreshCcw as LcRefreshCcw,
+  Trash as LcTrash, Pencil as LcPencil } from '@lucide/vue'
 import { useUserStore } from '@/store/modules/user';
 import { formatDateTime } from '@/utils/date';
+import request from '@/utils/request';
 
 import {
       getMachines,
@@ -580,7 +601,6 @@ import {
 import {
       getInitialMachineReadings,
       saveInitialMachineReading,
-      resetInitialMachineReading,
       deactivateMachine
 } from '@/api/machineinitialreading';
 
@@ -608,6 +628,35 @@ const machineVisible = ref(false);
 const typeVisible = ref(false);
 const gameVisible = ref(false);
 const historyVisible = ref(false);
+const readingHistoryVisible = ref(false);
+const readingHistoryLoading = ref(false);
+const readingHistoryRows = ref<any[]>([]);
+const readingHistoryMachine = ref<string | number>('');
+
+function openArchivedReadingHistory(row: any) {
+  if (!row.ReplacedMachineId) return;
+  openReadingHistory({ ID: row.ReplacedMachineId, MachineNumber: row.MachineNumber });
+}
+
+async function openReadingHistory(row: any) {
+  readingHistoryVisible.value = true;
+  readingHistoryMachine.value = row.MachineNumber;
+  readingHistoryRows.value = [];
+  readingHistoryLoading.value = true;
+  try {
+    const result: any = await request({
+      url: `/machine/reading-history/${row.ID}`,
+      method: 'get',
+      params: { locationid: userStore.locationId }
+    });
+    readingHistoryRows.value = result.data || [];
+  } catch (error) {
+    ElMessage.error('Unable to load machine reading history.');
+  } finally {
+    readingHistoryLoading.value = false;
+  }
+}
+
 
 const canManageMachines = computed(() =>
       userStore.isOwner ||
@@ -685,9 +734,10 @@ const filteredMachines = computed(() => {
         .trim()
         .toLowerCase();
 
-      if (!text) return machines.value;
+      const visible = machines.value.filter(item => !item.IsArchived);
+      if (!text) return visible;
 
-      return machines.value.filter(item =>
+      return visible.filter(item =>
         [
           item.MachineNumber,
           item.MachineTypeName,
@@ -705,9 +755,10 @@ const filteredMachines = computed(() => {
 const filteredInitialReadingRows = computed(() => {
       const text = initialReadingSearch.value.trim().toLowerCase();
 
-      if (!text) return initialReadingRows.value;
+      const visible = initialReadingRows.value.filter(row => !row.IsArchived);
+      if (!text) return visible;
 
-      return initialReadingRows.value.filter(row =>
+      return visible.filter(row =>
         [
           row.MachineNumber,
           row.Status
@@ -784,7 +835,7 @@ async function saveInitialReading(row: any) {
         await saveInitialMachineReading(
           row.ID,
           {
-            locationId: Number(userStore.locationId),
+            locationid: Number(userStore.locationId),
             previousIn: Number(row.PreviousIn),
             previousOut: Number(row.PreviousOut),
             currentIn: Number(row.CurrentIn),
@@ -802,33 +853,31 @@ async function saveInitialReading(row: any) {
       }
 }
 
-async function resetInitialReading(row: any) {
-      if (
-        !row?.InitialReadingId ||
-        !userStore.locationId
-      ) {
-        return;
-      }
-
-      await ElMessageBox.confirm(
-        `Reset the initial reading for Machine #${row.MachineNumber}? Only the INITIAL MachineReadings row will be removed.`,
-        'Reset Initial Reading',
-        {
-          type: 'warning',
-          confirmButtonText: 'Reset'
+async function replaceMachine(row: any) {
+      if (!row?.ID || !userStore.locationId) return;
+      const typeResult: any = await ElMessageBox.prompt(
+        `Choose BOARD or MACHINE for Machine #${row.MachineNumber}. The old machine and every reading will be archived, and a new machine ID will be created.`,
+        'Replace Machine / Board',
+        { confirmButtonText: 'Continue', inputPlaceholder: 'BOARD or MACHINE',
+          inputValidator: (value: string) => ['BOARD','MACHINE'].includes(String(value).trim().toUpperCase()) || 'Enter BOARD or MACHINE' }
+      );
+      const reasonResult: any = await ElMessageBox.prompt(
+        'Enter the reason for replacement. Existing readings and completed reports will remain unchanged.',
+        'Confirm Replacement',
+        { confirmButtonText: 'Replace', inputPlaceholder: 'Reason for replacement',
+          inputValidator: (value: string) => (String(value).trim().length > 0 && String(value).trim().length <= 1000) || 'A reason (max 1000 characters) is required' }
+      );
+      await request({
+        url: `/machine/replace/${row.ID}`,
+        method: 'post',
+        data: {
+          locationid: Number(userStore.locationId),
+          replacementType: String(typeResult.value).trim().toUpperCase(),
+          reason: String(reasonResult.value).trim()
         }
-      );
-
-      await resetInitialMachineReading(
-        row.ID,
-        Number(userStore.locationId)
-      );
-
-      ElMessage.success(
-        `Initial reading reset for Machine #${row.MachineNumber}.`
-      );
-
-      await loadInitialReadings();
+      });
+      ElMessage.success(`Machine #${row.MachineNumber} replaced. Enter its new initial readings.`);
+      await Promise.all([loadMachines(), loadInitialReadings()]);
 }
 
 async function deactivateInitialMachine(row: any) {
@@ -960,7 +1009,7 @@ async function submitGenerate() {
 
       try {
         const result = await generateMachines({
-          locationId: Number(userStore.locationId),
+          locationid: Number(userStore.locationId),
           startNumber: generateForm.startNumber,
           endNumber: generateForm.endNumber,
           machineTypeId: generateForm.machineTypeId
@@ -1208,3 +1257,26 @@ onMounted(async () => {
 });
 </script>
 
+
+<style scoped>
+.machine-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.machine-action-buttons.align-right {
+  justify-content: flex-end;
+}
+.machine-action-buttons .el-button + .el-button {
+  margin-left: 0;
+}
+.machine-action-buttons .action-icon-btn {
+  padding: 5px;
+  min-width: 26px;
+  height: 28px;
+  border-radius: 4px;
+  font-size: 17px;
+}
+</style>

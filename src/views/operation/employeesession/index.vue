@@ -56,12 +56,12 @@
       <template #header>
         <div class="drawer-header">
           <div class="drawer-icon"><el-icon><Filter /></el-icon></div>
-          <div><div class="drawer-title">Filter Sessions</div><div class="drawer-subtitle">Choose a reporting period.</div></div>
+          <div><div class="drawer-title">Filter Sessions</div><div class="drawer-subtitle">Choose a reporting period and reconciliation status.</div></div>
         </div>
       </template>
       <div class="filter-section">
         <div class="filter-label">Period</div>
-        <el-select v-model="draftPeriod" style="width: 100%">
+        <el-select v-model="draftPeriod" style="width: 100%" @change="onPeriodChange">
           <el-option label="All sessions" value="all" />
           <el-option label="Today" value="today" />
           <el-option label="Last 7 days" value="7" />
@@ -69,33 +69,40 @@
           <el-option label="Custom date range" value="custom" />
         </el-select>
       </div>
+      <div class="filter-section">
+        <div class="filter-label">Reconciliation</div>
+        <el-select v-model="draftReconciliation" style="width: 100%" @change="onReconciliationChange">
+          <el-option label="Unreconciled" value="unreconciled" />
+          <el-option label="Reconciled" value="reconciled" />
+          <el-option label="All Sessions" value="all" />
+        </el-select>
+      </div>
       <div v-if="draftPeriod === 'custom'" class="filter-section">
         <div class="filter-label">Date Range</div>
         <el-date-picker v-model="draftDateRange" type="daterange" unlink-panels
                         start-placeholder="Start date" end-placeholder="End date"
-                        value-format="YYYY-MM-DD" style="width: 100%" />
+                        value-format="YYYY-MM-DD" style="width: 100%" @change="onDateRangeChange" />
       </div>
       <template #footer>
         <div class="drawer-footer">
           <el-button @click="clearFilters">Clear</el-button>
-          <el-button type="primary" :loading="loading" @click="applyFilters">Apply Filter</el-button>
         </div>
       </template>
     </el-drawer>
 
     <!-- DESKTOP -->
     <el-card shadow="never"
-             class="table-card employee-session-desktop-list"
+             class="table-card app-table-card employee-session-desktop-list"
              v-loading="loading"
              element-loading-text="Loading employee sessions...">
       <el-empty v-if="!loading && filteredEmployees.length === 0"
                 description="No employees found"
-                class="small-empty" />
+                class="small-empty app-table-empty" />
 
       <el-table v-else
                 :data="filteredEmployees"
                 row-key="userId"
-                class="clickable-table"
+                class="clickable-table app-data-table is-compact"
                 @row-click="openEmployee">
         <el-table-column label="Employee"
                          min-width="160">
@@ -123,7 +130,7 @@
             <el-tag type="primary"
                     effect="light"
                     round>
-              {{ Number(row.readingIncludedCount || 0) }} / {{ Number(row.sessionCount || 0) }}
+              {{ Number(row.sessionCount || 0) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -133,14 +140,14 @@
             {{ Number(row.totalPoints || 0).toLocaleString() }}
           </template>
         </el-table-column>
-        <el-table-column label="Expenses" min-width="100" align="center">
+        <el-table-column label="Expenses" min-width="80" align="center">
           <template #default="{ row }">
             {{ formatMoney(row.cashExpenses) }}
           </template>
         </el-table-column>
 
         <el-table-column label="Last Session"  align="center"
-                         min-width="85">
+                         min-width="90">
           <template #default="{ row }">
             {{ formatDateTime(row.lastSession) }}
           </template>
@@ -179,8 +186,9 @@
           <template #default>
             <el-button circle
                        text
-                       :icon="ArrowRight"
-                       aria-label="View employee sessions" />
+                       aria-label="View employee sessions" >
+              <el-icon><ArrowRight/></el-icon>
+              </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -244,8 +252,8 @@
             </div>
           </div>
           <div class="mobile-session-count">
-            <span>Included / Total Sessions</span>
-            <strong>{{ Number(employee.readingIncludedCount || 0) }}/{{ Number(employee.sessionCount || 0) }}</strong>
+            <span>Sessions</span>
+            <strong>{{ Number(employee.sessionCount || 0) }}</strong>
           </div>
         </div>
       </el-card>
@@ -258,7 +266,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { ArrowRight, Filter, UserFilled, Calendar, Coin, Money } from '@element-plus/icons-vue';
+
 
 import { useUserStore } from '@/store/modules/user';
 import { useRefreshStore } from '@/store/modules/refresh';
@@ -271,10 +279,12 @@ const refreshStore = useRefreshStore();
 const loading = ref(false);
 const filterDrawer = ref(false);
 const draftPeriod = ref('all');
+const draftReconciliation = ref('unreconciled');
 const draftDateRange = ref([]);
 const drawerSize = 'min(360px, 100%)';
 const employees = ref([]);
 const period = ref('all');
+const reconciliation = ref('unreconciled');
 const dateRange = ref([]);
 const chicagoDate = (date) => new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -293,25 +303,41 @@ const selectedDates = computed(() => {
 });
 function openFilterDrawer() {
     draftPeriod.value = period.value;
+    draftReconciliation.value = reconciliation.value;
     draftDateRange.value = Array.isArray(dateRange.value) ? [...dateRange.value] : [];
     filterDrawer.value = true;
 }
-function applyFilters() {
-    if (draftPeriod.value === 'custom' && (!draftDateRange.value || draftDateRange.value.length !== 2)) {
-      ElMessage.warning('Please select a start and end date.');
+function onPeriodChange(value) {
+    // A custom period takes effect once both dates have been selected.
+    if (value === 'custom') {
+      if (Array.isArray(draftDateRange.value) && draftDateRange.value.length === 2) {
+        onDateRangeChange(draftDateRange.value);
+      }
       return;
     }
-    period.value = draftPeriod.value;
-    dateRange.value = draftPeriod.value === 'custom' ? [...draftDateRange.value] : [];
-    filterDrawer.value = false;
+    period.value = value;
+    dateRange.value = [];
+    draftDateRange.value = [];
+    loadEmployees();
+}
+function onReconciliationChange(value) {
+    reconciliation.value = value;
+    loadEmployees();
+}
+function onDateRangeChange(value) {
+    if (draftPeriod.value !== 'custom') return;
+    if (!Array.isArray(value) || value.length !== 2) return;
+    period.value = 'custom';
+    dateRange.value = [...value];
     loadEmployees();
 }
 function clearFilters() {
     draftPeriod.value = 'all';
+    draftReconciliation.value = 'unreconciled';
     draftDateRange.value = [];
     period.value = 'all';
+    reconciliation.value = 'unreconciled';
     dateRange.value = [];
-    filterDrawer.value = false;
     loadEmployees();
 }
 const formatMoney = value => Number(value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -383,7 +409,7 @@ function openEmployee(employee) {
         employeeId:
                       employee.userId
       },
-      query: { ...selectedDates.value, period: period.value }
+      query: { ...selectedDates.value, period: period.value, reconciliation: reconciliation.value }
     });
 }
 
@@ -398,7 +424,7 @@ async function loadEmployees() {
       const response =
                   await getEmployeeSessionSummary(
                     userStore.locationId,
-                    selectedDates.value
+                    { ...selectedDates.value, reconciliation: reconciliation.value }
                   );
 
       employees.value =

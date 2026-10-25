@@ -1,7 +1,8 @@
 <template>
   <div class="upload-container">
-    <el-button :style="{background:color,borderColor:color}" :icon="IconUpload" size="small" type="primary" @click=" dialogVisible=true">
-      upload
+    <el-button :style="{background:color,borderColor:color}" size="small" type="primary" @click=" dialogVisible=true">
+      <el-icon><IconUpload/></el-icon>
+      <span>upload</span>
     </el-button>
     <el-dialog v-model="dialogVisible">
       <el-upload
@@ -31,7 +32,7 @@
 
 <script>
 import { defineComponent, markRaw } from 'vue';
-import { Upload as IconUpload } from '@element-plus/icons-vue';
+
 // import { getToken } from 'api/qiniu'
 
 export default defineComponent({

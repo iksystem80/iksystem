@@ -58,7 +58,7 @@
 <script setup>
 import { computed, reactive, ref, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
-import { User, Phone } from '@element-plus/icons-vue';
+
 import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/mycamera';
 import { checkin, checkout } from '@/api/customer';

@@ -12,8 +12,8 @@
       </div>
       <div class="header-actions">
         <el-button type="primary" class="action-button" @click="handleNewCustomer">
-          <el-icon style="color: #fff;"><Plus /></el-icon>
-          <span style="color: #fff;">New Customer</span>
+          <UserPlus size="14"/>
+          <span>New Customer</span>
         </el-button>
         <el-button class="action-button" @click="drawer2 = true">
           <el-icon><Filter /></el-icon>
@@ -59,12 +59,13 @@
     <!-- CUSTOMER TABLE LIST IS KEPT THE SAME -->
     <!-- ===================================================== -->
 
-    <el-card v-if="device !== 'mobile'"
+    <el-card v-if="!useCustomerCardLayout"
              shadow="never"
-             class="table-card">
+             class="table-card app-table-card">
       <el-table v-loading="loading"
                 :data="filteredCustomers"
-                style="width: 100%; height: calc(100vh - 310px)">
+                class="app-data-table is-compact"
+                style="width: 100%; height: calc(100vh - 245px)">
         <!-- Product Image -->
         <el-table-column label="" width="105">
           <template #default="{ row }">
@@ -106,7 +107,7 @@
         <!-- Last Visit -->
         <el-table-column prop="lastvisited"
                          label="Last Visit On"
-                         min-width="120" />
+                         min-width="165" />
 
         <!-- Points -->
         <el-table-column prop="points"
@@ -119,18 +120,16 @@
 
         <!-- Verification Status -->
         <el-table-column label="Verification"
-                         min-width="125">
+                         min-width="115">
           <template #default="{ row }">
-            <VerificationBadge
-              :status="verificationStatusLabel(row)"
-              :clickable="verificationStatusLabel(row) === 'Unverified'"
-              @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)"
-            />
+            <VerificationBadge :status="verificationStatusLabel(row)"
+                               :clickable="verificationStatusLabel(row) === 'Unverified'"
+                               @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)" />
           </template>
         </el-table-column>
 
         <!-- Operations -->
-        <el-table-column label="" width="130" align="right">
+        <el-table-column label="" width="110" align="center">
           <template #default="{ row }">
             <div class="customer-row-actions">
               <el-tooltip :content="row.isactive ? 'Active' : 'Inactive'"
@@ -149,9 +148,6 @@
                   <el-icon><CircleClose /></el-icon>
                 </el-button>
               </el-tooltip>
-
-
-
               <el-tooltip content="Edit" placement="top">
                 <el-button link
                            class="action-icon-btn"
@@ -237,12 +233,10 @@
         <div class="mobile-actions">
           <div class="mobile-verification-action">
             <el-tooltip :content="verificationStatusLabel(row)" placement="top">
-              <VerificationBadge
-                :status="verificationStatusLabel(row)"
-                :clickable="verificationStatusLabel(row) === 'Unverified'"
-                icon-only
-                @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)"
-              />
+              <VerificationBadge :status="verificationStatusLabel(row)"
+                                 :clickable="verificationStatusLabel(row) === 'Unverified'"
+                                 icon-only
+                                 @click="verificationStatusLabel(row) === 'Unverified' && openVerification(row)" />
             </el-tooltip>
           </div>
 
@@ -486,11 +480,6 @@
           <el-button @click="clearFilters">
             Clear
           </el-button>
-
-          <el-button type="primary"
-                     @click="confirmClick">
-            Apply Filter
-          </el-button>
         </div>
       </template>
     </el-drawer>
@@ -498,47 +487,14 @@
 </template>
 
 <script setup>
-import {
-        computed,
-        onMounted,
-        ref,
-        watch
-} from 'vue';
-
-import {
-        ElMessage,
-        ElMessageBox
-} from 'element-plus';
-
-import {
-        Plus,
-        Filter,
-        CircleCheck,
-        CircleClose,
-        Edit,
-        Delete,
-        User,
-        Search,
-        Refresh,
-        Lock,
-        Phone,
-        Check
-} from '@element-plus/icons-vue';
-
+import {computed,onBeforeUnmount,onMounted,ref,watch} from 'vue';
+import { ElMessage,ElMessageBox } from 'element-plus';
+import { UserPlus } from '@lucide/vue'
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';
-
-import {
-        getcustomers,
-        deletecustomer,
-        updatestatus
-} from '@/api/customer';
-import {
-        sendcustomerverification,
-        verifycustomerverification,
-        bypasscustomerverification
-} from '@/api/customerverification';
+import { getcustomers,deletecustomer,updatestatus} from '@/api/customer';
+import { sendcustomerverification,verifycustomerverification,bypasscustomerverification } from '@/api/customerverification';
 import { formatPhone } from '@/utils/phone';
 import verificationIllustration from '@/assets/phone-verification.png';
 import PointsBadge from '@/components/pointsbadge/index.vue';
@@ -554,6 +510,26 @@ const router = useRouter();
 
 const device = computed(() => appStore.device);
 
+// Customer list uses card layout on phones and iPads/tablets.
+// Pointer detection prevents normal desktop/laptop screens from being
+// treated as tablets purely because of their viewport width.
+const tabletMediaQuery =
+            typeof window !== 'undefined'
+              ? window.matchMedia('(max-width: 1366px) and (pointer: coarse)')
+              : null;
+
+const isTabletViewport = ref(
+            tabletMediaQuery?.matches ?? false
+);
+
+const useCustomerCardLayout = computed(
+            () => device.value === 'mobile' || isTabletViewport.value
+);
+
+function handleTabletMediaChange(event) {
+            isTabletViewport.value = event.matches;
+}
+
 // ============================================================
 // STATE
 // ============================================================
@@ -565,9 +541,7 @@ const drawer2 = ref(false);
 const searchText = ref('');
 
 const radiostatus = ref('all');
-const appliedStatus = ref('all');
 const verificationFilter = ref('all');
-const appliedVerificationFilter = ref('all');
 
 // ============================================================
 // PHONE VERIFICATION
@@ -584,73 +558,59 @@ const verifyingCode = ref(false);
 const bypassingVerification = ref(false);
 
 function verificationStatusLabel(row) {
-        if (row?.phoneverified === true) {
-          return 'Verified';
-        }
+  if (row?.phoneverified === true) {
+    return 'Verified';
+  }
 
-        if (
-          String(row?.verificationmethod || '')
-            .trim()
-            .toLowerCase() === 'bypass'
-        ) {
-          return 'Bypass';
-        }
-
-        return 'Unverified';
+  if (String(row?.verificationmethod || '').trim().toLowerCase() === 'bypass') {
+    return 'Bypass';
+  }
+  return 'Unverified';
 }
-
 
 // ============================================================
 // FILTERED CUSTOMERS
 // ============================================================
 
 const filteredCustomers = computed(() => {
-        let data = Array.isArray(customersData.value)
-          ? customersData.value
-          : [];
+  let data = Array.isArray(customersData.value)
+    ? customersData.value
+    : [];
 
-        // Status filter
-        if (appliedStatus.value === '1') {
-          data = data.filter(row => Boolean(row.isactive));
-        }
+  // Status filter
+  if (radiostatus.value === '1') {
+    data = data.filter(row => Boolean(row.isactive));
+  }
 
-        if (appliedStatus.value === '0') {
-          data = data.filter(row => !row.isactive);
-        }
+  if (radiostatus.value === '0') {
+    data = data.filter(row => !row.isactive);
+  }
 
-        // Verification filter
-        if (appliedVerificationFilter.value !== 'all') {
-          data = data.filter(row =>
-            verificationStatusLabel(row).toLowerCase() ===
-            appliedVerificationFilter.value
-          );
-        }
+  // Verification filter
+  if (verificationFilter.value !== 'all') {
+    data = data.filter(row =>
+      verificationStatusLabel(row).toLowerCase() ===
+      verificationFilter.value
+    );
+  }
 
-        // Search filter
-        const search = searchText.value
-          .trim()
-          .toLowerCase();
+  // Search filter
+  const search = searchText.value
+    .trim()
+    .toLowerCase();
 
-        if (!search) {
-          return data;
-        }
+  if (!search) {
+    return data;
+  }
 
-        return data.filter(row => {
-          const searchable = [
-            row.firstname,
-            row.lastname,
-            row.phone,
-            row.dob,
-            row.datecreated,
-            row.lastvisited,
-            row.points
-          ]
-            .filter(value => value != null)
-            .join(' ')
-            .toLowerCase();
+  return data.filter(row => {
+    const searchable = [row.firstname, row.lastname, row.phone, row.dob, row.datecreated, row.lastvisited, row.points]
+      .filter(value => value != null)
+      .join(' ')
+      .toLowerCase();
 
-          return searchable.includes(search);
-        });
+    return searchable.includes(search);
+  });
 });
 
 // ============================================================
@@ -658,31 +618,31 @@ const filteredCustomers = computed(() => {
 // ============================================================
 
 async function loadCustomers() {
-        const locationid = userStore.locationId;
+  const locationid = userStore.locationId;
 
-        if (!locationid) {
-          customersData.value = [];
-          return;
-        }
+  if (!locationid) {
+    customersData.value = [];
+    return;
+  }
 
-        loading.value = true;
+  loading.value = true;
 
-        try {
-          const response = await getcustomers(locationid);
+  try {
+    const response = await getcustomers(locationid);
 
-          customersData.value =
-                              Array.isArray(response.data)
-                                ? response.data
-                                : [];
-        } catch (error) {
-          console.error('Failed to load customers:', error);
+    customersData.value =
+      Array.isArray(response.data)
+        ? response.data
+        : [];
+  } catch (error) {
+    console.error('Failed to load customers:', error);
 
-          ElMessage.error(error?.message || 'Failed to load customers');
+    ElMessage.error(error?.message || 'Failed to load customers');
 
-          customersData.value = [];
-        } finally {
-          loading.value = false;
-        }
+    customersData.value = [];
+  } finally {
+    loading.value = false;
+  }
 }
 
 // ============================================================
@@ -690,9 +650,7 @@ async function loadCustomers() {
 // ============================================================
 
 function handleNewCustomer() {
-        router.push({
-          path: '/newcustomer/index'
-        });
+  router.push({ path: '/newcustomer/index' });
 }
 
 // ============================================================
@@ -700,12 +658,7 @@ function handleNewCustomer() {
 // ============================================================
 
 function handleEdit(row) {
-        router.push({
-          name: 'Profile',
-          params: {
-            id: row.id
-          }
-        });
+  router.push({ name: 'Profile', params: { id: row.id } });
 }
 
 // ============================================================
@@ -713,249 +666,248 @@ function handleEdit(row) {
 // ============================================================
 
 async function handleStatus(row) {
-        try {
-          await updatestatus(row.id);
+  try {
+    await updatestatus(row.id);
 
-          ElMessage.success(
-            'Customer status updated successfully'
-          );
+    ElMessage.success(
+      'Customer status updated successfully'
+    );
 
-          await loadCustomers();
-        } catch (error) {
-          console.error(error);
-        }
+    await loadCustomers();
+  } catch (error) {
+    console.error(error);
+  }
 }
-
 
 // ============================================================
 // PHONE VERIFICATION
 // ============================================================
 
 function needsPhoneVerification(row) {
-        return verificationStatusLabel(row) === 'Unverified';
+  return verificationStatusLabel(row) === 'Unverified';
 }
 
 function setOtpRef(el, index) {
-        if (el) {
-          otpInputRefs.value[index] = el;
-        }
+  if (el) {
+    otpInputRefs.value[index] = el;
+  }
 }
 
 function syncVerificationCode() {
-        verificationCode.value = verificationDigits.value.join('');
+  verificationCode.value = verificationDigits.value.join('');
 }
 
 function resetVerificationCode() {
-        verificationDigits.value = ['', '', '', '', '', ''];
-        verificationCode.value = '';
+  verificationDigits.value = ['', '', '', '', '', ''];
+  verificationCode.value = '';
 }
 
 function focusOtp(index) {
-        const target = otpInputRefs.value[index];
+  const target = otpInputRefs.value[index];
 
-        if (target?.focus) {
-          target.focus();
-        }
+  if (target?.focus) {
+    target.focus();
+  }
 }
 
 function handleOtpInput(index) {
-        const raw =
-          String(verificationDigits.value[index] || '');
+  const raw =
+    String(verificationDigits.value[index] || '');
 
-        verificationDigits.value[index] =
-          raw.replace(/\D/g, '').slice(-1);
+  verificationDigits.value[index] =
+    raw.replace(/\D/g, '').slice(-1);
 
-        syncVerificationCode();
+  syncVerificationCode();
 
-        if (
-          verificationDigits.value[index] &&
-          index < 5
-        ) {
-          focusOtp(index + 1);
-        }
+  if (
+    verificationDigits.value[index] &&
+    index < 5
+  ) {
+    focusOtp(index + 1);
+  }
 }
 
 function handleOtpBackspace(index) {
-        if (
-          !verificationDigits.value[index] &&
-          index > 0
-        ) {
-          verificationDigits.value[index - 1] = '';
-          syncVerificationCode();
-          focusOtp(index - 1);
-        }
+  if (
+    !verificationDigits.value[index] &&
+    index > 0
+  ) {
+    verificationDigits.value[index - 1] = '';
+    syncVerificationCode();
+    focusOtp(index - 1);
+  }
 }
 
 function handleOtpPaste(event) {
-        const digits =
-          String(
-            event?.clipboardData?.getData('text') || ''
-          )
-            .replace(/\D/g, '')
-            .slice(0, 6)
-            .split('');
+  const digits =
+    String(
+      event?.clipboardData?.getData('text') || ''
+    )
+      .replace(/\D/g, '')
+      .slice(0, 6)
+      .split('');
 
-        if (!digits.length) {
-          return;
-        }
+  if (!digits.length) {
+    return;
+  }
 
-        verificationDigits.value =
-          Array.from(
-            { length: 6 },
-            (_, index) => digits[index] || ''
-          );
+  verificationDigits.value =
+    Array.from(
+      { length: 6 },
+      (_, index) => digits[index] || ''
+    );
 
-        syncVerificationCode();
-        focusOtp(Math.min(digits.length, 6) - 1);
+  syncVerificationCode();
+  focusOtp(Math.min(digits.length, 6) - 1);
 }
 
 function openVerification(row) {
-        verificationCustomer.value = row;
-        resetVerificationCode();
-        verificationCodeSent.value = false;
-        verificationDialogVisible.value = true;
+            verificationCustomer.value = row;
+            resetVerificationCode();
+            verificationCodeSent.value = false;
+            verificationDialogVisible.value = true;
 }
 
 function closeVerificationDialog() {
-        verificationDialogVisible.value = false;
-        verificationCustomer.value = null;
-        verificationCodeSent.value = false;
-        resetVerificationCode();
+            verificationDialogVisible.value = false;
+            verificationCustomer.value = null;
+            verificationCodeSent.value = false;
+            resetVerificationCode();
 }
 
 async function sendVerificationCode() {
-        if (!verificationCustomer.value?.id) {
-          return;
-        }
+  if (!verificationCustomer.value?.id) {
+    return;
+  }
 
-        try {
-          sendingCode.value = true;
+  try {
+    sendingCode.value = true;
 
-          const response =
-            await sendcustomerverification({
-              customerId:
-                verificationCustomer.value.id
-            });
+    const response =
+      await sendcustomerverification({
+        customerId:
+          verificationCustomer.value.id
+      });
 
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Unable to send verification code.'
-            );
-          }
+    if (!response?.success) {
+      throw new Error(
+        response?.message ||
+        'Unable to send verification code.'
+      );
+    }
 
-          verificationCodeSent.value = true;
-          resetVerificationCode();
+    verificationCodeSent.value = true;
+    resetVerificationCode();
 
-          ElMessage.success(
-            response.message ||
-            'Verification code sent.'
-          );
-        } catch (error) {
-          console.error(
-            'Send verification code error:',
-            error
-          );
+    ElMessage.success(
+      response.message ||
+      'Verification code sent.'
+    );
+  } catch (error) {
+    console.error(
+      'Send verification code error:',
+      error
+    );
 
-          ElMessage.error(
-            error?.response?.data?.message ||
-            error?.message ||
-            'Unable to send verification code.'
-          );
-        } finally {
-          sendingCode.value = false;
-        }
+    ElMessage.error(
+      error?.response?.data?.message ||
+      error?.message ||
+      'Unable to send verification code.'
+    );
+  } finally {
+    sendingCode.value = false;
+  }
 }
 
 async function verifyCustomerPhone() {
-        if (
-          !verificationCustomer.value?.id ||
-          verificationCode.value.trim().length !== 6
-        ) {
-          return;
-        }
+  if (
+    !verificationCustomer.value?.id ||
+    verificationCode.value.trim().length !== 6
+  ) {
+    return;
+  }
 
-        try {
-          verifyingCode.value = true;
+  try {
+    verifyingCode.value = true;
 
-          const response =
-            await verifycustomerverification({
-              customerId:
-                verificationCustomer.value.id,
-              code:
-                verificationCode.value.trim()
-            });
+    const response =
+      await verifycustomerverification({
+        customerId:
+          verificationCustomer.value.id,
+        code:
+          verificationCode.value.trim()
+      });
 
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Unable to verify phone number.'
-            );
-          }
+    if (!response?.success) {
+      throw new Error(
+        response?.message ||
+        'Unable to verify phone number.'
+      );
+    }
 
-          ElMessage.success(
-            'Phone verified. Customer is now active.'
-          );
+    ElMessage.success(
+      'Phone verified. Customer is now active.'
+    );
 
-          closeVerificationDialog();
-          await loadCustomers();
-        } catch (error) {
-          console.error(
-            'Verify customer phone error:',
-            error
-          );
+    closeVerificationDialog();
+    await loadCustomers();
+  } catch (error) {
+    console.error(
+      'Verify customer phone error:',
+      error
+    );
 
-          ElMessage.error(
-            error?.response?.data?.message ||
-            error?.message ||
-            'Invalid verification code.'
-          );
-        } finally {
-          verifyingCode.value = false;
-        }
+    ElMessage.error(
+      error?.response?.data?.message ||
+      error?.message ||
+      'Invalid verification code.'
+    );
+  } finally {
+    verifyingCode.value = false;
+  }
 }
 
 async function bypassCustomerVerification() {
-        if (!verificationCustomer.value?.id) {
-          return;
-        }
+  if (!verificationCustomer.value?.id) {
+    return;
+  }
 
-        try {
-          bypassingVerification.value = true;
+  try {
+    bypassingVerification.value = true;
 
-          const response =
-            await bypasscustomerverification({
-              customerId:
-                verificationCustomer.value.id
-            });
+    const response =
+      await bypasscustomerverification({
+        customerId:
+          verificationCustomer.value.id
+      });
 
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Verification bypass was not allowed.'
-            );
-          }
+    if (!response?.success) {
+      throw new Error(
+        response?.message ||
+        'Verification bypass was not allowed.'
+      );
+    }
 
-          ElMessage.success(
-            'Verification bypassed. Customer is now active.'
-          );
+    ElMessage.success(
+      'Verification bypassed. Customer is now active.'
+    );
 
-          closeVerificationDialog();
-          await loadCustomers();
-        } catch (error) {
-          console.error(
-            'Bypass customer verification error:',
-            error
-          );
+    closeVerificationDialog();
+    await loadCustomers();
+  } catch (error) {
+    console.error(
+      'Bypass customer verification error:',
+      error
+    );
 
-          ElMessage.error(
-            error?.response?.data?.message ||
-            error?.message ||
-            'You are not authorized to bypass verification.'
-          );
-        } finally {
-          bypassingVerification.value = false;
-        }
+    ElMessage.error(
+      error?.response?.data?.message ||
+      error?.message ||
+      'You are not authorized to bypass verification.'
+    );
+  } finally {
+    bypassingVerification.value = false;
+  }
 }
 
 // ============================================================
@@ -963,46 +915,38 @@ async function bypassCustomerVerification() {
 // ============================================================
 
 async function handleDelete(row) {
-        try {
-          await ElMessageBox.confirm(
-            `Delete ${row.firstname} ${row.lastname}?`,
-            'Delete Customer',
-            {
-              confirmButtonText: 'Delete',
-              cancelButtonText: 'Cancel',
-              type: 'warning'
-            }
-          );
+  try {
+    await ElMessageBox.confirm(
+      `Delete ${row.firstname} ${row.lastname}?`,
+      'Delete Customer',
+      {
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      }
+    );
 
-          await deletecustomer(row.id);
+    await deletecustomer(row.id);
 
-          ElMessage.success(
-            'Customer deleted successfully'
-          );
+    ElMessage.success(
+      'Customer deleted successfully'
+    );
 
-          await loadCustomers();
-        } catch (error) {
-          // User cancelled dialog
-          console.error(error);
-        }
+    await loadCustomers();
+  } catch (error) {
+    // User cancelled dialog
+    console.error(error);
+  }
 }
 
 // ============================================================
 // FILTER
 // ============================================================
 
-function confirmClick() {
-        appliedStatus.value = radiostatus.value;
-        appliedVerificationFilter.value = verificationFilter.value;
-        drawer2.value = false;
-}
-
 function clearFilters() {
-        radiostatus.value = 'all';
-        appliedStatus.value = 'all';
-        verificationFilter.value = 'all';
-        appliedVerificationFilter.value = 'all';
-        drawer2.value = false;
+  radiostatus.value = 'all';
+  verificationFilter.value = 'all';
+  drawer2.value = false;
 }
 
 // ============================================================
@@ -1010,14 +954,14 @@ function clearFilters() {
 // ============================================================
 
 watch(
-        () => userStore.locationId,
-        newLocation => {
-          if (newLocation) {
-            loadCustomers();
-          } else {
-            customersData.value = [];
-          }
-        }
+  () => userStore.locationId,
+  newLocation => {
+    if (newLocation) {
+      loadCustomers();
+    } else {
+      customersData.value = [];
+    }
+  }
 );
 
 // ============================================================
@@ -1025,7 +969,19 @@ watch(
 // ============================================================
 
 onMounted(() => {
-        loadCustomers();
+  tabletMediaQuery?.addEventListener?.(
+    'change',
+    handleTabletMediaChange
+  );
+
+  loadCustomers();
+});
+
+onBeforeUnmount(() => {
+  tabletMediaQuery?.removeEventListener?.(
+    'change',
+    handleTabletMediaChange
+  );
 });
 </script>
 

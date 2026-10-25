@@ -10,7 +10,6 @@ export function login(data) {
 
 export function getInfo(token, userid, locationid) {
   const params = {
-    token,
     userid
   };
 
@@ -21,6 +20,7 @@ export function getInfo(token, userid, locationid) {
   return request({
     url: '/user/userinfo',
     method: 'get',
-    params
+    params,
+    headers: { 'x-token': token }
   });
 }

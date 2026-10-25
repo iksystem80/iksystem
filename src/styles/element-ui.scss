@@ -8,9 +8,26 @@
     border-radius: 10px !important;
 }
 .el-radio-group {
-flex-wrap:nowrap !important;
+    flex-wrap: nowrap !important;
 }
-
+.el-radio-button__inner {
+    font-size: var(--app-font-button) !important;
+}
+.el-tabs__item {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+.el-button {
+    font-size: var(--app-font-button) !important
+}
+.el-button .lucide {
+    margin-right: 5px !important;
+}
+.el-form-item__label {
+    font-size: var(--app-font-label) !important;
+    margin-bottom: 0px !important;
+    color: var(--el-text-color-secondary) !important;
+}
     /*.el-button:hover {
     color: #818cf8 !important;
     border-color: #e1dafa !important;

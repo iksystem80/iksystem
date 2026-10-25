@@ -1,10 +1,23 @@
+ <!--class="current-customer-filter-wrap"-->
+
+
 <template>
-  <div v-loading="loading" element-loading-text="Loading check-ins...">
-    <!-- FILTER -->
-    <div class="filter-row">
-      <el-segmented v-model="statusFilter" :options="filterOptions" class="status-filter" />
+  <div v-loading="loading" element-loading-text="Loading check-ins..." class="current-customer-list">
+    <div class="current-customer-table-header" style="margin-bottom:10px;">
+      <div class="app-table-card-header">
+        <el-icon><User /></el-icon>
+        <div class="app-table-card-title">
+          <strong>Current Customers</strong>
+          <div class="small-text">Customers currently checked in.</div>
+        </div>
+      </div>
+      <div class="current-customer-filter-wrap">
+        <el-segmented v-model="statusFilter"
+                      :options="filterOptions"
+                      class="status-filter" />
+      </div>
     </div>
-    <el-divider class="divider" />
+    <el-divider class="divider"/>
     <!-- EMPTY -->
     <el-empty v-if="!loading && filteredCheckinData.length === 0" :description="emptyDescription" />
     <!-- CHECK-IN LIST -->
@@ -72,7 +85,7 @@
               {{ row.approvedby }}
             </template>
 
-            <PhotoPreviewIcon v-if="row.ImageUrl" :src="row.ImageUrl" class="view-photo"/>
+            <PhotoPreviewIcon v-if="row.ImageUrl" :src="row.ImageUrl" class="view-photo" />
 
             <!--<el-image v-if="row.ImageUrl"
             src="/src/assets/viewphoto.png"
@@ -85,12 +98,12 @@
 
           <!-- PENDING -->
           <span v-else>
-            <el-button  v-if="userStore.isClockedIn && Number(userStore.employeeBalance || 0) > 0"
+            <el-button v-if="userStore.isClockedIn && Number(userStore.employeeBalance || 0) > 0"
                        type="warning"
                        round
-                       :icon="WarningFilled"
                        @click="openAssignMachine(row)">
-              Pending
+              <el-icon><WarningFilled /></el-icon>
+              <span>Pending</span>
             </el-button>
 
             <el-tag v-else
@@ -125,11 +138,11 @@
 
 <script setup lang="ts">
 import {
-        computed,
-        onBeforeUnmount,
-        onMounted,
-        ref,
-        watch
+            computed,
+            onBeforeUnmount,
+            onMounted,
+            ref,
+            watch
 } from 'vue';
 
 import { useRouter } from 'vue-router';
@@ -157,148 +170,148 @@ const selectedCustomer = ref(null);
 const checkinData = ref<any[]>([]);
 
 /* ============================================================
-             FILTER
+                 FILTER
 ============================================================ */
 
 const statusFilter = ref('pending');
 
 const filterOptions = [
-        {
-          label: 'Pending',
-          value: 'pending'
-        },
-        {
-          label: 'Match',
-          value: 'approved'
-        },
-        {
-          label: 'All',
-          value: 'all'
-        }
+            {
+              label: 'Pending',
+              value: 'pending'
+            },
+            {
+              label: 'Match',
+              value: 'approved'
+            },
+            {
+              label: 'All',
+              value: 'all'
+            }
 ];
 
 const filteredCheckinData = computed(() => {
-        if (statusFilter.value === 'pending') {
-          return checkinData.value.filter(
-            row => !row.status
-          );
-        }
+            if (statusFilter.value === 'pending') {
+              return checkinData.value.filter(
+                row => !row.status
+              );
+            }
 
-        if (statusFilter.value === 'approved') {
-          return checkinData.value.filter(
-            row => Boolean(row.status)
-          );
-        }
+            if (statusFilter.value === 'approved') {
+              return checkinData.value.filter(
+                row => Boolean(row.status)
+              );
+            }
 
-        return checkinData.value;
+            return checkinData.value;
 });
 
 const emptyDescription = computed(() => {
-        if (statusFilter.value === 'pending') {
-          return 'No pending check-ins.';
-        }
+            if (statusFilter.value === 'pending') {
+              return 'No pending check-ins.';
+            }
 
-        if (statusFilter.value === 'approved') {
-          return 'No matched check-ins.';
-        }
+            if (statusFilter.value === 'approved') {
+              return 'No matched check-ins.';
+            }
 
-        return 'No customer check-ins found.';
+            return 'No customer check-ins found.';
 });
 
 /* ============================================================
-             LOAD CHECK-INS
+                 LOAD CHECK-INS
 ============================================================ */
 
 async function loadCheckIn() {
-        loading.value = true;
+            loading.value = true;
 
-        try {
-          const locationid =
-                      userStore.locationId;
+            try {
+              const locationid =
+                          userStore.locationId;
 
-          const response =
-                      await getcheckin(
-                        locationid
-                      );
+              const response =
+                          await getcheckin(
+                            locationid
+                          );
 
-          if (response.success) {
-            checkinData.value =
-                          response.data || [];
-          } else {
-            checkinData.value = [];
-          }
-        } catch (error: any) {
-          ElMessage.error(
-            error?.response?.data?.message ||
-                      error?.message ||
-                      'Failed to load check in'
-          );
+              if (response.success) {
+                checkinData.value =
+                              response.data || [];
+              } else {
+                checkinData.value = [];
+              }
+            } catch (error: any) {
+              ElMessage.error(
+                error?.response?.data?.message ||
+                          error?.message ||
+                          'Failed to load check in'
+              );
 
-          checkinData.value = [];
-        } finally {
-          loading.value = false;
-        }
+              checkinData.value = [];
+            } finally {
+              loading.value = false;
+            }
 }
 
 /* ============================================================
-             CUSTOMER DETAIL
+                 CUSTOMER DETAIL
 ============================================================ */
 
 function openCustomer(row: any) {
-        router.push({
-          name: 'Profile',
-          params: {
-            id: row.id
-          }
-        });
+            router.push({
+              name: 'Profile',
+              params: {
+                id: row.id
+              }
+            });
 }
 
 /* ============================================================
-             ASSIGN MACHINE
+                 ASSIGN MACHINE
 ============================================================ */
 
 function openAssignMachine(row: any) {
-        selectedCustomer.value = {
-          ...row
-        };
+            selectedCustomer.value = {
+              ...row
+            };
 
-        dialogFormVisible.value = true;
+            dialogFormVisible.value = true;
 }
 
 async function handleClick() {
-        dialogFormVisible.value = false;
+            dialogFormVisible.value = false;
 }
 
 function handleClose() {
-        selectedCustomer.value = null;
+            selectedCustomer.value = null;
 
-        loadCheckIn();
+            loadCheckIn();
 }
 
 /* ============================================================
-             LIFECYCLE
+                 LIFECYCLE
 ============================================================ */
 
 onMounted(() => {
-        loadCheckIn();
+            loadCheckIn();
 });
 
 onBeforeUnmount(() => {
-        // Socket cleanup can be added here if required.
+            // Socket cleanup can be added here if required.
 });
 
 watch(
-        () => checkinStore.refreshKey,
-        () => {
-          loadCheckIn();
-        }
+            () => checkinStore.refreshKey,
+            () => {
+              loadCheckIn();
+            }
 );
 
 watch(
-        () => userStore.locationId,
-        () => {
-          loadCheckIn();
-        }
+            () => userStore.locationId,
+            () => {
+              loadCheckIn();
+            }
 );
 </script>
 

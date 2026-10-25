@@ -4,7 +4,7 @@
     <el-card class="settings-card" shadow="never">
       <div class="section-header">
         <div>
-          <h3>Customer Points</h3>
+          <h3  class="section-title">Customer Points</h3>
           <p>
             Update the customer's current point balance.
           </p>
@@ -37,13 +37,14 @@
     </el-card>
     <!-- CUSTOMER STATUS -->
     <el-card class="settings-card" shadow="never">
-      <div class="section-header">
-        <div>
-          <h3>Customer Status</h3>
-          <p>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-title">Customer Status</div>
+          <div class="setting-description">
             Manage the customer's account, VIP and blacklist status.
-          </p>
+          </div>
         </div>
+
         <VerificationBadge :status="verificationStatusLabel(customer)" />
       </div>
 
@@ -59,9 +60,7 @@
 
         <el-switch v-model="form.isActive"
                    size="large"
-                   inline-prompt
-                   active-text="ON"
-                   inactive-text="OFF" />
+                   inline-prompt />
       </div>
 
       <el-divider />
@@ -76,9 +75,7 @@
 
         <el-switch v-model="form.isVip"
                    size="large"
-                   inline-prompt
-                   active-text="ON"
-                   inactive-text="OFF" />
+                   inline-prompt />
       </div>
 
       <el-divider />
@@ -93,9 +90,7 @@
 
         <el-switch v-model="form.isBlacklist"
                    size="large"
-                   inline-prompt
-                   active-text="ON"
-                   inactive-text="OFF" />
+                   inline-prompt />
       </div>
     </el-card>
 
@@ -111,7 +106,7 @@
             rather than global rules.
           </div>
         </div>
-        <el-switch v-model="form.privilegedMatchRule" size="large" inline-prompt active-text="ON" inactive-text="OFF" />
+        <el-switch v-model="form.privilegedMatchRule" size="large" inline-prompt />
       </div>
       <div v-if="form.privilegedMatchRule" class="privileged-info">
         <div class="privileged-icon">
@@ -136,7 +131,7 @@
 <script setup>
 import { reactive, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import { InfoFilled } from '@element-plus/icons-vue';
+
 
 import { updateCustomerAccount } from '@/api/customer';
 import { useUserStore } from '@/store/modules/user';
@@ -331,7 +326,7 @@ const saveAccount = async () => {
   .setting-title {
     margin-bottom: 3px;
     color: var(--el-text-color-primary);
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 600;
   }
 

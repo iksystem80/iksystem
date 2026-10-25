@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container admin-transactions-page">
     <div class="page-header">
       <div>
         <h2 class="page-title">Admin Transactions</h2>
@@ -16,13 +16,61 @@
                 <div class="summary-card-content">
                   <div class="summary-icon"><el-icon><CircleCheckFilled /></el-icon></div>
                   <el-statistic title="Available Balance" :value="Number(myCustodyAvailable || 0)" :precision="2" prefix="$" />
+                  <div class="admin-withdraw-overview-actions">
+                    <el-button class="admin-withdraw-history-btn" title="Withdrawal History" aria-label="Withdrawal History" @click="openAdminWithdrawalHistory">
+                      <LcHistory class="admin-withdraw-action-icon" />
+                      <span class="admin-withdraw-action-label">Withdrawal History</span>
+                    </el-button>
+                    <el-button class="admin-withdraw-overview-btn" type="primary" title="Withdraw Cash" aria-label="Withdraw Cash" :disabled="!custodyLoaded || !!custodyError || myCustodyAvailable <= 0"
+                             @click="adminWithdrawalDialogOpen = true">
+                      <LcBanknoteArrowDown class="admin-withdraw-action-icon" />
+                      <span class="admin-withdraw-action-label">Withdraw Cash</span>
+                    </el-button>
+                  </div>
                 </div>
               </el-card>
             </el-col>
           </el-row>
         </div>
 
+        <el-dialog v-model="adminWithdrawalHistoryOpen" title="Admin Withdrawal History" width="min(650px, 94vw)" append-to-body destroy-on-close>
+          <div v-loading="adminWithdrawalHistoryLoading">
+            <el-alert v-if="adminWithdrawalHistoryError" type="error" :title="adminWithdrawalHistoryError" :closable="false" show-icon class="withdraw-history-alert" />
+            <el-empty v-else-if="!adminWithdrawalHistoryLoading && !adminWithdrawalHistory.length" description="No withdrawals recorded" :image-size="70" />
+            <el-table v-else :data="adminWithdrawalHistory" size="small" max-height="420" style="width:100%">
+              <el-table-column label="Date" min-width="165">
+                <template #default="{ row }">{{ dateTime(row.createdAt) }}</template>
+              </el-table-column>
+              <el-table-column label="Notes" min-width="180">
+                <template #default="{ row }">{{ row.notes || '—' }}</template>
+              </el-table-column>
+              <el-table-column label="Withdrawn" width="125" align="right">
+                <template #default="{ row }"><strong class="debit">−{{ money(Math.abs(Number(row.amount || 0))) }}</strong></template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-dialog>
+
         <el-alert v-if="custodyError" type="error" :title="custodyError" :closable="false" show-icon />
+
+        <!-- Owner capital is credited to the Admin ledger only after recipient acceptance. -->
+        <el-card v-if="myPendingCapital.length" shadow="never" class="panel" style="margin-bottom: 16px">
+          <template #header>
+            <strong>Initial Capital Awaiting Confirmation</strong>
+          </template>
+          <div v-for="capital in myPendingCapital" :key="capital.id"
+               style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+            <div>
+              <strong>{{ money(capital.amount) }}</strong>
+              <div class="hint">From Owner · {{ dateTime(capital.createdAt) }} · Pending receipt</div>
+              <div v-if="capital.notes" class="hint">{{ capital.notes }}</div>
+            </div>
+            <el-button type="primary" :loading="acceptingCapitalId === capital.id"
+                       :disabled="acceptingCapitalId !== null" @click="confirmInitialCapital(capital)">
+              Confirm Receipt
+            </el-button>
+          </div>
+        </el-card>
 
         <div class="work-grid cash-activity-section">
           <el-card shadow="never" class="panel cash-entry-card">
@@ -93,7 +141,10 @@
         <div class="session-ledger-grid space-top">
           <el-card shadow="never" class="ledger-card credit-ledger">
             <template #header>
-              <strong>Credits</strong>
+              <div class="weekly-analytics-card-title">
+                <!--<el-icon><Wallet /></el-icon>-->
+                <strong style="font-size:14px;font-weight:700">Credits</strong>
+              </div>
             </template>
 
             <el-empty v-if="!adminCreditTransactions.length"
@@ -120,7 +171,7 @@
 
           <el-card shadow="never" class="ledger-card expense-ledger">
             <template #header>
-              <strong>Expenses</strong>
+              <strong style="font-size:14px;font-weight:700">Expenses</strong>
             </template>
 
             <el-empty v-if="!adminExpenseTransactions.length"
@@ -146,10 +197,11 @@
           </el-card>
         </div>
 
-        <el-card shadow="never" class="panel space-top">
+        <el-card shadow="never" class="panel space-top app-table-card">
           <template #header>
-            <div class="cash-header-actions">
-              <div>
+            <div class="app-table-card-header">
+              <el-icon><WalletFilled /></el-icon>
+              <div class="app-table-card-title">
                 <strong>Current Employee Money Trail</strong>
                 <div class="hint">Employee cash flow not yet included in a Reading Session.</div>
               </div>
@@ -158,12 +210,14 @@
 
           <div v-loading="moneyTrailLoading">
             <el-empty v-if="!moneyTrailLoading && !currentMoneyTrail.length"
+                      class="app-table-empty"
                       description="No current employee sessions awaiting Reading Session coverage"
                       :image-size="70" />
 
             <div v-else class="weekly-report-table-wrap">
               <el-table :data="currentMoneyTrail"
                         size="small"
+                        class="app-data-table is-compact"
                         style="width:100%">
                 <el-table-column label="Employee / Session" min-width="230">
                   <template #default="{ row }">
@@ -175,7 +229,7 @@
                       <div class="money-trail-employee">
                         <div class="money-trail-employee-line">
                           <strong>{{ row.employeeName }}</strong>
-                          <span>Session #{{ row.id }}</span>
+                          <span>Session # {{ row.sessionNumber ?? row.id }}</span>
                         </div>
 
                         <span class="money-trail-date">
@@ -218,7 +272,7 @@
                   </template>
                 </el-table-column>
 
-                <el-table-column label="Short / Over" width="125" align="right">
+                <el-table-column label="Short / Over" width="125" align="center">
                   <template #default="{ row }">
                     <strong v-if="row.variance != null"
                             :class="Number(row.variance) < 0 ? 'debit' : Number(row.variance) > 0 ? 'credit' : ''">
@@ -261,8 +315,9 @@
       <el-tab-pane label="Session Funding" name="funding">
         <el-card shadow="never" class="panel">
           <template #header>
-            <div class="cash-header-actions">
-              <div>
+            <div class="app-table-card-header">
+              <el-icon><Money /></el-icon>
+              <div class="app-table-card-title">
                 <strong>Admin → Employee Cash Funding</strong>
                 <div class="hint">Send opening cash for new session from your Admin custody. The employee confirms receipt before their session is credited.</div>
               </div>
@@ -296,46 +351,99 @@
 
         </el-card>
 
-        <el-card shadow="never" class="panel">
+        <el-dialog v-model="adminWithdrawalDialogOpen" title="Admin Cash Withdrawal" width="min(480px, 94vw)" append-to-body destroy-on-close class="admin-withdraw-dialog">
+          <p class="withdraw-dialog-hint">Withdraw cash from the business. This reduces Admin custody only; it is not a business expense.</p>
+          <el-form label-position="top" class="cash-activity-form" @submit.prevent="withdrawAdminCash">
+            <el-form-item :label="`Withdrawal Amount · Available ${custodyLoaded && !custodyError ? money(myCustodyAvailable) : '—'}`">
+              <el-input v-model="adminWithdrawal.amount" inputmode="decimal" placeholder="0.00"
+                        :disabled="adminWithdrawalBusy || !custodyLoaded || !!custodyError || myCustodyAvailable <= 0">
+                <template #prefix>$</template>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="Notes (optional)">
+              <el-input v-model="adminWithdrawal.notes" maxlength="500" />
+            </el-form-item>
+            <div class="hint">The withdrawal date is recorded automatically when you confirm.</div>
+            <div class="withdraw-dialog-actions">
+              <el-button :disabled="adminWithdrawalBusy" @click="adminWithdrawalDialogOpen = false">Cancel</el-button>
+              <el-button type="primary" native-type="submit" :loading="adminWithdrawalBusy"
+                         :disabled="adminWithdrawalBusy || !custodyLoaded || !!custodyError || myCustodyAvailable <= 0 || !validAmount(adminWithdrawal.amount) || Number(adminWithdrawal.amount) > myCustodyAvailable">
+                <el-icon><Money /></el-icon><span>Withdraw Cash</span>
+              </el-button>
+            </div>
+          </el-form>
+        </el-dialog>
+
+        <el-card shadow="never" class="panel admin-custody-history-card">
           <template #header>
-            <div class="cash-header-actions"><div><strong>Admin-to-Employee Funding Status</strong><div class="hint">Check pending transfers and previously confirmed cash.</div></div></div>
+            <div class="app-table-card-header">
+              <el-icon><Money /></el-icon>
+              <div class="app-table-card-title">
+                <strong>Admin Custody History</strong>
+                <div class="hint">One chronological list of capital, funding, shift closings and actual machine collections. Other custody adjustments appear separately when needed.</div>
+              </div>
+            </div>
           </template>
-          <el-empty v-if="!adminFundingHistory.length" description="No funding records yet" :image-size="60" />
-          <div v-else>
-            <el-table :data="adminFundingHistory" size="small" style="width:100%">
-              <el-table-column label="Created" min-width="160">
-                <template #default="{ row }">
-                  {{ dateTime(row.createdAt) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="fromName" label="From" min-width="130" />
-              <el-table-column prop="toName" label="Employee" min-width="130" />
-              <el-table-column label="Type" min-width="145">
-                <template #default="{ row }">
-                  {{ row.fundingType === 'INITIAL_OPENING' ? 'Session Opening Bank' : 'Additional Cash' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="Amount" min-width="105">
-                <template #default="{ row }">
-                  {{ money(row.amount) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="Status" min-width="100">
-                <template #default="{ row }">
-                  <el-tag :type="row.status === 'Accepted' ? 'success' : row.status === 'Cancelled' ? 'info' : 'warning'" effect="light">{{ row.status }}</el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="Actions" min-width="140" align="right">
-                <template #default="{ row }">
-                  <template v-if="row.status === 'Pending'">
-                    <el-button v-if="!row.custodySourceAccountId" link type="primary" :disabled="adminBusy" @click="openEditFunding(row)"><el-icon><Edit /></el-icon><span>Edit</span></el-button>
-                    <el-button link type="danger" :loading="adminBusy" @click="cancelFunding(row)"><el-icon><Close /></el-icon><span>Cancel</span></el-button>
-                  </template>
-                  <span v-else class="hint">Locked</span>
-                </template>
-              </el-table-column>
-            </el-table>
+          <div class="admin-custody-history-filters">
+            <el-radio-group v-model="custodyHistoryRange" size="small" @change="onCustodyHistoryRangeChange">
+              <el-radio-button value="7d">Last 7 Days</el-radio-button>
+              <el-radio-button value="custom">Custom Range</el-radio-button>
+            </el-radio-group>
+            <div v-if="custodyHistoryRange === 'custom'" class="admin-custody-custom-range">
+              <el-date-picker v-model="custodyHistoryDates" type="daterange" value-format="YYYY-MM-DD"
+                              start-placeholder="Start date" end-placeholder="End date"
+                              unlink-panels :clearable="false" size="small" />
+              <el-button type="primary" size="small" :loading="custodyHistoryLoading"
+                         :disabled="!custodyHistoryDates || custodyHistoryDates.length !== 2"
+                         @click="loadCustodyHistory">Apply</el-button>
+            </div>
           </div>
+          <el-empty v-if="!adminCustodyHistory.length && !custodyHistoryLoading" description="No Admin custody transactions for this range" :image-size="60" />
+          <el-table v-else v-loading="custodyHistoryLoading" :data="adminCustodyHistory" size="small" style="width:100%" row-key="id">
+            <el-table-column label="Date" min-width="112">
+              <template #default="{ row }">{{ row.date }}</template>
+            </el-table-column>
+            <el-table-column prop="fromName" label="From" min-width="100" />
+            <el-table-column prop="toName" label="To" min-width="100" />
+            <el-table-column label="Type" min-width="165">
+              <template #default="{ row }">
+                <span>{{ row.type }}</span>
+                <el-tag v-if="row.status === 'Pending'" size="small" type="warning" effect="plain" style="margin-left: 5px">Pending</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="Opening" min-width="115" align="right">
+              <template #default="{ row }">{{ money(row.opening) }}</template>
+            </el-table-column>
+            <el-table-column label="Collection" min-width="125" align="right">
+              <template #default="{ row }">
+                <span v-if="Number(row.collection)" style="color: var(--el-color-success)">+{{ money(row.collection) }}</span>
+                <span v-else>{{ money(0) }}</span>
+                <div v-if="Number(row.calculatedCollection)" class="hint">Calculated {{ money(row.calculatedCollection) }}</div>
+              </template>
+            </el-table-column>
+            <el-table-column label="Funding" min-width="130" align="right">
+              <template #default="{ row }">
+                <span v-if="row.status === 'Pending'" class="hint">Pending {{ money(row.pendingAmount) }}</span>
+                <span v-else-if="row.type === 'Admin Withdrawal'" style="color: var(--el-color-danger)">{{ money(row.otherMovement) }}</span>
+                <span v-else :style="Number(row.funding) < 0 ? 'color: var(--el-color-danger)' : ''">{{ money(row.funding) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="Closing" min-width="120" align="right">
+              <template #default="{ row }"><strong>{{ money(row.closing) }}</strong></template>
+            </el-table-column>
+            <el-table-column label="Actions" min-width="135" align="right">
+              <template #default="{ row }">
+                <template v-if="row.status === 'Pending'">
+                  <el-button v-if="!row.custodySourceAccountId" link type="primary" :disabled="adminBusy" @click="openEditFunding(row)"><el-icon><Edit /></el-icon>Edit</el-button>
+                  <el-button link type="danger" :loading="adminBusy" @click="cancelFunding(row)"><el-icon><Close /></el-icon>Cancel</el-button>
+                </template>
+                <el-tooltip v-else-if="Number(row.otherMovement)" :content="`Other custody movement: ${money(row.otherMovement)} · ${row.notes || row.type}`" placement="top">
+                  <span class="hint">Details</span>
+                </el-tooltip>
+                <span v-else class="hint">—</span>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-card>
       </el-tab-pane>
 
@@ -343,13 +451,98 @@
 
         <el-card shadow="never" class="panel">
           <template #header>
-            <div class="cash-header-actions"><div><strong>Manage Expense Types</strong><div class="hint">Maintain the same expense categories used by employees and Admin.</div></div></div>
+            <div class="app-table-card-header">
+              <el-icon><WalletFilled /></el-icon>
+              <div class="app-table-card-title">
+                <strong>Manage Expense Types</strong>
+                <div class="hint">Maintain the same expense categories used by employees and Admin.</div>
+              </div>
+            </div>
           </template>
           <div class="cash-activity-row"><el-input v-model="newExpenseType" maxlength="100" placeholder="New expense type, e.g. Supplies" @keyup.enter="addType" /><el-button type="primary" :loading="busy" @click="addType"><el-icon><Plus /></el-icon><span>Add type</span></el-button></div>
           <div class="ledger-list"><div v-for="item in expenseTypes" :key="item.id" class="ledger-item"><span>{{ item.name }}</span><el-switch :model-value="item.isActive" :loading="busy" @change="value => changeType(item, value)" /></div></div>
         </el-card>
       </el-tab-pane>
+
+      <el-tab-pane label="Credit Type" name="credits">
+        <el-card shadow="never" class="panel">
+          <template #header>
+            <div class="app-table-card-header">
+              <el-icon><CircleCheckFilled /></el-icon>
+              <div class="app-table-card-title">
+                <strong>Manage Credit Types</strong>
+                <div class="hint">Global defaults are available to every location and are locked. Add location-specific credit types here.</div>
+              </div>
+            </div>
+          </template>
+
+          <div class="cash-activity-row">
+            <el-input v-model="newCreditType"
+                      maxlength="100"
+                      placeholder="New credit type, e.g. Cash Adjustment"
+                      @keyup.enter="addCreditType" />
+            <el-button type="primary"
+                       :loading="creditTypeBusy"
+                       @click="addCreditType">
+              <el-icon><Plus /></el-icon>
+              <span>Add type</span>
+            </el-button>
+          </div>
+
+          <div class="weekly-report-table-wrap space-top" v-loading="creditTypeLoading">
+            <el-table :data="creditTypes" size="small" style="width:100%">
+              <el-table-column prop="name" label="Credit Type" min-width="220" />
+
+              <el-table-column label="Source" width="120">
+                <template #default="{ row }">
+                  <el-tag v-if="row.isGlobal" type="info" effect="plain" round>Global</el-tag>
+                  <el-tag v-else type="primary" effect="plain" round>Location</el-tag>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="Status" width="120">
+                <template #default="{ row }">
+                  <el-switch :model-value="row.isActive"
+                             :disabled="row.isGlobal"
+                             :loading="creditTypeBusy"
+                             @change="value => changeCreditTypeStatus(row, value)" />
+                </template>
+              </el-table-column>
+
+              <el-table-column label="Actions" min-width="160" align="right">
+                <template #default="{ row }">
+                  <span v-if="row.isGlobal" class="hint">System managed</span>
+                  <template v-else>
+                    <el-button link type="primary" :disabled="creditTypeBusy" @click="openCreditTypeEdit(row)">
+                      <el-icon><Edit /></el-icon><span>Edit</span>
+                    </el-button>
+                    <el-button link type="danger" :disabled="creditTypeBusy" @click="deleteCreditType(row)">
+                      <el-icon><Delete /></el-icon><span>Delete</span>
+                    </el-button>
+                  </template>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-card>
+      </el-tab-pane>
     </el-tabs>
+
+    <el-dialog v-model="editCreditTypeOpen"
+               title="Edit Credit Type"
+               width="460px"
+               :close-on-click-modal="false"
+               destroy-on-close>
+      <el-form label-position="top" @submit.prevent="saveCreditTypeEdit">
+        <el-form-item label="Credit type name">
+          <el-input v-model="editCreditType.name" maxlength="100" @keyup.enter="saveCreditTypeEdit" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editCreditTypeOpen = false">Cancel</el-button>
+        <el-button type="primary" :loading="creditTypeBusy" @click="saveCreditTypeEdit">Save changes</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="editFundingOpen" title="Edit Pending Funding" width="520px" :close-on-click-modal="false" destroy-on-close>
       <el-form label-position="top">
@@ -378,6 +571,7 @@ import { useUserStore } from '@/store/modules/user';
 import { useRefreshStore } from '@/store/modules/refresh';
 import request from '@/utils/request';
 import { ElMessage, ElMessageBox } from 'element-plus';
+  import { History as LcHistory, BanknoteArrowDown as LcBanknoteArrowDown } from '@lucide/vue';
 //
 import {
       getEmployeeFinance,
@@ -402,7 +596,31 @@ const loading = ref(false); const busy = ref(false);
 const adminLoading = ref(false); const adminBusy = ref(false);
 const session = ref(null); const summary = ref({}); const transactions = ref([]); const pending = ref([]); const pendingAdminFunding = ref([]);
 const recipients = ref([]); const expenseTypes = ref([]);
-const adminEmployees = ref([]); const adminFundingHistory = ref([]); const adminSummary = ref({});
+const creditTypes = ref([]);
+const creditTypeLoading = ref(false);
+const creditTypeBusy = ref(false);
+const newCreditType = ref('');
+const editCreditTypeOpen = ref(false);
+const editCreditType = ref({ id: null, name: '' });
+const adminEmployees = ref([]); const adminFundingHistory = ref([]); const adminCustodyHistory = ref([]); const adminSummary = ref({});
+const adminWithdrawal = ref({ amount: '', notes: '' });
+const adminWithdrawalBusy = ref(false);
+const adminWithdrawalDialogOpen = ref(false);
+const adminWithdrawalHistoryOpen = ref(false);
+const adminWithdrawalHistory = ref([]);
+const adminWithdrawalHistoryLoading = ref(false);
+const adminWithdrawalHistoryError = ref('');
+const custodyHistoryRange = ref('7d');
+const custodyHistoryDates = ref([]);
+const custodyHistoryLoading = ref(false);
+let custodyHistoryRequestId = 0;
+
+const pendingOwnerCapital = ref([]);
+const acceptingCapitalId = ref(null);
+const myPendingCapital = computed(() => pendingOwnerCapital.value.filter(item =>
+      String(item.status).toLowerCase() === 'pending' &&
+      Number(item.toUserId) === Number(custodyViewerId.value)
+));
 const custodyAccounts = ref([]);
 const custodyViewerId = ref(null);
 const custodyLoaded = ref(false);
@@ -468,7 +686,7 @@ const adminCreditTransactions = computed(() =>
 
 const adminExpenseTransactions = computed(() =>
       adminLedger.value
-        .filter(item => Number(item.amount || 0) < 0)
+        .filter(item => Number(item.amount || 0) < 0 && item.kind !== 'OWNER_DISTRIBUTION')
         .slice()
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 );
@@ -487,7 +705,7 @@ const adminLedgerLabel = item => {
         EMPLOYEE_SUPPORT: 'Employee Funding',
         DIRECT_EXPENSE: item?.expenseTypeName || 'Expense',
         BANK_WITHDRAWAL: 'Bank Withdrawal',
-        OWNER_DISTRIBUTION: 'Owner Distribution'
+        OWNER_DISTRIBUTION: 'Admin Withdrawal'
       }[item?.kind] || (Number(item?.amount || 0) >= 0 ? 'Credit' : 'Expense');
 };
 
@@ -504,6 +722,7 @@ async function loadCustody() {
         if (Number(locationId.value) !== targetLocation || requestId !== custodyRequestId) return;
         const d = response.data || {};
         custodyAccounts.value = d.accounts || [];
+        pendingOwnerCapital.value = d.capital || [];
         custodyViewerId.value = d.viewerId;
         custodyLoaded.value = true;
       } catch (e) {
@@ -512,6 +731,32 @@ async function loadCustody() {
         custodyError.value = errorText(e);
       } finally {
         if (Number(locationId.value) === targetLocation && requestId === custodyRequestId) custodyLoading.value = false;
+      }
+}
+async function confirmInitialCapital(capital) {
+      if (!locationId.value || !capital?.id || acceptingCapitalId.value !== null) return;
+      const targetLocation = Number(locationId.value);
+      try {
+        await ElMessageBox.confirm(
+          `Confirm that you received ${money(capital.amount)} in initial Owner capital?`,
+          'Confirm Capital Receipt',
+          { type: 'warning', confirmButtonText: 'Confirm Receipt', cancelButtonText: 'Cancel' }
+        );
+      } catch { return; }
+      try {
+        acceptingCapitalId.value = capital.id;
+        await request({
+          url: `/locationcash/capital/${capital.id}/accept`,
+          method: 'post',
+          data: { locationid: targetLocation }
+        });
+        ElMessage.success('Initial capital confirmed and credited to your Admin balance.');
+        if (Number(locationId.value) === targetLocation) await refreshBalances();
+      } catch (e) {
+        ElMessage.error(errorText(e));
+        if (Number(locationId.value) === targetLocation) await loadCustody();
+      } finally {
+        acceptingCapitalId.value = null;
       }
 }
 async function loadAdminLedger() {
@@ -528,6 +773,27 @@ async function loadAdminLedger() {
       } catch (e) {
         adminLedger.value = [];
         ElMessage.error(errorText(e));
+      }
+}
+
+async function openAdminWithdrawalHistory() {
+      adminWithdrawalHistoryOpen.value = true;
+      adminWithdrawalHistoryLoading.value = true;
+      adminWithdrawalHistoryError.value = '';
+      adminWithdrawalHistory.value = [];
+      const targetLocation = Number(locationId.value);
+      try {
+        const response = await request({
+          url: '/employeefinance/admin/custody-withdrawals',
+          method: 'get',
+          params: { locationid: targetLocation }
+        });
+        if (Number(locationId.value) !== targetLocation) return;
+        adminWithdrawalHistory.value = response?.data || [];
+      } catch (e) {
+        if (Number(locationId.value) === targetLocation) adminWithdrawalHistoryError.value = errorText(e);
+      } finally {
+        adminWithdrawalHistoryLoading.value = false;
       }
 }
 
@@ -710,11 +976,72 @@ async function loadAdminOverview() {
         const d = (await getAdminFinanceOverview(locationId.value)).data || {};
         adminEmployees.value = d.employees || [];
         adminFundingHistory.value = d.funding || [];
+        await loadCustodyHistory();
         adminSummary.value = d.summary || {};
       } catch (e) {
         ElMessage.error(errorText(e));
       } finally {
         adminLoading.value = false;
+      }
+}
+
+function onCustodyHistoryRangeChange(value) {
+      if (value === '7d') loadCustodyHistory();
+      else adminCustodyHistory.value = [];
+}
+
+async function loadCustodyHistory() {
+      if (!isAdmin.value || !locationId.value) return;
+      const params = { locationid: locationId.value };
+      if (custodyHistoryRange.value === 'custom') {
+        if (!custodyHistoryDates.value || custodyHistoryDates.value.length !== 2) return;
+        params.startdate = custodyHistoryDates.value[0];
+        params.enddate = custodyHistoryDates.value[1];
+      } else {
+        params.range = '7d';
+      }
+      const requestId = ++custodyHistoryRequestId;
+      custodyHistoryLoading.value = true;
+      try {
+        const result = await request({ url: '/employeefinance/admin/custody-history', method: 'get', params });
+        if (requestId === custodyHistoryRequestId) adminCustodyHistory.value = result?.data || [];
+      } catch (e) {
+        if (requestId === custodyHistoryRequestId) {
+          adminCustodyHistory.value = [];
+          ElMessage.error(errorText(e));
+        }
+      } finally {
+        if (requestId === custodyHistoryRequestId) custodyHistoryLoading.value = false;
+      }
+}
+
+async function withdrawAdminCash() {
+      if (!validAmount(adminWithdrawal.value.amount)) return ElMessage.warning('Enter a valid withdrawal amount.');
+      adminWithdrawalBusy.value = true;
+      try {
+        // Verify after acquiring a fresh balance; server checks again under a lock.
+        await loadCustody();
+        if (!custodyLoaded.value || custodyError.value) throw new Error('Unable to verify Admin custody.');
+        if (Number(adminWithdrawal.value.amount) > myCustodyAvailable.value) {
+          return ElMessage.warning(`Available cash is ${money(myCustodyAvailable.value)}.`);
+        }
+        await ElMessageBox.confirm(
+          `Withdraw ${money(Number(adminWithdrawal.value.amount))} from Admin custody? This cash will leave the business.`,
+          'Confirm Cash Withdrawal', { type: 'warning', confirmButtonText: 'Withdraw Cash' }
+        );
+        const response = await request({
+          url: '/employeefinance/admin/custody-withdraw',
+          method: 'post',
+          data: { locationid: locationId.value, amount: adminWithdrawal.value.amount, notes: adminWithdrawal.value.notes }
+        });
+        adminWithdrawal.value = { amount: '', notes: '' };
+        adminWithdrawalDialogOpen.value = false;
+        ElMessage.success(response?.message || 'Cash withdrawal recorded.');
+        await refreshBalances();
+      } catch (e) {
+        if (e !== 'cancel' && e !== 'close') ElMessage.error(errorText(e));
+      } finally {
+        adminWithdrawalBusy.value = false;
       }
 }
 
@@ -746,7 +1073,7 @@ function openEditFunding(item) {
       const employee = adminEmployees.value.find(person => Number(person.id) === Number(item.toUserId)) || adminEmployees.value.find(person => person.name === item.toName);
 
       editFunding.value = {
-        id: item.id,
+        id: item.fundingId || item.id,
         touserid: employee?.id ?? null,
         fundingtype: item.fundingType || 'INITIAL_OPENING',
         amount: String(item.amount ?? ''),
@@ -790,7 +1117,7 @@ async function cancelFunding(item) {
       } catch { return; }
       try {
         adminBusy.value = true;
-        await cancelAdminFunding(item.id, { locationid: locationId.value });
+        await cancelAdminFunding(item.fundingId || item.id, { locationid: locationId.value });
         ElMessage.success('Pending funding cancelled.');
         await refreshBalances();
       } catch (e) {
@@ -811,6 +1138,123 @@ async function addType() {
 async function changeType(item, value) {
       await run(() => setExpenseTypeStatus(item.id, { locationid: locationId.value, isactive: value }), 'Expense type updated.');
 }
+async function loadCreditTypesManage() {
+      if (!isAdmin.value || !locationId.value) {
+        creditTypes.value = [];
+        return;
+      }
+
+      try {
+        creditTypeLoading.value = true;
+        const response = await request({
+          url: '/employeefinance/credit-types/manage',
+          method: 'get',
+          params: { locationid: locationId.value }
+        });
+        creditTypes.value = response?.data || [];
+      } catch (e) {
+        creditTypes.value = [];
+        ElMessage.error(errorText(e));
+      } finally {
+        creditTypeLoading.value = false;
+      }
+}
+
+async function addCreditType() {
+      const name = newCreditType.value.trim();
+      if (!name) return ElMessage.warning('Enter a credit type name.');
+
+      try {
+        creditTypeBusy.value = true;
+        await request({
+          url: '/employeefinance/credit-types',
+          method: 'post',
+          data: { locationid: locationId.value, name }
+        });
+        newCreditType.value = '';
+        ElMessage.success('Credit type added.');
+        await Promise.all([loadCreditTypesManage(), refreshAdminCreditTypes(), load()]);
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        creditTypeBusy.value = false;
+      }
+}
+
+function openCreditTypeEdit(item) {
+      if (item.isGlobal) return;
+      editCreditType.value = { id: item.id, name: item.name || '' };
+      editCreditTypeOpen.value = true;
+}
+
+async function saveCreditTypeEdit() {
+      const name = String(editCreditType.value.name || '').trim();
+      if (!editCreditType.value.id || !name) return ElMessage.warning('Enter a credit type name.');
+
+      try {
+        creditTypeBusy.value = true;
+        await request({
+          url: `/employeefinance/credit-types/${editCreditType.value.id}`,
+          method: 'patch',
+          data: { locationid: locationId.value, name }
+        });
+        editCreditTypeOpen.value = false;
+        ElMessage.success('Credit type updated.');
+        await Promise.all([loadCreditTypesManage(), refreshAdminCreditTypes(), load()]);
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        creditTypeBusy.value = false;
+      }
+}
+
+async function changeCreditTypeStatus(item, value) {
+      if (item.isGlobal) return;
+      try {
+        creditTypeBusy.value = true;
+        await request({
+          url: `/employeefinance/credit-types/${item.id}`,
+          method: 'patch',
+          data: { locationid: locationId.value, isactive: value }
+        });
+        ElMessage.success(value ? 'Credit type activated.' : 'Credit type deactivated.');
+        await Promise.all([loadCreditTypesManage(), refreshAdminCreditTypes(), load()]);
+      } catch (e) {
+        ElMessage.error(errorText(e));
+        await loadCreditTypesManage();
+      } finally {
+        creditTypeBusy.value = false;
+      }
+}
+
+async function deleteCreditType(item) {
+      if (item.isGlobal) return;
+      try {
+        await ElMessageBox.confirm(
+          `Delete credit type “${item.name}”?`,
+          'Delete Credit Type',
+          { confirmButtonText: 'Delete', cancelButtonText: 'Cancel', type: 'warning' }
+        );
+      } catch {
+        return;
+      }
+
+      try {
+        creditTypeBusy.value = true;
+        await request({
+          url: `/employeefinance/credit-types/${item.id}`,
+          method: 'delete',
+          params: { locationid: locationId.value }
+        });
+        ElMessage.success('Credit type deleted.');
+        await Promise.all([loadCreditTypesManage(), refreshAdminCreditTypes(), load()]);
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        creditTypeBusy.value = false;
+      }
+}
+
 watch(
       () => refreshStore.key('adminTransactions'),
       (current, previous) => {
@@ -830,15 +1274,60 @@ watch(adminTransactionMode, mode => {
 });
 
 watch(adminTab, value => {
-      if (!['overview', 'funding', 'expenses'].includes(value)) adminTab.value = 'overview';
+      if (!['overview', 'funding', 'expenses', 'credits'].includes(value)) {
+        adminTab.value = 'overview';
+        return;
+      }
+      if (value === 'credits') loadCreditTypesManage();
 });
-watch(locationId, () => { ++custodyRequestId; custodyLoaded.value = false; custodyLoading.value = false; custodyError.value = ''; custodyAccounts.value = []; custodyViewerId.value = null; adminLedger.value = []; currentMoneyTrail.value = []; load(); });
+watch(locationId, () => { ++custodyRequestId; custodyLoaded.value = false; custodyLoading.value = false; custodyError.value = ''; custodyAccounts.value = []; pendingOwnerCapital.value = []; custodyViewerId.value = null; adminLedger.value = []; currentMoneyTrail.value = []; creditTypes.value = []; load(); if (adminTab.value === 'credits') loadCreditTypesManage(); });
 onMounted(load);
 </script>
 
 
 
 <style scoped>
+.withdraw-history-alert { margin-bottom: 12px; }
+.withdraw-dialog-hint {
+  margin: 0 0 18px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+.withdraw-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+.admin-custody-history-card {
+  margin-top: 16px;
+}
+.admin-custody-history-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.admin-custody-custom-range {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+@media (max-width: 767px) {
+  .admin-custody-history-filters,
+  .admin-custody-custom-range {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .admin-custody-custom-range :deep(.el-date-editor) {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
 .money-trail-employee-wrap {
   display: flex;
   align-items: stretch;

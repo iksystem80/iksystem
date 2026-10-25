@@ -168,10 +168,11 @@ const startNativeCamera = async () => {
           : CameraDirection.Rear
     });
 
-    if (!photo.webPath) return;
+    if (!photo.webPath) return null;
 
     const image = new Image();
 
+    return await new Promise((resolve, reject) => {
     image.onload = () => {
       const canvas = canvasRef.value;
       if (!canvas) return;
@@ -190,21 +191,23 @@ const startNativeCamera = async () => {
       const imageFile = dataURLtoFile(capturedImage.value, fileName);
 
       emit('captured', imageFile);
+      resolve(imageFile);
 
       isCameraOpen.value = false;
       isStreamActive.value = false;
     };
 
     image.onerror = () => {
-      alert('Unable to process captured photo.');
+      reject(new Error('Unable to process captured photo.'));
     };
 
     image.src = photo.webPath;
+    });
   } catch (error) {
     console.error('Native Camera Error:', error);
 
     const message = String(error?.message || error || '').toLowerCase();
-    if (message.includes('cancel')) return;
+    if (message.includes('cancel')) return null;
 
     alert(
       `Camera Error
@@ -221,8 +224,7 @@ const startCamera = async () => {
     Capacitor.isNativePlatform() &&
     Capacitor.getPlatform() === 'ios'
   ) {
-    await startNativeCamera();
-    return;
+    return await startNativeCamera();
   }
 
   stopCamera();
@@ -283,14 +285,30 @@ const stopCamera = () => {
 defineExpose({
   reset,
   startCamera,
-  stopCamera
+  stopCamera,
+  capturePhoto
 });
 
 const takePhoto = async () => {
   const video = videoRef.value;
   const canvas = canvasRef.value;
 
-  if (!video || !canvas) return;
+  if (!video || !canvas || !isStreamActive.value) {
+    throw new Error('Camera is not ready. Please start the camera and try again.');
+  }
+  if (!video.videoWidth || !video.videoHeight) {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        video.removeEventListener('loadedmetadata', ready);
+        reject(new Error('Camera is not ready yet. Please try again.'));
+      }, 5000);
+      function ready() {
+        clearTimeout(timeout);
+        resolve();
+      }
+      video.addEventListener('loadedmetadata', ready, { once: true });
+    });
+  }
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -315,7 +333,21 @@ const takePhoto = async () => {
   emit('captured', imageFile);
 
   stopCamera();
+  return imageFile;
 };
+
+// Capture a fresh photo using the current live stream (or native iOS camera).
+// Returns the File so the parent can wait until capture is complete.
+async function capturePhoto() {
+  reset();
+  if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
+    return await startNativeCamera();
+  }
+  if (!isStreamActive.value) {
+    await startCamera();
+  }
+  return await takePhoto();
+}
 
 // 4. Return from view mode back to live camera mode
 const retakePhoto = async () => {

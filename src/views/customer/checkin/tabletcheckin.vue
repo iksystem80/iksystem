@@ -86,16 +86,40 @@
           </template>
 
           <template v-else>
-            <div class="camera-frame">
-              <CameraApp ref="cameraAppRef"
-                         shape="custom"
-                         width="100%"
-                         height="100%"
-                         border-radius="12px"
-                         @captured="handleCapturedImage" />
+            <div class="customer-flip-scene camera-flip-scene" :class="{ flipped: showCustomer }">
+              <div class="customer-flip-inner">
+                <div class="customer-flip-face customer-flip-front">
+                  <div class="camera-frame">
+                    <CameraApp v-if="!showCustomer"
+                               ref="cameraAppRef"
+                               shape="custom"
+                               width="100%"
+                               height="100%"
+                               border-radius="12px"
+                               @captured="handleCapturedImage" />
+                  </div>
+                </div>
+
+                <div class="customer-flip-face customer-flip-back">
+                  <div class="customer-preview">
+                    <div class="customer-avatar">
+                      <img v-if="matchedCustomer?.avatar"
+                           :src="matchedCustomer.avatar"
+                           :alt="matchedCustomerName" />
+                      <span v-else>{{ matchedCustomerInitials }}</span>
+                    </div>
+                    <strong>{{ matchedCustomerName }}</strong>
+                    <small>Checked in successfully</small>
+                    <div class="customer-preview-timer">
+                      Returning to camera in 5 seconds
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <el-button :loading="loading"
+                       :disabled="showCustomer"
                        type="primary"
                        class="checkin-button"
                        @click="submitForm">
@@ -123,7 +147,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Back, SwitchButton } from '@element-plus/icons-vue';
+
 import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/mycamera';
 import { checkin } from '@/api/customer';
@@ -210,12 +234,17 @@ async function submitForm() {
             await checkInFormRef.value.validate();
           }
 
-          if (userStore.hasfaceallowed && !capturedImage.value) {
-            ElMessage.warning('Please capture a customer photo.');
-            return;
-          }
-
           loading.value = true;
+
+          if (userStore.hasfaceallowed) {
+            // Check In automatically captures a new photo before verification.
+            capturedImage.value = null;
+            const photo = await cameraAppRef.value?.capturePhoto?.();
+            if (!photo) {
+              throw new Error('No photo captured. Please try again.');
+            }
+            capturedImage.value = photo;
+          }
 
           const payload = {
             phonenumber: unformatPhone(checkInForm.phone || ''),
@@ -262,7 +291,9 @@ async function submitForm() {
               message.toLowerCase().includes('verification')
             );
 
-          if (blockedCustomer) {
+          // Any failed face check-in must discard the captured photo and
+          // return the camera to a fresh capture (including unknown faces).
+          if (userStore.hasfaceallowed || blockedCustomer) {
             resetForm();
           }
         } finally {
@@ -684,6 +715,18 @@ function resetForm() {
     color: #887baf;
     font-size: 11px;
     font-weight: 700;
+  }
+
+  .camera-flip-scene,
+  .camera-flip-scene .customer-flip-inner {
+    min-height: 330px;
+  }
+
+  .camera-flip-scene .camera-frame {
+    height: 100%;
+    max-height: none;
+    margin-bottom: 0;
+    aspect-ratio: auto;
   }
 
   .camera-frame {

@@ -104,6 +104,19 @@
           </small>
           <small v-else>No reading</small>
         </button>
+
+        <button type="button"
+                class="weekly-report-day weekly-report-summary-day"
+                :class="{
+                  'is-active': summaryMode,
+                  'is-disabled': !availableDays.length
+                }"
+                :disabled="!availableDays.length || weekLoading"
+                @click="selectWeekSummary">
+          <span>Week</span>
+          <strong>Summary</strong>
+          <small>View totals</small>
+        </button>
       </div>
 
       <el-button text
@@ -119,6 +132,107 @@
               description="No completed Reading Sessions exist for this week."
               class="weekly-report-empty" />
 
+    <template v-else-if="summaryMode">
+      <div v-loading="weekSummaryLoading" class="weekly-report-summary-view">
+        <el-card shadow="never" class="weekly-report-section-card weekly-summary-table-card">
+          <template #header>
+            <div class="weekly-analytics-card-title">
+              <el-icon><DataAnalysis /></el-icon>
+              <div>
+                <strong>Weekly Summary</strong>
+                <div class="small-text">{{ formattedWeekRange }} · Completed Reading Sessions only.</div>
+              </div>
+            </div>
+          </template>
+
+          <div v-if="weekSummaryRows.length" class="weekly-report-table-wrap weekly-summary-table-wrap">
+            <el-table :data="weekSummaryRows" size="small"
+                      class="report-table weekly-report-table weekly-summary-table"
+                      show-summary :summary-method="weeklySummaryMethod"
+                :class="{ 'app-data-table': true }">
+              <el-table-column label="Day" min-width="110">
+                <template #default="{ row }">
+                  <div class="weekly-summary-day-cell">
+                    <strong>{{ dayName(row.date) }}</strong>
+                    <div class="small-text">{{ shortDate(row.date) }}</div>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="Customers" min-width="90" align="right"><template #default="{ row }">{{ number(row.customers) }}</template></el-table-column>
+              <el-table-column label="Total IN" min-width="115" align="right"><template #default="{ row }">{{ money(row.totalIn) }}</template></el-table-column>
+              <el-table-column label="Total OUT" min-width="115" align="right"><template #default="{ row }">{{ money(row.totalOut) }}</template></el-table-column>
+              <el-table-column label="Match" min-width="110" align="right"><template #default="{ row }">{{ money(row.match) }}</template></el-table-column>
+              <el-table-column label="Match %" min-width="90" align="right"><template #default="{ row }">{{ percentage(row.matchPercentage) }}</template></el-table-column>
+              <el-table-column label="Payout %" min-width="90" align="right"><template #default="{ row }">{{ percentage(row.payoutPercentage) }}</template></el-table-column>
+              <el-table-column label="Hold %" min-width="85" align="right"><template #default="{ row }">{{ percentage(row.holdPercentage) }}</template></el-table-column>
+              <el-table-column label="Gross Profit" min-width="115" align="right"><template #default="{ row }">{{ money(row.grossProfit) }}</template></el-table-column>
+              <el-table-column label="Net Profit" min-width="115" align="right"><template #default="{ row }"><strong :class="amountClass(row.netProfit)">{{ signedMoney(row.netProfit) }}</strong></template></el-table-column>
+              <el-table-column label="Short / Over" min-width="110" align="right"><template #default="{ row }"><span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span></template></el-table-column>
+            </el-table>
+          </div>
+
+          <div v-if="weekSummaryRows.length" class="weekly-report-mobile-list weekly-summary-mobile-list">
+            <div v-for="row in weekSummaryRows" :key="row.date" class="weekly-report-mobile-card weekly-summary-mobile-card">
+              <strong>{{ dayName(row.date) }} · {{ shortDate(row.date) }}</strong>
+              <div><span>Customers</span><b>{{ number(row.customers) }}</b></div>
+              <div><span>Total IN</span><b>{{ money(row.totalIn) }}</b></div>
+              <div><span>Total OUT</span><b>{{ money(row.totalOut) }}</b></div>
+              <div><span>Match</span><b>{{ money(row.match) }}</b></div>
+              <div><span>Match %</span><b>{{ percentage(row.matchPercentage) }}</b></div>
+              <div><span>Payout %</span><b>{{ percentage(row.payoutPercentage) }}</b></div>
+              <div><span>Hold %</span><b>{{ percentage(row.holdPercentage) }}</b></div>
+              <div><span>Gross Profit</span><b>{{ money(row.grossProfit) }}</b></div>
+              <div><span>Net Profit</span><b :class="amountClass(row.netProfit)">{{ signedMoney(row.netProfit) }}</b></div>
+              <div><span>Short / Over</span><b :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</b></div>
+            </div>
+            <div class="weekly-report-mobile-card weekly-summary-mobile-card is-total">
+              <strong>Week Total</strong>
+              <div><span>Customers</span><b>{{ number(weekSummaryTotals.customers) }}</b></div>
+              <div><span>Total IN</span><b>{{ money(weekSummaryTotals.totalIn) }}</b></div>
+              <div><span>Total OUT</span><b>{{ money(weekSummaryTotals.totalOut) }}</b></div>
+              <div><span>Match</span><b>{{ money(weekSummaryTotals.match) }}</b></div>
+              <div><span>Match %</span><b>{{ percentage(weekSummaryTotals.matchPercentage) }}</b></div>
+              <div><span>Payout %</span><b>{{ percentage(weekSummaryTotals.payoutPercentage) }}</b></div>
+              <div><span>Hold %</span><b>{{ percentage(weekSummaryTotals.holdPercentage) }}</b></div>
+              <div><span>Gross Profit</span><b>{{ money(weekSummaryTotals.grossProfit) }}</b></div>
+              <div><span>Net Profit</span><b :class="amountClass(weekSummaryTotals.netProfit)">{{ signedMoney(weekSummaryTotals.netProfit) }}</b></div>
+              <div><span>Short / Over</span><b :class="amountClass(weekSummaryTotals.shortOver)">{{ signedMoney(weekSummaryTotals.shortOver) }}</b></div>
+            </div>
+          </div>
+
+          <el-empty v-if="!weekSummaryLoading && !weekSummaryRows.length" description="No completed Reading Sessions are available for this week." />
+        </el-card>
+
+        <el-card v-if="weekSummaryRows.length" shadow="never" class="weekly-report-section-card weekly-summary-shortover-card">
+          <template #header>
+            <div class="weekly-analytics-card-title">
+              <el-icon><DataAnalysis /></el-icon>
+              <div><strong>Weekly Short / Over</strong><div class="small-text">Employee variance summary by completed Reading day.</div></div>
+            </div>
+          </template>
+          <div class="weekly-report-table-wrap weekly-summary-shortover-wrap">
+            <el-table :data="weekSummaryRows" size="small" class="report-table weekly-report-table weekly-summary-shortover-table" show-summary :summary-method="weeklyShortOverSummaryMethod"
+                :class="{ 'app-data-table': true }">
+              <el-table-column label="Day" min-width="115"><template #default="{ row }">{{ dayName(row.date) }}</template></el-table-column>
+              <el-table-column label="Short / Over" min-width="120"><template #default="{ row }"><span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span></template></el-table-column>
+              <el-table-column label="Employee Names" min-width="360"><template #default="{ row }">{{ row.employeeNames || '—' }}</template></el-table-column>
+              <el-table-column label="Zelle" min-width="100" align="right"><template #default="{ row }">{{ money(row.zelle || 0) }}</template></el-table-column>
+              <el-table-column label="Receive By" min-width="130"><template #default="{ row }">{{ row.receiveBy || '—' }}</template></el-table-column>
+            </el-table>
+          </div>
+          <div class="weekly-report-mobile-list weekly-summary-shortover-mobile-list">
+            <div v-for="row in weekSummaryRows" :key="`shortover-${row.date}`" class="weekly-report-mobile-card weekly-summary-shortover-mobile-card">
+              <strong>{{ dayName(row.date) }}</strong>
+              <div><span>Short / Over</span><b :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</b></div>
+              <div><span>Employees</span><b>{{ row.employeeNames || '—' }}</b></div>
+              <div><span>Zelle</span><b>{{ money(row.zelle || 0) }}</b></div>
+              <div><span>Receive By</span><b>{{ row.receiveBy || '—' }}</b></div>
+            </div>
+          </div>
+        </el-card>
+      </div>
+    </template>
+
     <template v-else-if="selectedDay">
       <el-card shadow="never" class="weekly-report-session-card weekly-selected-day-banner">
         <div class="weekly-report-session-row">
@@ -131,7 +245,7 @@
               <span class="weekly-report-eyebrow">Selected Reading Day</span>
               <h3>{{ longDate(selectedDate) }}</h3>
               <p v-if="selectedSession">
-                Reading Session #{{ selectedSession.id }} ·
+                Reading Session #{{ selectedSession.sessionNumber ?? selectedSession.id }} ·
                 {{ formatDateTime(selectedSession.startedAt) }} -
                 {{ formatDateTime(selectedSession.endedAt) }}
               </p>
@@ -143,7 +257,7 @@
             <el-select v-model="selectedSessionId" @change="loadDayReport">
               <el-option v-for="session in selectedDay.sessions"
                          :key="session.id"
-                         :label="`Session #${session.id}`"
+                         :label="`Session #${session.sessionNumber ?? session.id}`"
                          :value="Number(session.id)" />
             </el-select>
           </div>
@@ -281,13 +395,16 @@
                   </template>
 
                   <div class="weekly-report-table-wrap weekly-session-cashflow-table-wrap">
-                    <el-table :data="cashFlowSessionRows" size="small" class="report-table weekly-report-table">
+                    <el-table :data="cashFlowSessionRows" size="small" class="report-table weekly-report-table"
+                :class="{ 'app-data-table': true }"
+                :row-style="({ row }) => ({ cursor: row.isAdmin ? 'default' : 'pointer' })"
+                @row-click="openCashFlowShiftReport">
                       <el-table-column label="Employee / Session" min-width="250">
                         <template #default="{ row }">
                           <div class="weekly-report-shift-main">
-                            <strong>{{ row.isAdmin ? `Admin · Reading Session #${row.id}` : row.name }}</strong>
+                            <strong>{{ row.isAdmin ? `Admin · Reading Session #${row.sessionNumber ?? row.id}` : row.name }}</strong>
                             <span v-if="row.isAdmin">Machine collection + Admin reading transactions</span>
-                            <span v-else>Session #{{ row.id }} · {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}</span>
+                            <span v-else>Session #{{ row.sessionNumber ?? row.id }} · {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}</span>
                           </div>
                         </template>
                       </el-table-column>
@@ -369,7 +486,8 @@
                       <el-table :data="report.reading.machines"
                                 show-summary
                                 :summary-method="machineReadingSummaryMethod"
-                                class="report-table weekly-report-table">
+                                class="report-table weekly-report-table"
+                :class="{ 'app-data-table': true }">
                         <el-table-column prop="machinenumber" label="Mch #" min-width="60" fixed="left">
                           <template #default="{ row }">
                             <span class="weekly-machine-number-badge ">
@@ -454,7 +572,8 @@
                       <el-table :data="report.reading.byMachineType"
                                 show-summary
                                 :summary-method="readingSummaryMethod"
-                                class="report-table weekly-report-table">
+                                class="report-table weekly-report-table"
+                :class="{ 'app-data-table': true }">
                         <el-table-column prop="machineType" label="Machine Type" min-width="115" fixed="left" />
                         <el-table-column prop="machineCount" label="Machines" min-width="90" align="center" />
                         <el-table-column prop="in" label="IN" min-width="105" align="right">
@@ -523,14 +642,14 @@
         <el-tab-pane label="Credit" name="credit">
           <div v-loading="dayLoading" class="weekly-report-tab-body">
             <template v-if="report">
-              <el-card shadow="never" class="weekly-report-section-card">
+              <el-card shadow="never" class="weekly-report-section-card weekly-report-credit-card">
                 <template #header>
                   <div class="weekly-report-card-header-actions">
                     <div class="weekly-analytics-card-title">
                       <el-icon><Plus /></el-icon>
                       <div>
                         <strong>Credit</strong>
-                        <div class="small-text">Credits added directly to Reading Session #{{ selectedSessionId }}.</div>
+                        <div class="small-text">Credits added directly to Reading Session #{{ selectedSession?.sessionNumber ?? selectedSessionId }}.</div>
                       </div>
                     </div>
 
@@ -604,7 +723,7 @@
                       <el-icon><UserFilled /></el-icon>
                       <div>
                         <strong>Employee Shifts</strong>
-                        <div class="small-text">Employee Sessions covered by Reading Session #{{ selectedSessionId }}.</div>
+                        <div class="small-text">Employee Sessions covered by Reading Session #{{ selectedSession?.sessionNumber ?? selectedSessionId }}.</div>
                       </div>
                     </div>
 
@@ -618,13 +737,16 @@
                 </template>
 
                 <el-table :data="report.expenses.employeeSessions"
-                          size="small" class="weekly-report-table">
+                          size="small" class="weekly-report-table"
+                :class="{ 'app-data-table': true }"
+                :row-style="() => ({ cursor: 'pointer' })"
+                @row-click="openShiftExpenses">
                   <el-table-column label="Employee / Session" min-width="310">
                     <template #default="{ row: shift }">
                       <div class="weekly-report-shift-main">
                         <strong>{{ shift.name }}</strong>
                         <span>
-                          Session #{{ shift.id }} ·
+                          Session #{{ shift.sessionNumber ?? shift.id }} ·
                           {{ formatDateTime(shift.clockIn) }} - {{ formatDateTime(shift.clockOut) }}
                         </span>
                       </div>
@@ -635,7 +757,7 @@
                     <template #default="{ row: shift }">
                       <el-space :size="6" alignment="center">
                         <strong>{{ money(shift.expenses) }}</strong>
-                        <el-button link type="primary" aria-label="View session expenses" title="View session expenses" @click="openShiftExpenses(shift)">
+                        <el-button link type="primary" aria-label="View session expenses" title="View session expenses" @click.stop="openShiftExpenses(shift)">
                           <el-icon :size="18"><List /></el-icon>
                         </el-button>
                       </el-space>
@@ -647,7 +769,7 @@
                   <div class="weekly-report-balance-row">
                     <div>
                       <strong>Admin Expense</strong>
-                      <span>Expenses added directly to Reading Session #{{ selectedSessionId }}</span>
+                      <span>Expenses added directly to Reading Session #{{ selectedSession?.sessionNumber ?? selectedSessionId }}</span>
                     </div>
                     <el-space :size="6" alignment="center">
                       <b class="debit">-{{ money(adminExpenseTotal) }}</b>
@@ -684,8 +806,14 @@
                     <strong class="credit">+{{ money(report.closingBalance.employeeSessionCloseAmount) }}</strong>
                   </div>
                   <div>
-                    <span>Machine Collection Amount</span>
-                    <strong class="credit">+{{ money(report.closingBalance.machineCollectionAmount) }}</strong>
+                    <span>Machine Collection Amount (Actual)</span>
+                    <strong class="credit">
+                      <span v-if="report.closingBalance.calculatedMachineCollectionAmount != null"
+                            class="small-text" style="font-weight: 400; color: var(--el-text-color-secondary);">
+                        (Calculated: {{ money(report.closingBalance.calculatedMachineCollectionAmount) }})
+                      </span>
+                      +{{ money(report.closingBalance.machineCollectionAmount) }}
+                    </strong>
                   </div>
                   <div>
                     <span>Admin Credit</span>
@@ -701,7 +829,90 @@
                   </div>
                 </div>
               </el-card>
+
+              <!-- Reconciliation diagnostic only: not an additional cash movement. -->
+              <el-card v-if="report.closingBalance.financeShortOver != null"
+                       shadow="never" class="weekly-report-section-card weekly-closing-card" style="margin-top: 12px;">
+                <template #header>
+                  <div class="weekly-analytics-card-title">
+                    <el-icon><Wallet /></el-icon>
+                    <div>
+                      <strong>Machine Collection Short / Over</strong>
+                      <div class="small-text">Actual machine collection compared with the calculated amount. Already reflected in Ending Balance.</div>
+                    </div>
+                  </div>
+                </template>
+                <div class="weekly-closing-list">
+                  <div>
+                    <span>Collection Variance</span>
+                    <strong :class="report.closingBalance.financeShortOver < 0 ? 'debit' : report.closingBalance.financeShortOver > 0 ? 'credit' : ''">
+                      {{ report.closingBalance.financeShortOver > 0 ? '+' : '' }}{{ money(report.closingBalance.financeShortOver) }}
+                    </strong>
+                  </div>
+                </div>
+              </el-card>
             </template>
+          </div>
+        </el-tab-pane>
+
+
+        <el-tab-pane label="Loan" name="loan">
+          <div v-loading="loanReportLoading" class="weekly-report-tab-body">
+            <el-card shadow="never" class="weekly-report-section-card">
+              <template #header>
+                <div class="weekly-analytics-card-title">
+                  <el-icon><LcHandCoins /></el-icon>
+                  <div>
+                    <strong>Open Loans</strong>
+                    <div class="small-text">Outstanding loans as of this Reading Session for covered employees</div>
+                  </div>
+                </div>
+              </template>
+              <el-table :data="loanOpenRows" size="small" class="weekly-report-table app-data-table">
+                <el-table-column prop="employeeName" label="Employee" min-width="140" />
+                <el-table-column prop="lenderName" label="Lender" min-width="140" />
+                <el-table-column label="Loan Amount" min-width="125" align="right">
+                  <template #default="{ row }">{{ money(row.loanAmount) }}</template>
+                </el-table-column>
+                <el-table-column label="Returned" min-width="120" align="right">
+                  <template #default="{ row }">{{ money(row.returnAmount) }}</template>
+                </el-table-column>
+                <el-table-column label="Remaining Balance" min-width="155" align="right">
+                  <template #default="{ row }"><strong>{{ money(row.remainingBalance) }}</strong></template>
+                </el-table-column>
+                <template #empty>No outstanding loans for employees in this Reading Session.</template>
+              </el-table>
+            </el-card>
+            <el-card shadow="never" class="weekly-report-section-card" style="margin-top: 16px;">
+              <template #header>
+                <div class="weekly-analytics-card-title">
+                  <el-icon><List /></el-icon>
+                  <div>
+                    <strong>Loan Transaction History</strong>
+                    <div class="small-text">Loan entries from Employee Sessions covered by this Reading Session</div>
+                  </div>
+                </div>
+              </template>
+              <el-table :data="loanHistoryRows" size="small" class="weekly-report-table app-data-table">
+                <el-table-column label="Date" min-width="155">
+                  <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
+                </el-table-column>
+                <el-table-column prop="employeeName" label="Employee" min-width="130" />
+                <el-table-column prop="lenderName" label="Lender" min-width="130" />
+                <el-table-column label="Transaction" min-width="125">
+                  <template #default="{ row }">{{ row.type === 'LOAN' ? 'Loan to Bank' : 'Loan Return' }}</template>
+                </el-table-column>
+                <el-table-column label="Amount" min-width="120" align="right">
+                  <template #default="{ row }">
+                    <strong :class="row.type === 'LOAN' ? 'credit' : 'debit'">{{ row.type === 'LOAN' ? '+' : '-' }}{{ money(row.amount) }}</strong>
+                  </template>
+                </el-table-column>
+                <el-table-column label="Employee Session" min-width="130">
+                  <template #default="{ row }">#{{ row.employeeSessionId }}</template>
+                </el-table-column>
+                <template #empty>No loan transactions in this Reading Session.</template>
+              </el-table>
+            </el-card>
           </div>
         </el-tab-pane>
 
@@ -747,16 +958,17 @@
                     <div class="weekly-analytics-shift-head">
                       <div class="weekly-analytics-shift-title">
                         <span class="weekly-analytics-dot"></span>
-                        <strong>Morning Shift</strong>
+                        <div class="weekly-analytics-shift-title-copy">
+                          <strong>Morning Shift</strong>
+                          <small>
+                            {{ timeLabel(report.analytics.shifts.morning.start) }} -
+                            {{ timeLabel(report.analytics.shifts.morning.end) }}
+                          </small>
+                        </div>
                       </div>
                       <span class="weekly-analytics-shift-share">
                         {{ shiftPercent(report.analytics.shifts.morning.pulls, report.analytics.dailyActivity.totalPulls) }}%
                       </span>
-                    </div>
-
-                    <div class="weekly-analytics-shift-amount">
-                      <span>Total Pull</span>
-                      <strong>{{ money(report.analytics.shifts.morning.pulls) }}</strong>
                     </div>
 
                     <div class="weekly-analytics-shift-stats">
@@ -768,12 +980,9 @@
                         <span>Avg / Customer</span>
                         <strong>{{ money(report.analytics.shifts.morning.averageMatchPerCustomer) }}</strong>
                       </div>
-                      <div>
-                        <span>Shift Hours</span>
-                        <strong>
-                          {{ timeLabel(report.analytics.shifts.morning.start) }} -
-                          {{ timeLabel(report.analytics.shifts.morning.end) }}
-                        </strong>
+                      <div class="weekly-analytics-shift-pull">
+                        <span>Total Pull</span>
+                        <strong>{{ money(report.analytics.shifts.morning.pulls) }}</strong>
                       </div>
                     </div>
                   </div>
@@ -782,16 +991,17 @@
                     <div class="weekly-analytics-shift-head">
                       <div class="weekly-analytics-shift-title">
                         <span class="weekly-analytics-dot is-night"></span>
-                        <strong>Night Shift</strong>
+                        <div class="weekly-analytics-shift-title-copy">
+                          <strong>Night Shift</strong>
+                          <small>
+                            {{ timeLabel(report.analytics.shifts.night.start) }} -
+                            {{ timeLabel(report.analytics.shifts.night.end) }}
+                          </small>
+                        </div>
                       </div>
                       <span class="weekly-analytics-shift-share">
                         {{ shiftPercent(report.analytics.shifts.night.pulls, report.analytics.dailyActivity.totalPulls) }}%
                       </span>
-                    </div>
-
-                    <div class="weekly-analytics-shift-amount">
-                      <span>Total Pull</span>
-                      <strong>{{ money(report.analytics.shifts.night.pulls) }}</strong>
                     </div>
 
                     <div class="weekly-analytics-shift-stats">
@@ -803,12 +1013,9 @@
                         <span>Avg / Customer</span>
                         <strong>{{ money(report.analytics.shifts.night.averageMatchPerCustomer) }}</strong>
                       </div>
-                      <div>
-                        <span>Shift Hours</span>
-                        <strong>
-                          {{ timeLabel(report.analytics.shifts.night.start) }} -
-                          {{ timeLabel(report.analytics.shifts.night.end) }}
-                        </strong>
+                      <div class="weekly-analytics-shift-pull">
+                        <span>Total Pull</span>
+                        <strong>{{ money(report.analytics.shifts.night.pulls) }}</strong>
                       </div>
                     </div>
                   </div>
@@ -824,8 +1031,8 @@
 
                   <div class="weekly-analytics-equation-hero">
                     <div>
-                      <strong :class="amountClass(report.analytics.reconciliation.equationX)">
-                        {{ signedMoney(report.analytics.reconciliation.equationX) }}
+                      <strong :class="amountClass(report.analytics.reconciliation.weeklyReport)">
+                        {{ signedMoney(report.analytics.reconciliation.weeklyReport) }}
                       </strong>
                       <small>Diagnostic Short / Over</small>
                     </div>
@@ -862,7 +1069,7 @@
                     </strong>
                   </div>
                   <div class="is-weekly">
-                    <span>Weekly Report</span>
+                    <span>Short/Over</span>
                     <strong :class="amountClass(report.analytics.reconciliation.weeklyReport)">
                       {{ signedMoney(report.analytics.reconciliation.weeklyReport) }}
                     </strong>
@@ -922,6 +1129,9 @@
                     <div class="weekly-analytics-detail-title">
                       <el-icon><Tickets /></el-icon>
                       <strong>Match Tickets</strong>
+                      <el-icon style="cursor:pointer; margin-left:auto" @click="ticketReconcileDialogVisible = true" title="View ticket reconciliation"><Ticket /></el-icon>
+                      <!--<el-button size="small" title="View ticket reconciliation" aria-label="View ticket reconciliation"
+                                 @click="ticketReconcileDialogVisible = true"><el-icon><View /></el-icon></el-button>-->
                     </div>
                   </template>
                   <div class="weekly-analytics-detail-list">
@@ -957,12 +1167,13 @@
                 </template>
 
                 <div class="weekly-report-table-wrap">
-                  <el-table :data="employeeCashFlowRows" size="small" class="report-table weekly-report-table">
+                  <el-table :data="employeeCashFlowRows" size="small" class="report-table weekly-report-table weekly-clickable-rows" @row-click="openCashFlowShiftReport"
+                :class="{ 'app-data-table': true }">
                     <el-table-column label="Employee / Session" min-width="250">
                       <template #default="{ row }">
                         <div class="weekly-report-shift-main">
                           <strong>{{ row.name }}</strong>
-                          <span>Session #{{ row.id }} · {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}</span>
+                          <span>Session #{{ row.sessionNumber ?? row.id }} · {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}</span>
                         </div>
                       </template>
                     </el-table-column>
@@ -1096,7 +1307,8 @@
                width="720px"
                class="compact-detail-dialog"
                append-to-body>
-      <el-table :data="adminReadingCredits" size="small" class="weekly-report-table">
+      <el-table :data="adminReadingCredits" size="small" class="weekly-report-table"
+                :class="{ 'app-data-table': true }">
         <el-table-column prop="creditTypeName" label="Credit Type" min-width="170" />
         <el-table-column prop="notes" label="Notes" min-width="250">
           <template #default="{ row }">
@@ -1122,7 +1334,8 @@
                width="720px"
                class="compact-detail-dialog"
                append-to-body>
-      <el-table :data="adminReadingExpenses" size="small" class="weekly-report-table">
+      <el-table :data="adminReadingExpenses" size="small" class="weekly-report-table"
+                :class="{ 'app-data-table': true }">
         <el-table-column prop="expenseTypeName" label="Expense Type" min-width="170" />
         <el-table-column prop="notes" label="Notes" min-width="250">
           <template #default="{ row }">
@@ -1151,7 +1364,7 @@
                :close-on-click-modal="false">
       <el-form label-position="top">
         <el-form-item label="Reading Session">
-          <el-input :model-value="`#${selectedSessionId || ''}`" disabled />
+          <el-input :model-value="`#${selectedSession?.sessionNumber ?? selectedSessionId ?? ''}`" disabled />
         </el-form-item>
 
         <el-form-item label="Credit Type">
@@ -1200,7 +1413,7 @@
                :close-on-click-modal="false">
       <el-form label-position="top">
         <el-form-item label="Reading Session">
-          <el-input :model-value="`Reading Session #${selectedSessionId}`" disabled />
+          <el-input :model-value="`Reading Session #${selectedSession?.sessionNumber ?? selectedSessionId}`" disabled />
         </el-form-item>
 
         <el-form-item label="Expense Type">
@@ -1252,7 +1465,8 @@
                append-to-body>
       <el-table :data="selectedExpenseTypeDetails"
                 size="small"
-                class="compact-detail-table weekly-report-table">
+                class="compact-detail-table weekly-report-table"
+                :class="{ 'app-data-table': true }">
         <el-table-column label="Source / Session" min-width="190">
           <template #default="{ row }">
             <strong>{{ row.employeeName }}</strong>
@@ -1280,11 +1494,30 @@
       </template>
     </el-dialog>
 
+    <TicketReconciliationDialog v-model="ticketReconcileDialogVisible"
+                                :session-id="selectedSessionId"
+                                :ended-at="formatDateTime(report?.session?.endedAt || report?.session?.endedat || report?.reading?.session?.endedAt)"
+                                :rows="report?.reading?.machines || []" />
+
+    <el-dialog v-model="employeeShiftDialogVisible"
+               class="employee-shift-report-dialog"
+               width="92%"
+               top="3vh"
+               destroy-on-close
+               append-to-body
+               :fullscreen="device === 'mobile'"
+               @closed="selectedEmployeeShiftSessionId = null">
+      <ShiftReport v-if="selectedEmployeeShiftSessionId"
+                   :session-id="selectedEmployeeShiftSessionId"
+                   embedded />
+    </el-dialog>
+
     <el-dialog v-model="expenseDialogVisible"
                :title="expenseDialogTitle"
                width="680px"
                append-to-body>
-      <el-table :data="selectedShiftExpenses" class="weekly-report-table">
+      <el-table :data="selectedShiftExpenses" class="weekly-report-table"
+                :class="{ 'app-data-table': true }">
         <el-table-column prop="category" label="Expense" min-width="150" />
         <el-table-column prop="details" label="Details" min-width="260" />
         <el-table-column label="Amount" width="130" align="right">
@@ -1307,14 +1540,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+
 import request from '@/utils/request';
 import { useUserStore } from '@/store/modules/user';
-import { getWeeklyReportDay, getWeeklyReportWeek } from '@/api/weeklyreport';
+import { getWeeklyReportDay, getWeeklyReportWeek, getWeeklyReportLoans } from '@/api/weeklyreport';
 import { getExpenseTypes } from '@/api/employeefinance';
+import ShiftReport from '@/views/operation/employeesession/shiftreport.vue';
+import TicketReconciliationDialog from '@/views/components/ticket_reconciliation_dialog.vue';
+import { useAppStore } from '@/store/modules/app';
+import { HandCoins as LcHandCoins } from '@lucide/vue';
 
 const userStore = useUserStore();
+const appStore = useAppStore();
+const device = computed(() => appStore.device);
+
 
 const weekMode = ref<'current' | 'last' | 'custom'>('current');
 const customRange = ref<string[]>([]);
@@ -1327,9 +1568,47 @@ const weekDays = ref<any[]>([]);
 const selectedDate = ref('');
 const selectedSessionId = ref<number | null>(null);
 const activeTab = ref('cashflow');
+const loanReportLoading = ref(false);
+const loanOpenRows = ref<any[]>([]);
+const loanHistoryRows = ref<any[]>([]);
+let loanRequestSequence = 0;
+
+watch([activeTab, selectedSessionId], async ([tab, sessionId]) => {
+  const requestSequence = ++loanRequestSequence;
+  loanOpenRows.value = [];
+  loanHistoryRows.value = [];
+  if (tab !== 'loan' || !sessionId || !userStore.locationId) {
+    loanReportLoading.value = false;
+    return;
+  }
+  loanReportLoading.value = true;
+  try {
+    const response = await getWeeklyReportLoans({
+      locationid: Number(userStore.locationId),
+      sessionid: Number(sessionId)
+    });
+    if (requestSequence !== loanRequestSequence) return;
+    loanOpenRows.value = response.data?.openLoans || [];
+    loanHistoryRows.value = response.data?.history || [];
+  } catch (error) {
+    if (requestSequence === loanRequestSequence) {
+      console.error('Loan report:', error);
+      ElMessage.error('Unable to load loan report.');
+    }
+  } finally {
+    if (requestSequence === loanRequestSequence) loanReportLoading.value = false;
+  }
+});
+
 const weekLoading = ref(false);
 const dayLoading = ref(false);
 const report = ref<any>(null);
+const ticketReconcileDialogVisible = ref(false);
+const summaryMode = ref(false);
+const weekSummaryLoading = ref(false);
+const weekSummaryRows = ref<any[]>([]);
+const employeeShiftDialogVisible = ref(false);
+const selectedEmployeeShiftSessionId = ref<number | null>(null);
 const expenseDialogVisible = ref(false);
 const selectedExpenseShift = ref<any>(null);
 const expenseTypeDialogVisible = ref(false);
@@ -1605,8 +1884,16 @@ const selectedShiftExpenseTotal = computed(() =>
 const expenseDialogTitle = computed(() => {
                               const shift = selectedExpenseShift.value;
                               if (!shift) return 'Employee Session Expenses';
-                              return `${shift.name} · Session #${shift.id} Expenses`;
+                              return `${shift.name} · Session #${shift.sessionNumber ?? shift.id} Expenses`;
 });
+
+function openCashFlowShiftReport(row: any) {
+                              if (row?.isAdmin) return;
+                              const sessionId = Number(row?.id);
+                              if (!Number.isSafeInteger(sessionId) || sessionId <= 0) return;
+                              selectedEmployeeShiftSessionId.value = sessionId;
+                              employeeShiftDialogVisible.value = true;
+}
 
 function openShiftExpenses(shift: any) {
                               selectedExpenseShift.value = shift;
@@ -1692,6 +1979,23 @@ function readingSummaryMethod({ columns }: any) {
                               }
                             });
 }
+
+const weekSummaryTotals = computed(() => {
+                              const totals = weekSummaryRows.value.reduce((acc: any, row: any) => {
+                                acc.netProfit += Number(row.netProfit || 0);
+                                acc.grossProfit += Number(row.grossProfit || 0);
+                                acc.shortOver += Number(row.shortOver || 0);
+                                acc.customers += Number(row.customers || 0);
+                                acc.totalIn += Number(row.totalIn || 0);
+                                acc.totalOut += Number(row.totalOut || 0);
+                                acc.match += Number(row.match || 0);
+                                return acc;
+                              }, { netProfit: 0, grossProfit: 0, shortOver: 0, customers: 0, totalIn: 0, totalOut: 0, match: 0 });
+                              totals.matchPercentage = totals.totalIn ? (totals.match / totals.totalIn) * 100 : 0;
+                              totals.payoutPercentage = totals.totalIn ? (totals.totalOut / totals.totalIn) * 100 : 0;
+                              totals.holdPercentage = totals.totalIn ? (totals.grossProfit / totals.totalIn) * 100 : 0;
+                              return totals;
+});
 
 const availableDays = computed(() =>
                               weekDays.value.filter(item => Array.isArray(item.sessions) && item.sessions.length > 0)
@@ -1941,6 +2245,8 @@ async function loadWeek() {
 
                               weekLoading.value = true;
                               report.value = null;
+                              summaryMode.value = false;
+                              weekSummaryRows.value = [];
                               selectedDate.value = '';
                               selectedSessionId.value = null;
 
@@ -2023,10 +2329,76 @@ watch(activeTab, async () => {
 async function selectDay(item: any) {
                               if (!item?.sessions?.length) return;
 
+                              summaryMode.value = false;
                               selectedDate.value = item.date;
                               selectedSessionId.value = Number(item.sessions[0].id);
                               activeTab.value = 'cashflow';
                               await loadDayReport();
+}
+
+async function selectWeekSummary() {
+                              if (!availableDays.value.length || weekSummaryLoading.value) return;
+                              summaryMode.value = true;
+                              selectedDate.value = '';
+                              selectedSessionId.value = null;
+                              report.value = null;
+                              await loadWeekSummary();
+}
+
+async function loadWeekSummary() {
+                              if (!userStore.locationId || !availableDays.value.length) return;
+                              weekSummaryLoading.value = true;
+                              weekSummaryRows.value = [];
+                              try {
+                                const rows = await Promise.all(availableDays.value.map(async (day: any) => {
+                                  const sessionReports = await Promise.all((day.sessions || []).map(async (session: any) => {
+                                    const response = await getWeeklyReportDay({
+                                      locationid: Number(userStore.locationId),
+                                      sessionid: Number(session.id)
+                                    });
+                                    return response.data || null;
+                                  }));
+                                  const dayTotal = sessionReports.reduce((acc: any, item: any) => {
+                                    if (!item) return acc;
+                                    acc.netProfit += Number(item.cashFlow?.actualNetProfit ?? item.cashFlow?.netProfit ?? 0);
+                                    acc.grossProfit += Number(item.reading?.totals?.grossProfit || 0);
+                                    acc.shortOver += Number(item.cashFlow?.shortOver || 0);
+                                    acc.customers += Number(item.analytics?.dailyActivity?.customers || 0);
+                                    acc.totalIn += Number(item.reading?.totals?.totalIn || 0);
+                                    acc.totalOut += Number(item.reading?.totals?.totalOut || 0);
+                                    acc.match += Number(item.analytics?.dailyActivity?.matchPoints || 0);
+                                    const employees = Array.isArray(item.analytics?.reconciliation?.employees) ? item.analytics.reconciliation.employees : [];
+                                    for (const employee of employees) {
+                                      const name = String(employee?.name || '').trim();
+                                      if (name) acc.employeeNamesList.push(name);
+                                    }
+                                    return acc;
+                                  }, { date: day.date, netProfit: 0, grossProfit: 0, shortOver: 0, customers: 0, totalIn: 0, totalOut: 0, match: 0, employeeNamesList: [], zelle: 0, receiveBy: '' });
+                                  dayTotal.employeeNames = dayTotal.employeeNamesList.join(', ');
+                                  delete dayTotal.employeeNamesList;
+                                  dayTotal.matchPercentage = dayTotal.totalIn ? (dayTotal.match / dayTotal.totalIn) * 100 : 0;
+                                  dayTotal.payoutPercentage = dayTotal.totalIn ? (dayTotal.totalOut / dayTotal.totalIn) * 100 : 0;
+                                  dayTotal.holdPercentage = dayTotal.totalIn ? (dayTotal.grossProfit / dayTotal.totalIn) * 100 : 0;
+                                  return dayTotal;
+                                }));
+                                weekSummaryRows.value = rows;
+                              } catch (error: any) {
+                                console.error(error);
+                                ElMessage.error(error?.response?.data?.message || error?.message || 'Unable to load weekly summary.');
+                              } finally {
+                                weekSummaryLoading.value = false;
+                              }
+}
+
+function weeklySummaryMethod({ columns }: any) {
+                              const totals: any = weekSummaryTotals.value;
+                              const values = ['Week Total', number(totals.customers), money(totals.totalIn), money(totals.totalOut), money(totals.match), percentage(totals.matchPercentage), percentage(totals.payoutPercentage), percentage(totals.holdPercentage), money(totals.grossProfit), signedMoney(totals.netProfit), signedMoney(totals.shortOver)];
+                              return columns.map((_: any, index: number) => values[index] ?? '');
+}
+
+function weeklyShortOverSummaryMethod({ columns }: any) {
+                              const values = ['Week Total', signedMoney(weekSummaryTotals.value.shortOver), '', money(0), ''];
+                              return columns.map((_: any, index: number) => values[index] ?? '');
 }
 
 async function loadDayReport() {
@@ -2162,6 +2534,10 @@ watch(
 onMounted(() => {
                               setStandardWeek('current');
                               loadWeek();
+});
+
+
+onBeforeUnmount(() => {
 });
 </script>
 

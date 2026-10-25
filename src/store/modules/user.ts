@@ -21,6 +21,28 @@ interface LoginInfo {
   password: string
 }
 
+// Preserve the selected location across reloads, scoped to the signed-in user.
+const locationStorageKey = (id: string) => `ik-selected-location:${id}`;
+
+function readSelectedLocation(id: string): string {
+  if (!id) return '';
+  try {
+    return localStorage.getItem(locationStorageKey(id)) || '';
+  } catch {
+    return '';
+  }
+}
+
+function saveSelectedLocation(id: string, locationId: string): void {
+  if (!id) return;
+  try {
+    if (locationId) localStorage.setItem(locationStorageKey(id), locationId);
+    else localStorage.removeItem(locationStorageKey(id));
+  } catch {
+    // Storage may be disabled; location switching still works in memory.
+  }
+}
+
 export const useUserStore = defineStore('user', () => {
   const token = ref<string>(getToken());
   const userId = ref<string>(getUserId());
@@ -37,7 +59,7 @@ export const useUserStore = defineStore('user', () => {
   const companyId = ref<number | null>(null);
   const companyName = ref('');
 
-  const locationId = ref('');
+  const locationId = ref(readSelectedLocation(userId.value));
   const location = ref('');
   const locations = ref<any[]>([]);
   const allowfaceCheckin = ref(false);
@@ -191,8 +213,11 @@ export const useUserStore = defineStore('user', () => {
       throw error;
     }
 
+    // Each new login starts at the account's primary location.
+    saveSelectedLocation(userId.value, '');
     token.value = response.token || '';
     userId.value = String(response.userid || '');
+    saveSelectedLocation(userId.value, '');
 
     companyId.value =
       response.companyid != null
@@ -230,15 +255,40 @@ export const useUserStore = defineStore('user', () => {
         userId.value,
         locationId.value
       );
+
+      // A saved location might have been removed from this user's access.
+      // Never keep an unauthorized selection just because it is in storage.
+      if (
+        locationId.value &&
+        Array.isArray(response?.locations) &&
+        !response.locations.some((item: any) =>
+          String(item.ID ?? item.id) === locationId.value
+        )
+      ) {
+        saveSelectedLocation(userId.value, '');
+        locationId.value = '';
+        response = await apiGetInfo(token.value, userId.value, '');
+      }
     } catch (error: any) {
-      const accessStatus =
-        accessStatusFromError(error);
+      const accessStatus = accessStatusFromError(error);
 
       if (accessStatus) {
         await forceAccessLogout(accessStatus);
+        throw error;
       }
 
-      throw error;
+      // If the previously selected location is no longer authorized,
+      // retry with the account's primary location.
+      if (
+        locationId.value &&
+        Number(error?.response?.status) === 403
+      ) {
+        saveSelectedLocation(userId.value, '');
+        locationId.value = '';
+        response = await apiGetInfo(token.value, userId.value, '');
+      } else {
+        throw error;
+      }
     }
 
     if (!response?.data) {
@@ -282,6 +332,7 @@ export const useUserStore = defineStore('user', () => {
       companyId.value
     );
 
+    saveSelectedLocation(userId.value, locationId.value);
     infoLoaded.value = true;
     return data;
   }
@@ -313,6 +364,9 @@ export const useUserStore = defineStore('user', () => {
     locid: string,
     locationname: string
   ): Promise<void> {
+    // Remember the current page before resetting location-specific routes.
+    const previousFullPath = router.currentRoute.value.fullPath;
+
     locationId.value = String(locid || '');
     location.value = locationname || '';
     infoLoaded.value = false;
@@ -326,11 +380,24 @@ export const useUserStore = defineStore('user', () => {
       initializeSocketListeners(locid, companyId.value);
     }
 
-    await getInfo();
-    await rebuildRoutes();
+    try {
+      await getInfo();
+      await rebuildRoutes();
+    } catch (error) {
+      // Do not retain a failed location switch across future reloads.
+      saveSelectedLocation(userId.value, '');
+      throw error;
+    }
 
-    // Re-resolve navigation using the newly loaded location permissions.
-    await router.replace('/');
+    // Stay on the same page if it remains accessible at the new location.
+    // The router has just been rebuilt with the new location's permissions.
+    const destination = router.resolve(previousFullPath);
+    const isAvailable = destination.matched.length > 0 &&
+      !destination.matched.some(record =>
+        record.path === '*' || record.path.includes(':pathMatch')
+      );
+
+    await router.replace(isAvailable ? previousFullPath : '/');
   }
 
   function statusRoute(
@@ -367,6 +434,7 @@ export const useUserStore = defineStore('user', () => {
     );
 
     cleanupSocket();
+    saveSelectedLocation(userId.value, '');
 
     removeToken();
     removeUserId();
@@ -439,6 +507,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   function clearUserState(): void {
+    saveSelectedLocation(userId.value, '');
     token.value = '';
     userId.value = '';
 

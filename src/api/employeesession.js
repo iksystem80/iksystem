@@ -42,19 +42,19 @@ export function getEmployeeSessions(
   });
 }
 
-export function getEmployeeSessionSummary(locationid) {
+export function getEmployeeSessionSummary(locationid, filters = {}) {
   return request({
     url: '/employeesession/reports/employees',
     method: 'get',
-    params: { locationid }
+    params: { locationid, ...filters }
   });
 }
 
-export function getEmployeeReportSessions(userid, locationid) {
+export function getEmployeeReportSessions(userid, locationid, filters = {}) {
   return request({
     url: `/employeesession/reports/employee/${userid}/sessions`,
     method: 'get',
-    params: { locationid }
+    params: { locationid, ...filters }
   });
 }
 

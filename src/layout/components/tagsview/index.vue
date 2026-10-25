@@ -80,7 +80,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import path from 'path-browserify';
 import { storeToRefs } from 'pinia';
-import { Close as IconClose, Location } from '@element-plus/icons-vue';
+
 import ScrollPane from './scrollpane.vue';
 import { useTagsViewStore } from '@/store/modules/tagsview';
 import { useAppStore } from '@/store/modules/app';

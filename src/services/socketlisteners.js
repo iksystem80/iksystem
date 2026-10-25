@@ -8,6 +8,17 @@ let initialized = false;
 let currentLocationId = null;
 let currentCompanyId = null;
 let connectScheduled = false;
+let connectedToken = null;
+
+function currentLoginToken() {
+  const token = useUserStore().token;
+  return typeof token === 'string' ? token.trim() : '';
+}
+
+// Socket.IO invokes this for each connection attempt, including reconnections.
+function socketAuth(callback) {
+  callback({ token: currentLoginToken() });
+}
 
 function normalizedId(value) {
   const id = Number(value);
@@ -18,8 +29,10 @@ function joinCurrentContext() {
   if (!socket.connected) return;
 
   socket.emit('join-user-context', {
-    locationId: currentLocationId,
-    companyId: currentCompanyId
+    // `locationId` is included for existing deployed servers.
+    // New servers can standardize on lowercase `locationid`.
+    locationid: currentLocationId,
+    locationId: currentLocationId
   });
 }
 
@@ -34,7 +47,12 @@ function connectWhenIdle() {
     // cleanupSocket() may have run while this idle callback was waiting.
     if (!initialized) return;
 
+    const token = currentLoginToken();
+    if (!token) return; // Wait until the user is logged in.
+
+    socket.auth = socketAuth;
     if (!socket.connected) {
+      connectedToken = token;
       socket.connect();
     }
   };
@@ -49,6 +67,14 @@ function connectWhenIdle() {
 export function initializeSocketListeners(locationId, companyId = null) {
   currentLocationId = normalizedId(locationId);
   currentCompanyId = normalizedId(companyId);
+
+  // Always read the latest login token instead of capturing it at import time.
+  socket.auth = socketAuth;
+  const token = currentLoginToken();
+  if (socket.connected && token !== connectedToken) {
+    socket.disconnect();
+    connectedToken = null;
+  }
 
   if (!initialized) {
     initialized = true;
@@ -78,8 +104,9 @@ export function cleanupSocket() {
   currentLocationId = null;
   currentCompanyId = null;
   connectScheduled = false;
+  connectedToken = null;
 
-  if (socket.connected) {
+  if (socket.connected || socket.active) {
     socket.disconnect();
   }
 }

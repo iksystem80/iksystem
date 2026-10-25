@@ -9,25 +9,44 @@
     <Breadcrumb id="breadcrumb-container" v-if="device !== 'mobile'"
                 class="breadcrumb-container" />
 
-    <!-- LOCATION v-if="device !== 'mobile'"-->
+    <!-- Centered location switcher; retain the existing pill appearance. -->
     <div class="location-container">
-      <div class="location-pill">
-        <el-icon class="location-pill-icon">
-          <Location />
-        </el-icon>
-
-        <span class="location-pill-label">
-          {{ location || 'No Location' }}
-        </span>
+      <el-dropdown v-if="userStore.isOwnerOrAdmin && locations?.length"
+                   trigger="click"
+                   placement="bottom"
+                   @command="selectedLocationById">
+        <div class="location-pill location-pill-trigger"
+             role="button"
+             tabindex="0"
+             aria-label="Change location">
+          <el-icon class="location-pill-icon">
+            <Location />
+          </el-icon>
+          <span class="location-pill-label">
+            {{ location || 'No Location' }}
+          </span>
+          <el-icon class="location-pill-chevron"><CaretBottom /></el-icon>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu class="user-dropdown-menu">
+            <el-dropdown-item v-for="item in locations"
+                              :key="item.id ?? item.ID"
+                              :command="String(item.id ?? item.ID)">
+              <el-icon class="dropdown-icon"><Location /></el-icon>
+              <span class="location-name">{{ item.name }}</span>
+              <el-icon v-if="String(userStore.locationId) === String(item.id ?? item.ID)"
+                       class="selected-location-icon"><Check /></el-icon>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <div v-else class="location-pill">
+        <el-icon class="location-pill-icon"><Location /></el-icon>
+        <span class="location-pill-label">{{ location || 'No Location' }}</span>
       </div>
     </div>
 
     <div class="right-menu">
-
-      <div class="right-menu-item hover-effect navbar-circle-control"
-           @click="openClockPage">
-        <el-icon size="24" class="clock-status-icon" :class="userStore.isClockedIn ? 'is-clocked-in' : 'is-clocked-out'"><Clock /></el-icon>
-     </div>
 
       <template v-if="device !== 'mobile'">
 
@@ -53,6 +72,11 @@
           <img v-else
                src="https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"
                class="user-avatar-img" />
+
+          <span class="navbar-avatar-status-dot"
+                :class="userStore.isClockedIn ? 'is-clocked-in' : 'is-clocked-out'"
+                :title="userStore.isClockedIn ? 'Clocked in' : 'Clocked out'"
+                @click.stop="openClockPage" />
 
           <el-icon class="el-icon-caret-bottom"
                    size="small">
@@ -103,7 +127,7 @@
               <el-dropdown-item divided>
 
                 <el-icon class="dropdown-icon">
-                  <User />
+                  <UserFilled />
                 </el-icon>
 
                 <span style="font-size:12px;">
@@ -113,37 +137,6 @@
               </el-dropdown-item>
 
             </router-link>
-
-            <!-- LOCATIONS -->
-            <template v-if="userStore.isOwnerOrAdmin && locations?.length">
-
-              <el-dropdown-item disabled class="section-title">
-                Locations
-              </el-dropdown-item>
-
-              <el-dropdown-item v-for="item in locations"
-                                :key="item.id ?? item.ID"
-                                @click="selectedLocation(item)">
-
-                <el-icon class="dropdown-icon">
-                  <Location />
-                </el-icon>
-
-                <span class="location-name">
-                  {{ item.name }}
-                </span>
-
-                <el-icon v-if="
-                           String(userStore.locationId) ===
-                             String(item.id ?? item.ID)
-                         "
-                         class="selected-location-icon">
-                  <Check />
-                </el-icon>
-
-              </el-dropdown-item>
-
-            </template>
 
             <!-- THEME -->
             <el-dropdown-item disabled class="section-title">
@@ -195,14 +188,6 @@ import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 
-import {
-  CaretBottom,
-  Location,
-  Check,
-  User,
-  SwitchButton
-} from '@element-plus/icons-vue';
-
 import Breadcrumb from '@/components/breadcrumb';
 import Hamburger from '@/components/hamburger';
 import ErrorLog from '@/components/errorlog';
@@ -244,8 +229,9 @@ const themeOptions: Array<{ label: string; value: AppTheme; color: string }> = [
   { label: 'Light', value: 'light', color: '#887baf' },
   { label: 'Dark', value: 'dark', color: '#181b20' },
   { label: 'Coffee', value: 'coffee', color: '#6f4e37' },
+  { label: 'Cloud Mint', value: 'cloud-mint', color: '#DDFBEF' },
   { label: 'Blue', value: 'blue', color: '#2563eb' },
-  { label: 'Orange', value: 'orange', color: '#ea580c' }
+  // { label: 'Orange', value: 'orange', color: '#ea580c' }
 ];
 
 function changeTheme(theme: AppTheme) {
@@ -288,7 +274,12 @@ async function logout() {
 /**
      * Change current location.
      */
-async function selectedLocation(item: LocationItem) {
+async function selectedLocationById(command: string) {
+  const item = locations.value.find(
+    (entry: LocationItem) => String(entry.ID ?? entry.id) === String(command)
+  );
+  if (!item) return;
+
   const locationId = item.ID ?? item.id;
 
   if (locationId === undefined || locationId === null) {
@@ -307,6 +298,23 @@ async function selectedLocation(item: LocationItem) {
 </script>
 
 <style scoped lang="scss">
+.location-pill-trigger {
+  cursor: pointer;
+  transition: filter 160ms ease, box-shadow 160ms ease;
+
+  &:hover,
+  &:focus-visible {
+    filter: brightness(1.12);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .22);
+    outline: none;
+  }
+}
+
+.location-pill-chevron {
+  margin-left: 5px;
+  font-size: 10px;
+}
+
 .theme-dot {
   width: 10px;
   height: 10px;

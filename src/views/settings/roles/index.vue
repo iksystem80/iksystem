@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
+
 import { getRoles, getRole, getPermissions, createRole, updateRole, deleteRole } from '@/api/role';
 import { useUserStore } from '@/store/modules/user';
 

@@ -132,9 +132,8 @@
 import { nextTick, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { FormInstance, FormRules } from 'element-plus';
-
-import { useUserStore } from '@/store/modules/user';
 import { Lock, User } from '@element-plus/icons-vue';
+import { useUserStore } from '@/store/modules/user';
 
 defineOptions({
       name: 'Login'

@@ -9,7 +9,7 @@
         <div>
           <h2 class="page-title">Ticket Out Report</h2>
           <div class="page-subtitle" v-if="report?.session">
-            Session # {{ report.session.id }} · {{ report.session.employeeName }}
+            Session # {{ (report.session.sessionNumber ?? report.session.id) }} · {{ report.session.employeeName }}
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
 
             <div class="employee-profile-text">
               <h2>{{ report.session.employeeName || 'Employee' }}</h2>
-              <div class="employee-period">Session # {{ report.session.id }}</div>
+              <div class="employee-period">Session # {{ (report.session.sessionNumber ?? report.session.id) }}</div>
             </div>
           </div>
 
@@ -111,20 +111,21 @@
       <el-empty v-if="!filteredMachines.length"
                 description="No Ticket Out entries were recorded during this session" />
 
-      <el-card v-else shadow="never" class="panel entries-panel">
+      <el-card v-else shadow="never" class="panel entries-panel app-table-card">
         <template #header>
-          <div class="panel-header entries-header">
-            <div>
+          <div class="app-table-card-header">
+            <el-icon><Tickets /></el-icon>
+            <div class="app-table-card-title">
               <strong>Machine Ticket Out</strong>
-              <span>
+              <div class="small-text">
                 {{ number(filteredTicketCount) }} entries across
                 {{ filteredMachines.length }} machines
-              </span>
+              </div>
             </div>
           </div>
         </template>
 
-        <div class="entry-breakdown">
+        <div class="entry-breakdown app-table-extra-content" style="border-bottom: 1px solid var(--el-border-color-lighter);">
           <div class="breakdown-title">BREAKDOWN BY MACHINE TYPE · TAP TO FILTER</div>
 
           <div class="breakdown-chips">
@@ -142,24 +143,22 @@
             </button>
           </div>
         </div>
-
-
         <div class="compact-entry-list" style="border-top:0;">
           <div v-for="machine in filteredMachines"
                :key="machine.machineId"
                class="compact-entry-row"
                style="justify-content:flex-start;">
             <span class="compact-entry-bar"></span>
-            <div style="width:60px; min-width:60px; flex:0 0 60px;">
-              <strong>
+            <div style="width:65px; min-width:65px; flex:0 0 65px;">
+              <span class="machine-number-badge">
                 {{ machine.machineNumber ?? machine.machineId }}
-              </strong>
+                </span>
             </div>
             <div class="compact-entry-person" style="flex:0 1 auto; min-width:0;">
               <div class="cash-header-actions" style="gap:10px;margin-bottom:5px;">
                 <!--<strong>
-                  Machine # {{ machine.machineNumber ?? machine.machineId }}
-                </strong>-->
+            Machine # {{ machine.machineNumber ?? machine.machineId }}
+          </strong>-->
                 <el-tag size="small"
                         effect="plain"
                         :style="gameTagStyle(machine.game)">
@@ -204,6 +203,54 @@
             </div>
           </div>
         </div>
+
+        <!--<el-table :data="filteredMachines"
+            class="app-data-table is-compact"
+            show-summary
+            :summary-method="ticketSummaryMethod"
+            style="width:100%;">
+    <el-table-column label="Machine #" width="100">
+      <template #default="{ row }">
+        <strong>{{ row.machineNumber ?? row.machineId }}</strong>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Machine Type" width="170">
+      <template #default="{ row }">
+        <el-tag size="small" effect="plain" :style="gameTagStyle(row.game)">
+          {{ row.game || 'Unknown Game' }}
+        </el-tag>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Ticket Entries" min-width="360">
+      <template #default="{ row }">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;">
+          <div v-for="entry in row.entries"
+               :key="entry.id"
+               style="display:flex;align-items:center;gap:6px;white-space:nowrap;">
+            <div>
+              <strong>{{ money(entry.amount) }}</strong>
+              <div class="small-text">{{ formatTime(entry.createdAt) }}</div>
+            </div>
+            <PhotoPreviewIcon :src="entry.imageUrl" />
+          </div>
+        </div>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Tickets" width="100" align="right">
+      <template #default="{ row }">
+        {{ number(row.ticketCount) }}
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Total" width="120" align="right">
+      <template #default="{ row }">
+        <strong>{{ money(row.totalAmount) }}</strong>
+      </template>
+    </el-table-column>
+  </el-table>-->
       </el-card>
 
     </template>
@@ -211,7 +258,7 @@
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -228,159 +275,173 @@ const report = ref(null);
 const selectedGame = ref(null);
 
 const entryPalette = [
-        'var(--el-color-primary)',
-        'var(--green)',
-        'var(--yellow)',
-        'var(--red)',
-        'var(--pink)',
-        'var(--tiffany)',
-        'var(--light-blue)',
-        'var(--blue)'
+          'var(--el-color-primary)',
+          'var(--green)',
+          'var(--yellow)',
+          'var(--red)',
+          'var(--pink)',
+          'var(--tiffany)',
+          'var(--light-blue)',
+          'var(--blue)'
 ];
 
 
 const filteredMachines = computed(() => {
-          const machines = report.value?.machines || [];
+            const machines = report.value?.machines || [];
 
-          if (!selectedGame.value) {
-            return machines;
-          }
+            if (!selectedGame.value) {
+              return machines;
+            }
 
-          return machines.filter(item => item.game === selectedGame.value);
+            return machines.filter(item => item.game === selectedGame.value);
 });
 
 const filteredTicketCount = computed(() =>
-          filteredMachines.value.reduce(
-            (sum, item) => sum + Number(item.ticketCount || 0),
-            0
-          )
+            filteredMachines.value.reduce(
+              (sum, item) => sum + Number(item.ticketCount || 0),
+              0
+            )
 );
 
 function initials(name) {
-          return String(name || 'E')
-            .split(' ')
-            .filter(Boolean)
-            .slice(0, 2)
-            .map(part => part[0])
-            .join('')
-            .toUpperCase();
+            return String(name || 'E')
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map(part => part[0])
+              .join('')
+              .toUpperCase();
 }
 
 function number(value) {
-          return Number(value || 0).toLocaleString();
+            return Number(value || 0).toLocaleString();
 }
 
 function money(value) {
-          return Number(value || 0).toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-          });
+            return Number(value || 0).toLocaleString('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            });
 }
 
 function formatDateTime(value) {
-          if (!value) return '—';
+            if (!value) return '—';
 
-          return new Date(value).toLocaleString([], {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-          });
+            return new Date(value).toLocaleString([], {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit'
+            });
 }
 
 function formatTime(value) {
-          if (!value) return '—';
+            if (!value) return '—';
 
-          return new Date(value).toLocaleTimeString([], {
-            hour: 'numeric',
-            minute: '2-digit'
-          });
+            return new Date(value).toLocaleTimeString([], {
+              hour: 'numeric',
+              minute: '2-digit'
+            });
 }
 
 function formatDuration(item) {
-          let hours = Number(item.totalWorkingHours || 0);
+            let hours = Number(item.totalWorkingHours || 0);
 
-          if (!item.clockOut && item.clockIn) {
-            hours = Math.max(
-              0,
-              (Date.now() - new Date(item.clockIn).getTime()) / 3600000
-            );
-          }
+            if (!item.clockOut && item.clockIn) {
+              hours = Math.max(
+                0,
+                (Date.now() - new Date(item.clockIn).getTime()) / 3600000
+              );
+            }
 
-          const minutes = Math.round(hours * 60);
+            const minutes = Math.round(hours * 60);
 
-          return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+            return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
 function breakdownStyle(index) {
-          const color = entryPalette[index % entryPalette.length];
-          return { '--point-color': color };
+            const color = entryPalette[index % entryPalette.length];
+            return { '--point-color': color };
 }
 
 function gameTagStyle(game) {
-          const breakdown = report.value?.breakdown || [];
-          const index = breakdown.findIndex(item => item.game === game);
-          const color = entryPalette[(index < 0 ? 0 : index) % entryPalette.length];
+            const breakdown = report.value?.breakdown || [];
+            const index = breakdown.findIndex(item => item.game === game);
+            const color = entryPalette[(index < 0 ? 0 : index) % entryPalette.length];
 
-          return {
-            '--el-tag-text-color': color,
-            '--el-tag-border-color': color,
-            '--el-tag-bg-color': `color-mix(in srgb, ${color} 10%, transparent)`
-          };
+            return {
+              '--el-tag-text-color': color,
+              '--el-tag-border-color': color,
+              '--el-tag-bg-color': `color-mix(in srgb, ${color} 10%, transparent)`
+            };
 }
 
 function pointColor(amount) {
-          const value = Math.round(Number(amount || 0));
-          return entryPalette[Math.abs(value) % entryPalette.length];
+            const value = Math.round(Number(amount || 0));
+            return entryPalette[Math.abs(value) % entryPalette.length];
+}
+
+function ticketSummaryMethod({ columns }) {
+            const totalAmount = filteredMachines.value.reduce(
+              (sum, item) => sum + Number(item.totalAmount || 0),
+              0
+            );
+
+            return columns.map((_, index) => {
+              if (index === 0) return 'Total';
+              if (index === 3) return number(filteredTicketCount.value);
+              if (index === 4) return money(totalAmount);
+              return '';
+            });
 }
 
 function toggleGame(game) {
-          selectedGame.value = selectedGame.value === game ? null : game;
+            selectedGame.value = selectedGame.value === game ? null : game;
 }
 
 
 async function loadReport() {
-          const sessionId = Number(route.params.sessionId);
-          const locationId = Number(userStore.locationId);
+            const sessionId = Number(route.params.sessionId);
+            const locationId = Number(userStore.locationId);
 
-          if (!sessionId || !locationId) return;
+            if (!sessionId || !locationId) return;
 
-          try {
-            loading.value = true;
-            error.value = '';
+            try {
+              loading.value = true;
+              error.value = '';
 
-            const response = await request({
-              url: `/employeesession/reports/session/${sessionId}/ticket-out`,
-              method: 'get',
-              params: { locationid: locationId }
-            });
+              const response = await request({
+                url: `/employeesession/reports/session/${sessionId}/ticket-out`,
+                method: 'get',
+                params: { locationid: locationId }
+              });
 
-            report.value = response?.data || null;
+              report.value = response?.data || null;
 
-            if (!report.value) {
-              throw new Error('Ticket Out report data was not returned.');
+              if (!report.value) {
+                throw new Error('Ticket Out report data was not returned.');
+              }
+            } catch (errorValue) {
+              console.error(errorValue);
+
+              error.value =
+                errorValue?.response?.data?.message ||
+                errorValue?.message ||
+                'Unable to load Ticket Out report.';
+
+              report.value = null;
+              ElMessage.error(error.value);
+            } finally {
+              loading.value = false;
             }
-          } catch (errorValue) {
-            console.error(errorValue);
-
-            error.value =
-              errorValue?.response?.data?.message ||
-              errorValue?.message ||
-              'Unable to load Ticket Out report.';
-
-            report.value = null;
-            ElMessage.error(error.value);
-          } finally {
-            loading.value = false;
-          }
 }
 
 watch(
-          () => [route.params.sessionId, userStore.locationId],
-          loadReport
+            () => [route.params.sessionId, userStore.locationId],
+            loadReport
 );
 
 onMounted(loadReport);
@@ -388,23 +449,22 @@ onMounted(loadReport);
 
 <style scoped>
 
-@media (max-width: 767px) {
-  .report-summary-two-column {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-  }
+  @media (max-width: 767px) {
+    .report-summary-two-column {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
 
-  .report-summary-two-column .metric-card {
-    width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-  }
+      .report-summary-two-column .metric-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+      }
 
-  .report-summary-two-column .metric-layout,
-  .report-summary-two-column .metric-copy {
-    min-width: 0;
+      .report-summary-two-column .metric-layout,
+      .report-summary-two-column .metric-copy {
+        min-width: 0;
+      }
   }
-}
-
 </style>

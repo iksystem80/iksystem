@@ -1,15 +1,15 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :class="{ 'shift-report-embedded': embedded }">
     <div class="page-header">
       <div class="header-left">
-        <el-button class="back-button" circle aria-label="Back" @click="router.back()">
+        <el-button v-if="!embedded" class="back-button" circle aria-label="Back" @click="router.back()">
           <el-icon><ArrowLeft /></el-icon>
         </el-button>
 
         <div>
           <h2 class="page-title">Shift Report</h2>
           <div class="page-subtitle" v-if="report?.session">
-            Session # {{ report.session.id }} · {{ report.session.employeeName }}
+            Session # {{ (report.session.sessionNumber ?? report.session.id) }} · {{ report.session.employeeName }}
           </div>
         </div>
       </div>
@@ -40,7 +40,7 @@
 
             <div class="employee-profile-text">
               <h2>{{ report.session.employeeName || 'Employee' }}</h2>
-              <div class="employee-period">Session # {{ report.session.id }}</div>
+              <div class="employee-period">Session # {{ (report.session.sessionNumber ?? report.session.id) }}</div>
             </div>
           </div>
 
@@ -223,80 +223,33 @@
       </div>
 
       <!-- Reconciliation remains last -->
-      <div class="panel-grid space-top">
-        <el-card shadow="never" class="panel">
+      <div class="panel-grid space-top shift-reconciliation-grid">
+        <el-card shadow="never" class="panel app-table-card shift-reconciliation-card">
           <template #header>
-            <div class="panel-heading">
-              <strong>Cash Reconciliation</strong>
-              <span>Employee transaction calculation</span>
+            <div class="app-table-card-header">
+              <el-icon><WalletFilled /></el-icon>
+              <div class="app-table-card-title">
+                <strong>Cash Reconciliation</strong>
+                <div class="small-text">Employee transaction calculation</div>
+              </div>
             </div>
           </template>
 
-          <div class="ledger-list">
-            <div class="ledger-item">
-              <div><strong>Total Credit</strong></div>
-              <strong class="credit">+{{ money(summary.openingBank) }}</strong>
-            </div>
+          <el-table :data="cashReconciliationRows"
+                    size="small"
+                    class="app-data-table is-compact">
+            <el-table-column label="Description" min-width="220">
+              <template #default="{ row }">
+                <strong>{{ row.label }}</strong>
+              </template>
+            </el-table-column>
 
-            <div class="ledger-item">
-              <div><strong>Manual Expense</strong></div>
-              <strong class="debit">−{{ money(summary.regularExpense) }}</strong>
-            </div>
-
-            <div class="ledger-item">
-              <div><strong>Match Point</strong></div>
-              <strong class="debit">−{{ money(summary.matchPointExpense) }}</strong>
-            </div>
-
-            <div class="ledger-item">
-              <div><strong>Extra Match</strong></div>
-              <strong class="debit">−{{ money(summary.extraMatchExpense) }}</strong>
-            </div>
-
-            <div class="ledger-item">
-              <div><strong>Raffle</strong></div>
-              <strong class="debit">−{{ money(summary.raffleExpense) }}</strong>
-            </div>
-
-            <div class="ledger-item">
-              <div><strong>Ticket Out</strong></div>
-              <strong class="debit">−{{ money(summary.ticketOutExpense) }}</strong>
-            </div>
-
-            <div v-if="Number(summary.transferOut || 0)" class="ledger-item">
-              <div><strong>Transfer to Employee</strong></div>
-              <strong class="debit">−{{ money(summary.transferOut) }}</strong>
-            </div>
-
-            <div v-if="Number(summary.ownerWithdrawals || 0)" class="ledger-item">
-              <div><strong>Owner / Admin Withdrawal</strong></div>
-              <strong class="debit">−{{ money(summary.ownerWithdrawals) }}</strong>
-            </div>
-
-            <div class="ledger-item">
-              <div><strong>Total Expense</strong></div>
-              <strong class="debit">−{{ money(summary.expenses) }}</strong>
-            </div>
-
-            <div class="ledger-item">
-              <div><strong>Calculated Balance</strong></div>
-              <strong>{{ money(summary.balance) }}</strong>
-            </div>
-
-            <template v-if="report.closing">
-              <div class="ledger-item">
-                <div><strong>Cash Counted</strong></div>
-                <strong>{{ money(report.closing.actualCash) }}</strong>
-              </div>
-
-              <div class="ledger-item">
-                <div>
-                  <strong>{{ shortOver > 0 ? 'Over' : shortOver < 0 ? 'Short' : 'Short / Over' }}</strong>
-                </div>
-                <strong :class="shortOverClass">{{ signedMoney(shortOver) }}</strong>
-              </div>
-            </template>
-          </div>
+            <el-table-column label="Amount" min-width="130" align="right">
+              <template #default="{ row }">
+                <strong :class="row.className">{{ row.display }}</strong>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-card>
       </div>
     </template>
@@ -304,7 +257,7 @@
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -313,6 +266,17 @@ import { useRefreshStore } from '@/store/modules/refresh';
 import ExportPdfButton from '@/components/exportpdfbutton.vue';
 import { exportShiftReportPdf } from '@/utils/exportshiftreportpdf';
 import { getEmployeeSessionShiftReport } from '@/api/employeesession';
+
+const props = defineProps({
+    sessionId: {
+      type: [Number, String],
+      default: null
+    },
+    embedded: {
+      type: Boolean,
+      default: false
+    }
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -324,151 +288,191 @@ const pdfExporting = ref(false);
 const error = ref('');
 const report = ref(null);
 
+const embedded = computed(() => props.embedded);
+const effectiveSessionId = computed(() => Number(props.sessionId || route.params.sessionId || 0));
+
 const summary = computed(() => report.value?.summary || {});
 const transactions = computed(() => Array.isArray(report.value?.transactions) ? report.value.transactions : []);
 
 const creditTransactions = computed(() =>
-      transactions.value
-        .filter(item => Number(item.signedAmount ?? item.amount ?? 0) > 0)
-        .slice()
-        .sort((a, b) => new Date(a.eventAt) - new Date(b.eventAt))
+        transactions.value
+          .filter(item => Number(item.signedAmount ?? item.amount ?? 0) > 0)
+          .slice()
+          .sort((a, b) => new Date(a.eventAt) - new Date(b.eventAt))
 );
 
 const expenseTransactions = computed(() =>
-      transactions.value
-        .filter(item => Number(item.signedAmount ?? 0) < 0)
-        .slice()
-        .sort((a, b) => new Date(a.eventAt) - new Date(b.eventAt))
+        transactions.value
+          .filter(item => Number(item.signedAmount ?? 0) < 0)
+          .slice()
+          .sort((a, b) => new Date(a.eventAt) - new Date(b.eventAt))
 );
 
 const shortOver = computed(() => Number(report.value?.closing?.variance || 0));
 
 const shortOverClass = computed(() => {
-      if (shortOver.value < 0) return 'debit';
-      if (shortOver.value > 0) return 'credit';
-      return '';
+        if (shortOver.value < 0) return 'debit';
+        if (shortOver.value > 0) return 'credit';
+        return '';
+});
+
+const cashReconciliationRows = computed(() => {
+        const rows = [
+          { label: 'Total Credit', display: `+${money(summary.value.openingBank)}`, className: 'credit' },
+          { label: 'Manual Expense', display: `−${money(summary.value.regularExpense)}`, className: 'debit' },
+          { label: 'Match Point', display: `−${money(summary.value.matchPointExpense)}`, className: 'debit' },
+          { label: 'Extra Match', display: `−${money(summary.value.extraMatchExpense)}`, className: 'debit' },
+          { label: 'Raffle', display: `−${money(summary.value.raffleExpense)}`, className: 'debit' },
+          { label: 'Ticket Out', display: `−${money(summary.value.ticketOutExpense)}`, className: 'debit' }
+        ];
+
+        if (Number(summary.value.transferOut || 0)) {
+          rows.push({ label: 'Transfer to Employee', display: `−${money(summary.value.transferOut)}`, className: 'debit' });
+        }
+
+        if (Number(summary.value.ownerWithdrawals || 0)) {
+          rows.push({ label: 'Owner / Admin Withdrawal', display: `−${money(summary.value.ownerWithdrawals)}`, className: 'debit' });
+        }
+
+        rows.push(
+          { label: 'Total Expense', display: `−${money(summary.value.expenses)}`, className: 'debit' },
+          { label: 'Calculated Balance', display: money(summary.value.balance), className: '' }
+        );
+
+        if (report.value?.closing) {
+          rows.push(
+            { label: 'Cash Counted', display: money(report.value.closing.actualCash), className: '' },
+            {
+              label: shortOver.value > 0 ? 'Over' : shortOver.value < 0 ? 'Short' : 'Short / Over',
+              display: signedMoney(shortOver.value),
+              className: shortOverClass.value
+            }
+          );
+        }
+
+        return rows;
 });
 
 const money = value =>
-      Number(value || 0).toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      });
+        Number(value || 0).toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        });
 
 const signedMoney = value =>
-      `${Number(value || 0) < 0 ? '−' : Number(value || 0) > 0 ? '+' : ''}${money(
-        Math.abs(Number(value || 0))
-      )}`;
+        `${Number(value || 0) < 0 ? '−' : Number(value || 0) > 0 ? '+' : ''}${money(
+          Math.abs(Number(value || 0))
+        )}`;
 
 const dateTime = value =>
-      value
-        ? new Date(value).toLocaleString([], {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-          })
-        : '—';
+        value
+          ? new Date(value).toLocaleString([], {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit'
+            })
+          : '—';
 
 const typeLabel = (type, expenseType, creditType) => ({
-      OPENING: 'Opening Bank',
-      OPENING_TRANSFER: 'Opening Bank',
-      TRANSFER_IN: 'Opening Bank',
-      TRANSFER_OUT: 'Transfer to Employee',
-      CASH_RECEIVED: creditType ? `Add Bank · ${creditType}` : 'Add Bank',
-      EXPENSE: expenseType || 'Expense',
-      MATCH_POINT: 'Match Point',
-      EXTRA_MATCH: 'Extra Match',
-      RAFFLE: 'Raffle',
-      TICKET_OUT: 'Ticket Out',
-      OWNER_WITHDRAWAL: 'Owner / Admin Withdrawal'
+        OPENING: 'Opening Bank',
+        OPENING_TRANSFER: 'Opening Bank',
+        TRANSFER_IN: 'Opening Bank',
+        TRANSFER_OUT: 'Transfer to Employee',
+        CASH_RECEIVED: creditType ? `Add Bank · ${creditType}` : 'Add Bank',
+        EXPENSE: expenseType || 'Expense',
+        MATCH_POINT: 'Match Point',
+        EXTRA_MATCH: 'Extra Match',
+        RAFFLE: 'Raffle',
+        TICKET_OUT: 'Ticket Out',
+        OWNER_WITHDRAWAL: 'Owner / Admin Withdrawal'
 }[type] || expenseType || creditType || type || 'Transaction');
 
 const ledgerKey = item => `${item.kind || item.type || 'item'}-${item.id}`;
 
 function initials(name) {
-      return String(name || 'E')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(part => part[0])
-        .join('')
-        .toUpperCase();
+        return String(name || 'E')
+          .split(' ')
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(part => part[0])
+          .join('')
+          .toUpperCase();
 }
 
 function duration(session) {
-      const hours = session.clockOut
-        ? Number(session.totalWorkingHours || 0)
-        : Math.max(0, (Date.now() - new Date(session.clockIn).getTime()) / 3600000);
+        const hours = session.clockOut
+          ? Number(session.totalWorkingHours || 0)
+          : Math.max(0, (Date.now() - new Date(session.clockIn).getTime()) / 3600000);
 
-      const minutes = Math.round(hours * 60);
-      return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+        const minutes = Math.round(hours * 60);
+        return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
 async function handleExportPdf() {
-      if (!report.value?.session) {
-        return ElMessage.warning('No shift report to export.');
-      }
+        if (!report.value?.session) {
+          return ElMessage.warning('No shift report to export.');
+        }
 
-      try {
-        pdfExporting.value = true;
+        try {
+          pdfExporting.value = true;
 
-        exportShiftReportPdf({
-          session: report.value.session,
-          duration: duration(report.value.session),
-          summary: summary.value,
-          credits: creditTransactions.value,
-          expenses: expenseTransactions.value,
-          closing: report.value.closing || null
-        });
+          exportShiftReportPdf({
+            session: report.value.session,
+            duration: duration(report.value.session),
+            summary: summary.value,
+            credits: creditTransactions.value,
+            expenses: expenseTransactions.value,
+            closing: report.value.closing || null
+          });
 
-        ElMessage.success('PDF exported.');
-      } catch (e) {
-        ElMessage.error(e?.message || 'Unable to export PDF.');
-      } finally {
-        pdfExporting.value = false;
-      }
+          ElMessage.success('PDF exported.');
+        } catch (e) {
+          ElMessage.error(e?.message || 'Unable to export PDF.');
+        } finally {
+          pdfExporting.value = false;
+        }
 }
 
 async function loadReport() {
-      const id = Number(route.params.sessionId);
-      const location = Number(userStore.locationId);
+        const id = effectiveSessionId.value;
+        const location = Number(userStore.locationId);
 
-      if (!id || !location) return;
+        if (!id || !location) return;
 
-      try {
-        loading.value = true;
-        error.value = '';
+        try {
+          loading.value = true;
+          error.value = '';
 
-        const response = await getEmployeeSessionShiftReport(id, location);
-        report.value = response?.data || null;
+          const response = await getEmployeeSessionShiftReport(id, location);
+          report.value = response?.data || null;
 
-        if (!report.value) {
-          throw new Error('Shift report data was not returned.');
+          if (!report.value) {
+            throw new Error('Shift report data was not returned.');
+          }
+        } catch (e) {
+          console.error(e);
+          error.value =
+            e?.response?.data?.message ||
+            e?.message ||
+            'Unable to load shift report.';
+
+          report.value = null;
+          ElMessage.error(error.value);
+        } finally {
+          loading.value = false;
         }
-      } catch (e) {
-        console.error(e);
-        error.value =
-          e?.response?.data?.message ||
-          e?.message ||
-          'Unable to load shift report.';
-
-        report.value = null;
-        ElMessage.error(error.value);
-      } finally {
-        loading.value = false;
-      }
 }
 
 watch(
-      () => [route.params.sessionId, userStore.locationId],
-      loadReport
+        () => [effectiveSessionId.value, userStore.locationId],
+        loadReport
 );
 
 watch(
-      () => refreshStore.key('employeeSessions'),
-      () => loadReport()
+        () => refreshStore.key('employeeSessions'),
+        () => loadReport()
 );
 
 onMounted(loadReport);

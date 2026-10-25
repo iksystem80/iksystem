@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { WarningFilled } from '@element-plus/icons-vue';
+
 import logo from '@/assets/logo.png';
 
 const route = useRoute();

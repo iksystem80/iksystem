@@ -22,11 +22,6 @@
 
 <script setup>
 import { computed } from 'vue';
-import {
-  CircleCheckFilled,
-  Unlock,
-  WarningFilled
-} from '@element-plus/icons-vue';
 
 const props = defineProps({
   status: {

@@ -10,6 +10,9 @@
 :root,
 html[data-theme='light'] {
     color-scheme: light;
+    /* Text-only overrides; original theme surface/border variables are untouched. */
+    --app-text-color-primary: #5d5d5d;
+    --app-text-color-regular: #5d5d5d;
     /* Element Plus + legacy palette */
     --el-color-white: #ffffff;
     --el-color-primary-light: #b1a8cc;
@@ -67,7 +70,7 @@ html[data-theme='light'] {
     --el-fill-color-extra-light: #fafcff;
     --el-fill-color-dark: #ebedf0;
     --el-fill-color-blank: #ffffff;
-    --el-text-color-primary: #303133;
+    --el-text-color-primary: #5d5d5d;
     --el-text-color-regular: #606266;
     --el-text-color-secondary: #909399;
     --el-text-color-placeholder: #a8abb2;
@@ -80,10 +83,21 @@ html[data-theme='light'] {
     --menu-hover: #263445;
     --sub-menu-bg: #1f2d3d;
     --sub-menu-hover: #001528;
+    /* Generic application table colors */
+    --table-header-bg: #ffffff;
+    --table-header-text: #909399;
+    --table-body-bg: #ffffff;
+    --table-body-text: #606266;
+    --table-footer-bg: #f5f7fa;
+    --table-footer-text: #303133;
+    --table-border: #ebeef5;
+    --table-row-hover-bg: #f5f7fa;
 }
 
 html[data-theme='blue'] {
     color-scheme: light;
+    --app-text-color-primary: #5d5d5d;
+    --app-text-color-regular: #5d5d5d;
     /* Element Plus + legacy palette */
     --el-color-white: #ffffff;
     --el-color-primary-light: #7ca3f4;
@@ -154,10 +168,21 @@ html[data-theme='blue'] {
     --menu-hover: #214a7b;
     --sub-menu-bg: #102a49;
     --sub-menu-hover: #1b416d;
+    /* Generic application table colors */
+    --table-header-bg: #ffffff;
+    --table-header-text: #7a8ba0;
+    --table-body-bg: #ffffff;
+    --table-body-text: #52647a;
+    --table-footer-bg: #edf5ff;
+    --table-footer-text: #1f2f46;
+    --table-border: #e6eef7;
+    --table-row-hover-bg: #edf5ff;
 }
 
 html[data-theme='orange'] {
     color-scheme: light;
+    --app-text-color-primary: #5d5d5d;
+    --app-text-color-regular: #5d5d5d;
     /* Element Plus + legacy palette */
     --el-color-white: #ffffff;
     --el-color-primary-light: #f39b70;
@@ -228,10 +253,21 @@ html[data-theme='orange'] {
     --menu-hover: #743719;
     --sub-menu-bg: #45200d;
     --sub-menu-hover: #663016;
+    /* Generic application table colors */
+    --table-header-bg: #ffffff;
+    --table-header-text: #92786a;
+    --table-body-bg: #ffffff;
+    --table-body-text: #695346;
+    --table-footer-bg: #fff3e6;
+    --table-footer-text: #3d2a20;
+    --table-border: #f6e9df;
+    --table-row-hover-bg: #fff6ef;
 }
 
 html[data-theme='dark'] {
     color-scheme: dark;
+    --app-text-color-primary: var(--el-text-color-primary);
+    --app-text-color-regular: var(--el-text-color-regular);
     /* Element Plus + legacy palette */
     --el-color-white: #ffffff;
     --el-color-primary-light: #927bdc;
@@ -247,22 +283,22 @@ html[data-theme='dark'] {
     --yellow: #e8bd72;
     --pan-green: #52b99a;
     --sub-menu-active-text: #f4f4f5;
-    --app-bg: #0f1115;
-    --app-surface: #181b20;
-    --app-surface-soft: #20242b;
-    --app-navbar-bg: #181b20;
-    --app-navbar-text: #e5e7eb;
+    --app-bg: #141926;
+    --app-surface: #1c212e;
+    --app-surface-soft: #181d29;
+    --app-navbar-bg: #141926;
+    --app-navbar-text: #d9dde5;
     --app-navbar-hover: rgba(255, 255, 255, 0.08);
     --app-border: #333842;
     --app-shadow: rgba(0, 0, 0, 0.35);
     --employee-banner-gradient-start: #242936;
     --employee-banner-gradient-end: #111318;
-    --employee-banner-text-primary: #ffffff;
-    --employee-banner-text-secondary: #c7cbea;
-    --employee-banner-text-muted: #aeb4d6;
+    --employee-banner-text-primary: #f1f3f5;
+    --employee-banner-text-secondary: #c4cad4;
+    --employee-banner-text-muted: #9fa7b5;
     /* Dashboard panel-group cards */
-    --stat-card-bg-start: #060606;
-    --stat-card-bg-end: #313131;
+    --stat-card-bg-start: #1c212e;
+    --stat-card-bg-end: #1c212e;
     --stat-card-border: #373b43;
     --stat-card-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
     --stat-card-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
@@ -281,18 +317,24 @@ html[data-theme='dark'] {
     --el-color-primary-light-8: #403863;
     --el-color-primary-light-9: #302b48;
     --el-color-primary-dark-2: #c4b5fd;
-    --el-bg-color: #181b20;
-    --el-bg-color-page: #0f1115;
-    --el-fill-color: #252a31;
-    --el-fill-color-light: #20242b;
-    --el-fill-color-lighter: #1d2127;
-    --el-fill-color-extra-light: #1b1f24;
-    --el-fill-color-dark: #303640;
-    --el-fill-color-blank: #181b20;
-    --el-text-color-primary: #ffffff;
-    --el-text-color-regular: #ffffff;
-    --el-text-color-secondary: #ffffff;
-    --el-text-color-placeholder: #ffffff;
+    --el-bg-color: #1c212e;
+    --el-bg-color-page: #141926;
+    --el-bg-color-overlay: #1c212e;
+    --el-input-bg-color: #1c212e;
+    --el-select-input-color: #e4e7ec;
+    --el-button-bg-color: #1c212e;
+    --el-button-hover-bg-color: #252b3a;
+    --el-button-active-bg-color: #181d29;
+    --el-fill-color: #1c212e;
+    --el-fill-color-light: #181d29;
+    --el-fill-color-lighter: #1c212e;
+    --el-fill-color-extra-light: #181d29;
+    --el-fill-color-dark: #252b3a;
+    --el-fill-color-blank: #1c212e;
+    --el-text-color-primary: #eef1f5;
+    --el-text-color-regular: #d9dee6;
+    --el-text-color-secondary: #aeb6c2;
+    --el-text-color-placeholder: #464d56;
     --el-border-color: #3b414c;
     --el-border-color-light: #333944;
     --el-border-color-lighter: #2b3038;
@@ -305,6 +347,15 @@ html[data-theme='dark'] {
     --menu-hover: #20252d;
     --sub-menu-bg: #0d1014;
     --sub-menu-hover: #1a1f26;
+    /* Generic application table colors */
+    --table-header-bg: #1c212e;
+    --table-header-text: #aeb6c2;
+    --table-body-bg: #1c212e;
+    --table-body-text: #d9dee6;
+    --table-footer-bg: #181d29;
+    --table-footer-text: #eef1f5;
+    --table-border: #2b3038;
+    --table-row-hover-bg: #252b3a;
 
     .el-card,
     .el-dialog,
@@ -331,6 +382,8 @@ html[data-theme='dark'] {
 }
 
 html[data-theme='coffee'] {
+    --app-text-color-primary: var(--el-text-color-primary);
+    --app-text-color-regular: var(--el-text-color-regular);
     color-scheme: dark;
     /* Element Plus + legacy palette */
     --el-color-white: #ffffff;
@@ -406,6 +459,138 @@ html[data-theme='coffee'] {
     --menu-hover: #20252d;
     --sub-menu-bg: #0d1014;
     --sub-menu-hover: #1a1f26;
+    /* Generic application table colors */
+    --table-header-bg: #181b20;
+    --table-header-text: #a47148;
+    --table-body-bg: #181b20;
+    --table-body-text: #a47148;
+    --table-footer-bg: #20242b;
+    --table-footer-text: #a47148;
+    --table-border: #2b3038;
+    --table-row-hover-bg: #252a31;
+}
+
+
+html[data-theme='cloud-mint'] {
+    color-scheme: dark;
+    --app-text-color-primary: var(--el-text-color-primary);
+    --app-text-color-regular: var(--el-text-color-regular);
+    /* Cloud Mint */
+    --el-color-white: #ffffff;
+    --el-color-primary-light: #9adfd2;
+    --el-color-danger: #ef7d7d;
+    --el-color-success: #7bc9a4;
+    --darkgray: #DDFBEF;
+    --blue: #9adfd2;
+    --light-blue: #b8efe4;
+    --red: #ef7d7d;
+    --pink: #e99ab5;
+    --green: #7bc9a4;
+    --tiffany: #7bd8cb;
+    --yellow: #e7c879;
+    --pan-green: #7bc9a4;
+    --sub-menu-active-text: #DDFBEF;
+    /* App surfaces - same dark-mode structure with Cloud Mint palette */
+    --app-bg: #233540; /*#2F4858*/;
+    --app-surface: #385766;
+    --app-surface-soft: #344f5e;
+    --app-navbar-bg: #2F4858;
+    --app-navbar-text: #DDFBEF;
+    --app-navbar-hover: rgba(221, 251, 239, 0.10);
+    --app-border: #4b6977;
+    --app-shadow: rgba(12, 30, 39, 0.34);
+    /* Employee banner */
+    --employee-banner-gradient-start: #385766;
+    --employee-banner-gradient-end: #263d4b;
+    --employee-banner-text-primary: #DDFBEF;
+    --employee-banner-text-secondary: #DDFBEF;
+    --employee-banner-text-muted: #DDFBEF;
+    /* Dashboard panel-group cards */
+    --stat-card-bg-start: #385766;
+    --stat-card-bg-end: #385766;
+    --stat-card-border: #4b6977;
+    --stat-card-shadow: 0 3px 12px rgba(12, 30, 39, 0.22);
+    --stat-card-hover-shadow: 0 10px 28px rgba(12, 30, 39, 0.38);
+    --stat-customers-accent: #7bd8cb;
+    --stat-customers-accent-soft: rgba(123, 216, 203, 0.14);
+    --stat-visits-accent: #9adfd2;
+    --stat-visits-accent-soft: rgba(154, 223, 210, 0.14);
+    --stat-current-accent: #ef8d8d;
+    --stat-current-accent-soft: rgba(239, 141, 141, 0.13);
+    --stat-amount-accent: #9bd67b;
+    --stat-amount-accent-soft: rgba(155, 214, 123, 0.13);
+    /* Element Plus */
+    --el-color-primary: #8FD6C8;
+    --el-color-primary-light-3: #a5e0d5;
+    --el-color-primary-light-5: #b9e8df;
+    --el-color-primary-light-7: #ccefe8;
+    --el-color-primary-light-8: #d7f4ee;
+    --el-color-primary-light-9: #41616f;
+    --el-color-primary-dark-2: #72bdae;
+    --el-bg-color: #385766;
+    --el-bg-color-page: #2F4858;
+    --el-bg-color-overlay: #385766;
+    --el-input-bg-color: #385766;
+    --el-select-input-color: #DDFBEF;
+    --el-button-bg-color: #385766;
+    --el-button-hover-bg-color: #456878;
+    --el-button-active-bg-color: #344f5e;
+    --el-fill-color: #385766;
+    --el-fill-color-light: #344f5e;
+    --el-fill-color-lighter: #3c5c6b;
+    --el-fill-color-extra-light: #365463;
+    --el-fill-color-dark: #456878;
+    --el-fill-color-blank: #385766;
+    /* Requested Cloud Mint text color */
+    --el-text-color-primary: #DDFBEF;
+    --el-text-color-regular: #DDFBEF;
+    --el-text-color-secondary: #DDFBEF;
+    --el-text-color-placeholder: #a9c9bf;
+    --el-border-color: #557481;
+    --el-border-color-light: #4d6c79;
+    --el-border-color-lighter: #466572;
+    --el-border-color-extra-light: #405e6b;
+    --el-mask-color: rgba(12, 31, 39, 0.80);
+    --el-mask-color-extra-light: rgba(12, 31, 39, 0.30);
+    /* Sidebar/menu palette */
+    --menu-text: #DDFBEF;
+    --menu-active-text: #DDFBEF;
+    --menu-bg: #253a46;
+    --menu-hover: #344f5e;
+    --sub-menu-bg: #21333e;
+    --sub-menu-hover: #304b59;
+    /* Generic application table colors */
+    --table-header-bg: #385766;
+    --table-header-text: #DDFBEF;
+    --table-body-bg: #385766;
+    --table-body-text: #DDFBEF;
+    --table-footer-bg: #344f5e;
+    --table-footer-text: #DDFBEF;
+    --table-border: #466572;
+    --table-row-hover-bg: #456878;
+
+    .el-card,
+    .el-dialog,
+    .el-drawer,
+    .el-dropdown-menu,
+    .el-popper,
+    .el-table,
+    .el-table__expanded-cell,
+    .el-descriptions,
+    .el-collapse-item__header,
+    .el-collapse-item__wrap {
+        background-color: var(--el-bg-color);
+        color: var(--el-text-color-primary);
+        border-color: var(--el-border-color-lighter);
+    }
+
+        .el-table th.el-table__cell,
+        .el-table tr,
+        .el-table td.el-table__cell {
+            background-color: var(--el-bg-color);
+            color: var(--el-text-color-primary);
+            border-color: var(--el-border-color-lighter);
+        }
 }
 
 

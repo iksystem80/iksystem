@@ -104,8 +104,27 @@ import AppLink from './link';
 import FixiOSBug from './fixiosbug';
 import { useSettingsStore } from '@/store/modules/settings';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+import { Binoculars, BookLock, CalendarDays, Calendars, Cog, FolderUsers, Gift, HandCoins, LibraryBig, MonitorCog, NotebookPen, UserRoundCog, LayoutTemplate, Images } from '@lucide/vue';
 
 const elementIcons = ElementPlusIconsVue;
+
+// Only icons used by router/index.ts are included in the bundle.
+const lucideIcons = {
+  LcBinoculars: Binoculars,
+  LcBookLock: BookLock,
+  LcCalendarDays: CalendarDays,
+  LcCalendars: Calendars,
+  LcCog: Cog,
+  LcFolderUsers: FolderUsers,
+  LcGift: Gift,
+  LcHandCoins: HandCoins,
+  LcLibraryBig: LibraryBig,
+  LcMonitorCog: MonitorCog,
+  LcNotebookPen: NotebookPen,
+  LcUserRoundCog: UserRoundCog,
+  LcLayoutTemplate: LayoutTemplate,
+  LcImages: Images
+};
 
 export default defineComponent({
   name: 'SidebarItem',
@@ -164,6 +183,11 @@ export default defineComponent({
         return null;
       }
 
+      // Resolve locally imported Lucide icons.
+      if (typeof icon === 'string' && icon.startsWith('Lc')) {
+        return lucideIcons[icon] || icon;
+      }
+
       // Element Plus icon
       if (elementIcons[icon]) {
         return elementIcons[icon];
@@ -180,6 +204,11 @@ export default defineComponent({
 
       if (!icon) {
         return null;
+      }
+
+      // Resolve locally imported Lucide icons.
+      if (typeof icon === 'string' && icon.startsWith('Lc')) {
+        return lucideIcons[icon] || icon;
       }
 
       // Element Plus icon

@@ -9,7 +9,7 @@
         </el-button>
         <div>
           <h1 class="page-title">Customer Detail</h1>
-          <div class="page-subtitle" v-if="customer">{{ customer.firstname }} {{ customer.lastname }}</div>
+          <p v-if="customer">{{ customer.firstname }} {{ customer.lastname }}</p>
           <p v-else>Customer profile</p>
         </div>
       </div>
@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 
 import UserCard from './components/usercard.vue';
 import Activity from './components/activity.vue';

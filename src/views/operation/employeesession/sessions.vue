@@ -99,7 +99,7 @@
 
             <div class="session-main">
               <div class="session-title-row">
-                <strong>Session # {{ session.id }}</strong>
+                <strong>Session # {{ session.sessionNumber ?? session.id }}</strong>
               </div>
 
               <span class="session-date">
@@ -133,7 +133,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { ArrowLeft, ArrowRight, Clock, Picture } from '@element-plus/icons-vue';
+
 
 import { useUserStore } from '@/store/modules/user';
 import { useRefreshStore } from '@/store/modules/refresh';
@@ -163,6 +163,9 @@ const filterDates = computed(() => ({
         ? route.query.endDate
         : undefined
 }));
+
+const reconciliation = computed(() => ['all', 'reconciled', 'unreconciled'].includes(route.query.reconciliation)
+    ? route.query.reconciliation : 'unreconciled');
 
 const periodLabel = computed(() => {
     if (filterDates.value.startDate && filterDates.value.endDate) {
@@ -273,7 +276,7 @@ async function loadSessions() {
       const response = await getEmployeeReportSessions(
         employeeId.value,
         userStore.locationId,
-        filterDates.value
+        { ...filterDates.value, reconciliation: reconciliation.value }
       );
 
       employee.value = response?.data?.employee || null;
@@ -293,6 +296,11 @@ async function loadSessions() {
 
 watch(
   () => refreshStore.key('employeeSessions'),
+  () => loadSessions()
+);
+
+watch(
+  () => [employeeId.value, filterDates.value.startDate, filterDates.value.endDate, reconciliation.value],
   () => loadSessions()
 );
 

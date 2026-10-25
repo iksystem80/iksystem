@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="app-container">
     <div class="page-header">
       <div>
         <h2 class="page-title">Promotions</h2>

@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build:ios": "vite build --mode ios",
+    "build:android": "vite build --mode android",
     "dev:test": "vite --mode dev_test --open",
     "dev:prod": "vite --mode dev_prod",
     "build:test": "vite build --mode build_test",
@@ -20,6 +21,7 @@
     "@capacitor/ios": "^8.5.2",
     "@capgo/capacitor-nfc": "^8.2.10",
     "@element-plus/icons-vue": "^2.3.2",
+    "@lucide/vue": "^1.59.0",
     "axios": "^1.11.0",
     "clipboard": "^2.0.11",
     "driver.js": "^1.3.6",
@@ -47,6 +49,7 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.2",
     "@eslint/js": "^9.32.0",
+    "@iconify-json/ep": "^1.2.4",
     "@pivanov/vite-plugin-svg-sprite": "^3.1.3",
     "@rushstack/eslint-patch": "^1.12.0",
     "@tsconfig/node20": "^20.1.6",
@@ -62,6 +65,7 @@
     "sass": "^1.89.2",
     "typescript": "~5.8.3",
     "unplugin-auto-import": "^19.3.0",
+    "unplugin-icons": "^24.0.0",
     "unplugin-vue-components": "^28.8.0",
     "vite": "^6.3.5",
     "vite-plugin-inspect": "^11.3.2",
@@ -72,6 +76,7 @@
     "canvas@3.2.3": true,
     "@parcel/watcher@2.6.0": true,
     "core-js@3.50.0": true,
-    "esbuild@0.25.12": true
+    "esbuild@0.25.12": true,
+    "sharp@0.32.6": true
   }
 }

@@ -95,7 +95,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowRight, Connection, Present, Star, Tickets } from '@element-plus/icons-vue';
+
 import { useUserStore } from '@/store/modules/user';
 
 const route = useRoute();

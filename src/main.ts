@@ -40,7 +40,6 @@ if (Capacitor.isNativePlatform()) {
 const platform = Capacitor.getPlatform();
 document.documentElement.classList.add(`platform-${platform}`);
 
-
 const NFC_HOST = 'secure.iklogy.com';
 
 interface NfcRouteTarget {

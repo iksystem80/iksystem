@@ -1,5 +1,5 @@
 <template>
-  <div class="page irfan-promotion-detail irfan-ui-page" v-loading="loading" >
+  <div class="app-container" v-loading="loading" >
     <div class="page-header">
       <div class="header-left">
         <el-button class="back-button" circle aria-label="Back" @click="goBack" >
@@ -123,9 +123,6 @@ import {
   useRouter
 } from 'vue-router';
 
-import {
-  ArrowLeft
-} from '@element-plus/icons-vue';
 
 import {
   getPromotion,

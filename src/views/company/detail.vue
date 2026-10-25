@@ -72,9 +72,13 @@
             </el-table-column>
 
             <el-table-column label="Actions"
-                             width="250"
+                             width="300"
                              align="right">
               <template #default="{ row }">
+                <el-button link type="primary" @click="openEditLocationDialog(row)">
+                  Edit
+                </el-button>
+
                 <el-button
                   v-if="!row.isActive || row.isSuspended"
                   link
@@ -184,6 +188,26 @@
     </el-tabs>
 
     <!-- ================================================= -->
+    <!-- EDIT LOCATION -->
+    <!-- ================================================= -->
+    <el-dialog v-model="editLocationDialogVisible" title="Edit Location" width="450px">
+      <el-form label-position="top">
+        <el-form-item label="Location Name">
+          <el-input v-model="editLocationName" maxlength="100" show-word-limit />
+        </el-form-item>
+        <el-form-item label="Allow Face Check-In">
+          <el-switch v-model="editAllowFaceCheckin" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editLocationDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" :loading="savingEditLocation" @click="saveEditLocation">
+          Save Changes
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- ================================================= -->
     <!-- ADD LOCATION -->
     <!-- ================================================= -->
 
@@ -221,7 +245,7 @@
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import {
   ref,
   onMounted
@@ -244,6 +268,7 @@ import {
 import {
   getCompanyLocations,
   createLocation,
+  updateLocation,
   updateLocationStatus
 } from '@/api/location';
 
@@ -291,6 +316,12 @@ const savingLocation =
 
 const newLocationName =
     ref('');
+
+const editLocationDialogVisible = ref(false);
+const savingEditLocation = ref(false);
+const editingLocationId = ref(null);
+const editLocationName = ref('');
+const editAllowFaceCheckin = ref(false);
 
 async function loadCompany() {
   try {
@@ -427,6 +458,37 @@ async function saveLocation() {
   } finally {
     savingLocation.value =
             false;
+  }
+}
+
+function openEditLocationDialog(row) {
+  editingLocationId.value = row.id;
+  editLocationName.value = row.name || '';
+  editAllowFaceCheckin.value = row.allowFaceCheckin === true;
+  editLocationDialogVisible.value = true;
+}
+
+async function saveEditLocation() {
+  const name = editLocationName.value.trim();
+  if (!name) {
+    ElMessage.warning('Location name is required.');
+    return;
+  }
+
+  savingEditLocation.value = true;
+  try {
+    await updateLocation(editingLocationId.value, {
+      name,
+      allowFaceCheckin: editAllowFaceCheckin.value
+    });
+    ElMessage.success('Location updated successfully.');
+    editLocationDialogVisible.value = false;
+    await loadLocations();
+  } catch (error) {
+    console.error(error);
+    ElMessage.error(error?.response?.data?.message || 'Unable to update location.');
+  } finally {
+    savingEditLocation.value = false;
   }
 }
 

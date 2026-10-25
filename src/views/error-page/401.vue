@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <el-button :icon="ArrowLeft" class="pan-back-btn" @click="back">
-      返回
+    <el-button class="pan-back-btn" @click="back">
+      <el-icon><ArrowLeft/></el-icon>
     </el-button>
     <el-row>
       <el-col :span="12">
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import { markRaw } from 'vue';
 import errGif from '@/assets/401_images/401.gif';
 import { defineComponent } from 'vue';

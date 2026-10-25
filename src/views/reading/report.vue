@@ -11,11 +11,11 @@
           <div class="filter-session">
             <label>Reading Session</label>
             <el-select class="reading-session-select" v-model="selectedSessionId" placeholder="Select a reconcile or completed session" filterable clearable style="width: 100%" @change="handleSessionChange">
-              <el-option v-for="session in completedSessions" :key="session.id" :label="`Session #${session.id} - ${formatDateTime(session.endedat)}`" :value="session.id">
+              <el-option v-for="session in completedSessions" :key="session.id" :label="`Session # ${session.sessionNumber ?? session.id} - ${formatDateTime(session.endedat)}`" :value="session.id">
                 <div class="session-option">
-                  <strong>Session #{{ session.id }}</strong>
+                  <strong>Session # {{ session.sessionNumber ?? session.id }} </strong>
                   <span>
-                    {{ formatDateTime(session.endedat) }}
+                    - {{ formatDateTime(session.endedat) }}
                     · {{ Number(session.status) === 2 ? 'Reconcile' : 'Completed' }}
                   </span>
                 </div>
@@ -23,11 +23,12 @@
             </el-select>
           </div>
           <div class="filter-refresh">
-            <el-button :icon="Refresh"
+            <el-button
                        :loading="loadingReport"
                        class="mobile-icon-button reading-report-refresh"
                        aria-label="Refresh"
                        @click="refreshReport">
+              <el-icon><Refresh /></el-icon>
               <span class="button-label">Refresh</span>
             </el-button>
           </div>
@@ -51,13 +52,18 @@
             <el-card v-if="selectedSession"
                      shadow="never"
                      class="reading-summary-card">
+              <div style="position: relative;top: -10px;font-size: 10px;color: var(--el-text-color-secondary);">
+                <strong class="reading-summary-date">{{ formatDateTime(selectedSession.startedat) }}</strong>
+                -
+                <strong class="reading-summary-date">{{ formatDateTime(selectedSession.endedat) }}</strong>
+              </div>
               <div class="reading-summary-strip">
                 <div class="reading-summary-item">
-                  <strong>{{ selectedSession.id }}</strong>
+                  <strong>{{ selectedSession.sessionNumber ?? selectedSession.id }}</strong>
                   <span>Session #</span>
                 </div>
 
-                <div class="reading-summary-item reading-summary-time">
+                <!--<div class="reading-summary-item reading-summary-time">
                   <div class="reading-summary-time-values">
                     <div class="reading-summary-time-row">
                       <small>Started</small>
@@ -69,7 +75,7 @@
                     </div>
                   </div>
                   <span>Reading Time</span>
-                </div>
+                </div>-->
 
                 <div class="reading-summary-item">
                   <strong>{{ reportRows.length }}</strong>
@@ -151,12 +157,12 @@
 
                 <div class="ticket-reconcile-badges">
                   <div class="ticket-reconcile-badge short">
-                    <span>SHORT PAY</span>
+                    <span>SHORT PAID</span>
                     <strong>${{ formatMoney(ticketShortPayTotal) }}</strong>
                   </div>
 
                   <div class="ticket-reconcile-badge over">
-                    <span>OVER TICKET PAID</span>
+                    <span>OVER PAID</span>
                     <strong>${{ formatMoney(ticketOverPaidTotal) }}</strong>
                   </div>
                 </div>
@@ -205,6 +211,24 @@
                     <strong>${{ formatNumber(totalTicketOut) }}</strong>
                   </p>
 
+                  <div v-if="!profitPosting" style="margin-top: 12px; max-width: 250px;">
+                    <label style="display:block; margin-bottom:6px; font-size:11px; font-weight:600;">Actual Cash Collected</label>
+                    <el-input-number v-model="actualPostingAmount" :min="0" :precision="2" :step="1" controls-position="right" style="width:100%" />
+                    <div class="small-text" style="margin-top:6px;">
+                      Finance Short / Over:
+                      <strong :class="differenceTextClass(postingVariance)">${{ formatNumber(postingVariance) }}</strong>
+                    </div>
+                  </div>
+                  <p v-else class="small-text" style="margin-top:8px;">
+                    Actual: <strong>${{ formatNumber(profitPosting.amount) }}</strong>
+                    <span v-if="profitPosting.calculatedAmount != null">
+                      · Calculated: ${{ formatNumber(profitPosting.calculatedAmount) }}
+                      · Short / Over:
+                      <strong :class="differenceTextClass(Number(profitPosting.amount) - Number(profitPosting.calculatedAmount))">
+                        ${{ formatNumber(Number(profitPosting.amount) - Number(profitPosting.calculatedAmount)) }}
+                      </strong>
+                    </span>
+                  </p>
                   <p v-if="profitPosting"
                      class="small-text posting-meta">
                     Posted by
@@ -250,138 +274,10 @@
             </el-card>
 
 
-            <el-dialog v-model="ticketReconcileDialogVisible"
-                       title="Match Tickets"
-                       width="92%"
-                       class="ticket-reconcile-dialog"
-                       destroy-on-close>
-              <div class="ticket-dialog-heading">
-                <div>
-                  <strong>Reading Session #{{ selectedSession?.id }}</strong>
-                  <span>{{ formatDateTime(selectedSession?.endedat) }}</span>
-                </div>
-              </div>
-
-              <div class="ticket-dialog-summary">
-                <div>
-                  <span class="ticket-reconcile-eyebrow">TICKET RECONCILIATION</span>
-                  <strong class="ticket-reconcile-net"
-                          :class="ticketVariance > 0 ? 'is-short' : ticketVariance < 0 ? 'is-over' : 'is-even'">
-                    {{ signedMoney(ticketVariance) }}
-                  </strong>
-                  <p>
-                    {{
-                    ticketVariance > 0
-                      ? 'Money still available — tickets were paid below machine OUT.'
-                      : ticketVariance < 0
-                        ? 'Tickets were paid above machine OUT.'
-                        : 'Machine OUT and Ticket Out match exactly.'
-                    }}
-                  </p>
-                </div>
-
-                <div class="ticket-reconcile-badges">
-                  <div class="ticket-reconcile-badge short">
-                    <span>SHORT PAY</span>
-                    <strong>${{ formatMoney(ticketShortPayTotal) }}</strong>
-                  </div>
-                  <div class="ticket-reconcile-badge over">
-                    <span>OVER TICKET PAID</span>
-                    <strong>${{ formatMoney(ticketOverPaidTotal) }}</strong>
-                  </div>
-                </div>
-
-                <div class="ticket-reconcile-bottom">
-                  <div>
-                    <span>READING OUT</span>
-                    <strong>${{ formatMoney(totalMachineOut) }}</strong>
-                    <small>{{ reportRows.length }} machines</small>
-                  </div>
-                  <div>
-                    <span>TICKET OUT</span>
-                    <strong>${{ formatMoney(totalTicketOut) }}</strong>
-                    <small>{{ totalTicketCount }} tickets</small>
-                  </div>
-                </div>
-              </div>
-
-              <div class="ticket-dialog-filters">
-                <el-button :type="ticketReconcileFilter === 'all' ? 'primary' : 'default'"
-                           round
-                           @click="ticketReconcileFilter = 'all'">
-                  All · {{ ticketReconcileCounts.all }}
-                </el-button>
-                <el-button :type="ticketReconcileFilter === 'even' ? 'primary' : 'default'"
-                           round
-                           @click="ticketReconcileFilter = 'even'">
-                  Even · {{ ticketReconcileCounts.even }}
-                </el-button>
-                <el-button :type="ticketReconcileFilter === 'short' ? 'success' : 'default'"
-                           round
-                           @click="ticketReconcileFilter = 'short'">
-                  Short Pay · {{ ticketReconcileCounts.short }}
-                </el-button>
-                <el-button :type="ticketReconcileFilter === 'over' ? 'danger' : 'default'"
-                           round
-                           @click="ticketReconcileFilter = 'over'">
-                  Over Ticket Paid · {{ ticketReconcileCounts.over }}
-                </el-button>
-              </div>
-
-              <div class="ticket-machine-list">
-                <div v-for="row in filteredTicketReconcileRows"
-                     :key="row.id"
-                     class="ticket-machine-row">
-                  <div class="ticket-machine-number">
-                    <span>MCH</span>
-                    <strong>{{ row.machinenumber }}</strong>
-                  </div>
-
-                  <div class="ticket-machine-amount">
-                    <span>READING OUT</span>
-                    <strong>${{ formatMoney(row.dailyout) }}</strong>
-                  </div>
-
-                  <div class="ticket-machine-arrow">→</div>
-
-                  <div class="ticket-machine-amount">
-                    <span>TICKET OUT</span>
-                    <strong>${{ formatMoney(row.ticketout) }}</strong>
-                  </div>
-
-                  <div class="ticket-machine-meta">
-                    <span>{{ Number(row.ticketcount || 0) }} {{ Number(row.ticketcount || 0) === 1 ? 'ticket' : 'tickets' }}</span>
-                    <small v-if="row.ticketemployees">{{ row.ticketemployees }}</small>
-                  </div>
-
-                  <div class="ticket-machine-status">
-                    <el-tag :type="ticketReconcileType(row) === 'short' ? 'success' : ticketReconcileType(row) === 'over' ? 'danger' : 'info'"
-                            effect="light"
-                            round>
-                      {{
-                      ticketReconcileType(row) === 'short'
-                        ? `+${formatMoney(ticketMachineVariance(row))}`
-                        : ticketReconcileType(row) === 'over'
-                          ? `-${formatMoney(Math.abs(ticketMachineVariance(row)))}`
-                          : 'Even'
-                      }}
-                    </el-tag>
-                    <small>
-                      {{
-                      ticketReconcileType(row) === 'short'
-                        ? 'Short Pay'
-                        : ticketReconcileType(row) === 'over'
-                          ? 'Over Ticket Paid'
-                          : 'Matched'
-                      }}
-                    </small>
-                  </div>
-                </div>
-
-                <el-empty v-if="filteredTicketReconcileRows.length === 0"
-                          description="No machines match this filter." />
-              </div>
-            </el-dialog>
+            <TicketReconciliationDialog v-model="ticketReconcileDialogVisible"
+                                        :session-id="selectedSession?.id"
+                                        :ended-at="formatDateTime(selectedSession?.endedat)"
+                                        :rows="reportRows" />
 
             <!-- ====================================================== -->
             <!-- COVERED EMPLOYEE SESSIONS -->
@@ -389,23 +285,18 @@
 
             <el-card v-if="selectedSession"
                      shadow="never"
-                     class="covered-sessions-card">
+                     class="covered-sessions-card app-table-card">
               <template #header>
                 <div class="covered-sessions-header">
-                  <div>
-                    <strong>
-                      Covered Employee Sessions
-                    </strong>
-
-                    <div class="small-text">
-                      {{ coveredEmployeeSessions.length }}
-                      employee
-                      {{
-                      coveredEmployeeSessions.length === 1
-                        ? 'session'
-                        : 'sessions'
-                      }}
-                      included in this reading session
+                  <div class="app-table-card-header">
+                    <el-icon><User /></el-icon>
+                    <div class="app-table-card-title">
+                      <strong>Covered Employee Sessions</strong>
+                      <div class="small-text">
+                        {{ coveredEmployeeSessions.length }} employee
+                        {{ coveredEmployeeSessions.length === 1 ? 'session' : 'sessions' }}
+                        included in this reading session
+                      </div>
                     </div>
                   </div>
 
@@ -424,88 +315,104 @@
                         :image-size="60"
                         description="No employee sessions are linked to this reading session." />
 
-              <div v-else
-                   class="covered-session-list">
-                <div v-for="employeeSession in coveredEmployeeSessions"
-                     :key="employeeSession.id"
-                     class="covered-session-item">
-                  <div class="covered-session-main">
-                    <div>
-                      <span class="covered-session-label">
-                        Employee
-                      </span>
+              <div v-else class="app-table-wrap covered-employee-table-wrap">
+                <el-table :data="coveredEmployeeSessions"
+                          style="width: 100%"
+                          class="app-data-table is-compact covered-employee-table"
+                          row-key="id"
+                          :row-style="() => ({ cursor: 'pointer' })"
+                          @row-click="openEmployeeShiftReport">
+                  <el-table-column prop="employeeName"
+                                   label="Employee"
+                                   min-width="120">
+                    <template #default="{ row }">
+                      <strong>{{ row.employeeName || 'Employee' }}</strong>
+                    </template>
+                  </el-table-column>
 
-                      <strong>
-                        {{
-                        employeeSession.employeeName ||
-                          'Employee'
-                        }}
-                      </strong>
-                    </div>
+                  <el-table-column prop="id"
+                                   label="Session"
+                                   width="82">
+                    <template #default="{ row }">
+                      <strong>#{{ row.id }}</strong>
+                    </template>
+                  </el-table-column>
 
-                    <div>
-                      <span class="covered-session-label">
-                        Session
-                      </span>
+                  <el-table-column label="Working Hours"
+                                   min-width="112">
+                    <template #default="{ row }">
+                      {{ formatHours(employeeSessionHours(row)) }}
+                    </template>
+                  </el-table-column>
 
-                      <strong>
-                        #{{ employeeSession.id }}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span class="covered-session-label">
-                        Working Hours
-                      </span>
-
-                      <strong>
-                        {{
-                        formatHours(
-                          employeeSessionHours(
-                            employeeSession
-                          )
-                        )
-                        }}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span class="covered-session-label">
-                        Session Points
-                      </span>
+                  <el-table-column prop="sessionPoints"
+                                   label="Session Points"
+                                   min-width="105">
+                    <template #default="{ row }">
                       <strong class="session-points-value">
-                        {{ formatNumber(employeeSession.sessionPoints ?? 0) }}
+                        {{ formatNumber(row.sessionPoints ?? 0) }}
                       </strong>
-                    </div>
+                    </template>
+                  </el-table-column>
 
-                    <div>
-                      <span class="covered-session-label">
-                        Covered Points
-                      </span>
+                  <el-table-column label="Covered Points"
+                                   min-width="112">
+                    <template #default="{ row }">
                       <strong class="covered-points-value">
-                        {{ formatNumber(employeeSession.coveredPoints ?? 0) }}
+                        {{ formatNumber(row.coveredPoints ?? 0) }}
+                        ({{ formatNumber(row.extraMatchPoints ?? 0) }})
                       </strong>
-                    </div>
+                    </template>
+                  </el-table-column>
 
-                    <div>
-                      <span class="covered-session-label">
-                        PULL
+                  <el-table-column prop="totalTicketOut"
+                                   label="Ticket Out"
+                                   min-width="92">
+                    <template #default="{ row }">
+                      <strong>${{ formatMoney(row.totalTicketOut ?? 0) }}</strong>
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column prop="shortOver"
+                                   label="Short / Over"
+                                   min-width="100">
+                    <template #default="{ row }">
+                      <strong>{{ signedMoney(row.shortOver ?? 0) }}</strong>
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column prop="totalPull"
+                                   label="PULL"
+                                   min-width="82">
+                    <template #default="{ row }">
+                      <strong>${{ formatMoney(row.totalPull ?? 0) }}</strong>
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column label="Session Time"
+                                   min-width="285">
+                    <template #default="{ row }">
+                      <span class="covered-session-time-value">
+                        {{ formatDateTime(row.clockIn) }} - {{ formatDateTime(row.clockOut) }}
                       </span>
-                      <strong>
-                        ${{ formatNumber(employeeSession.totalPull ?? 0) }}
-                      </strong>
-                    </div>
-
-                    <div class="covered-session-time">
-                      <span class="covered-session-label">Session Time</span>
-                      <strong class="covered-session-time-value">
-                        {{ formatDateTime(employeeSession.clockIn) }} - {{ formatDateTime(employeeSession.clockOut) }}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
+                    </template>
+                  </el-table-column>
+                </el-table>
               </div>
             </el-card>
+
+            <el-dialog v-model="employeeShiftDialogVisible"
+                       class="employee-shift-report-dialog"
+                       width="92%"
+                       top="3vh"
+                       destroy-on-close
+                       append-to-body
+                       :fullscreen="device === 'mobile'"
+                       @closed="handleEmployeeShiftDialogClosed">
+              <ShiftReport v-if="selectedEmployeeShiftSessionId"
+                           :session-id="selectedEmployeeShiftSessionId"
+                           embedded />
+            </el-dialog>
 
           </el-tab-pane>
           <el-tab-pane label="Machine Wise" name="machine">
@@ -513,25 +420,17 @@
             <!-- DESKTOP MACHINE REPORT -->
             <!-- ====================================================== -->
 
-            <el-card v-if="device !== 'mobile'"
-                     shadow="never"
-                     class="report-card"
+            <el-card shadow="never"
+                     class="report-card app-table-card reading-report-table-card"
                      v-loading="loadingReport">
               <template #header>
                 <div class="report-card-header">
-                  <div>
-                    <strong>
-                      Machine Reading Report
-                    </strong>
-
-                    <div class="small-text">
-                      {{ filteredRows.length }}
-                      machine
-                      {{
-                      filteredRows.length === 1
-                        ? 'reading'
-                        : 'readings'
-                      }}
+                  <div class="app-table-card-header">
+                    <el-icon><Monitor /></el-icon>
+                    <div class="app-table-card-title">
+                      <strong>Machine Reading Report</strong>
+                      <div class="hint">{{ filteredRows.length }} machine {{filteredRows.length === 1? 'reading': 'readings'}}
+                      </div>
                     </div>
                   </div>
 
@@ -556,347 +455,83 @@
                       "
                         description="No machine readings found." />
 
-              <el-table v-else
-                        :data="filteredRows"
-                        stripe
-                        show-summary
-                        :summary-method="getSummaries"
-                        style="width: 100%"
-                        class="report-table">
-                <el-table-column prop="machinenumber"
-                                 label="Machine #"
-                                 min-width="75"
-                                 fixed="left">
-                  <template #default="{ row }">
-                    <strong>
-                      {{ row.machinenumber }}
-                    </strong>
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Previous IN"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ displayValue(row.previousin) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Previous OUT"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ displayValue(row.previousout) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Current IN"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ displayValue(row.currentin) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Current OUT"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ displayValue(row.currentout) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Daily IN"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ displayValue(row.dailyin) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Daily OUT"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ displayValue(row.dailyout) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Ticket Out"
-                                 min-width="105"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ formatNumber(row.ticketout ?? 0) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="OUT Check"
-                                 min-width="105"
-                                 align="center">
-                  <template #default="{ row }">
-                    <el-tag :type="
-                              ticketReconcileType(row) === 'short'
-                                ? 'success'
-                                : ticketReconcileType(row) === 'over'
-                                  ? 'danger'
-                                  : 'info'
-                            "
-                            effect="light"
-                            round>
-                      {{
-                        ticketReconcileType(row) === 'short'
-                          ? 'Short Paid'
-                          : ticketReconcileType(row) === 'over'
-                            ? 'Over Paid'
-                            : 'Even'
-                      }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Difference"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    <el-tag v-if="
-                            row.difference !== null &&
-                              row.difference !== undefined
-                          "
-                            :type="
-                            differenceType(
-                              row.difference
-                            )
-                          "
-                            effect="light"
-                            round>
-                      {{
-                      formatNumber(
-                        row.difference
-                      )
-                      }}
-                    </el-tag>
-
-                    <span v-else>
-                      --
-                    </span>
-                  </template>
-                </el-table-column>
-
-                <el-table-column prop="machinepoints"
-                                 label="Points Given"
-                                 min-width="110"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{
-                    formatNumber(
-                      row.machinepoints
-                    )
-                    }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Life Pay %"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ lifePayPercent(row) }}
-                  </template>
-                </el-table-column>
-
-                <el-table-column label="Life Hold %"
-                                 min-width="100"
-                                 align="right">
-                  <template #default="{ row }">
-                    {{ lifeHoldPercent(row) }}
-                  </template>
-                </el-table-column>
-              </el-table>
-            </el-card>
-
-            <!-- ====================================================== -->
-            <!-- MOBILE MACHINE REPORT -->
-            <!-- ====================================================== -->
-
-            <el-card v-else
-                     shadow="never"
-                     v-loading="loadingReport"
-                     class="report-card mobile-report-container">
-              <div class="
-                        report-card-header
-                        mobile-report-heading
-                    ">
-                <div>
-                  <strong>
-                    Machine Reading Report
-                  </strong>
-
-                  <div class="small-text">
-                    {{ filteredRows.length }}
-                    machine
-                    {{
-                    filteredRows.length === 1
-                      ? 'reading'
-                      : 'readings'
-                    }}
-                  </div>
-                </div>
-              </div>
-
-              <el-empty v-if="
-                        !loadingReport &&
-                          filteredRows.length === 0
-                      "
-                        description="No machine readings found." />
-
-              <div v-else
-                   class="mobile-report-list">
-                <el-card v-for="row in filteredRows"
-                         :key="row.id"
-                         shadow="never"
-                         class="mobile-report-card">
-                  <div class="mobile-report-header">
-                    <div>
-                      <span class="machine-label">
-                        MACHINE
+              <div v-else class="app-table-wrap reading-report-table-wrap reading-machine-table-wrap">
+                <el-table :data="filteredRows"
+                          show-summary
+                          :summary-method="getSummaries"
+                          style="width: 100%"
+                          class="report-table app-data-table reading-machine-wise-table">
+                  <el-table-column prop="machinenumber"
+                                   label="MCH #"
+                                   min-width="60"
+                                   fixed="left">
+                    <template #default="{ row }">
+                      <span class="weekly-machine-number-badge">
+                        {{ row.machinenumber }}
                       </span>
+                    </template>
+                  </el-table-column>
 
-                      <strong>
-                        #{{ row.machinenumber }}
-                      </strong>
-                    </div>
+                  <el-table-column label="Prev. IN"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ displayValue(row.previousin) }}
+                    </template>
+                  </el-table-column>
 
-                    <el-tag v-if="
-                            row.difference !== null &&
-                              row.difference !== undefined
-                          "
-                            :type="
-                            differenceType(
-                              row.difference
-                            )
-                          "
-                            effect="light"
-                            round>
-                      Difference:
-                      {{
-                      formatNumber(
-                        row.difference
-                      )
-                      }}
-                    </el-tag>
-                  </div>
+                  <el-table-column label="Prev. OUT"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ displayValue(row.previousout) }}
+                    </template>
+                  </el-table-column>
 
-                  <div class="mobile-points">
-                    <span>
-                      Points given during covered employee sessions
-                    </span>
+                  <el-table-column label="Curr. IN"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ displayValue(row.currentin) }}
+                    </template>
+                  </el-table-column>
 
-                    <strong>
-                      {{
-                      formatNumber(
-                        row.machinepoints
-                      )
-                      }}
-                    </strong>
-                  </div>
+                  <el-table-column label="Curr. OUT"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ displayValue(row.currentout) }}
+                    </template>
+                  </el-table-column>
 
-                  <div class="mobile-section-label">
-                    Previous Reading
-                  </div>
+                  <el-table-column label="Daily IN"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ displayValue(row.dailyin) }}
+                    </template>
+                  </el-table-column>
 
-                  <div class="mobile-value-grid">
-                    <div>
-                      <span>IN</span>
+                  <el-table-column label="Daily OUT"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ displayValue(row.dailyout) }}
+                    </template>
+                  </el-table-column>
 
-                      <strong>
-                        {{
-                        displayValue(
-                          row.previousin
-                        )
-                        }}
-                      </strong>
-                    </div>
+                  <el-table-column label="Ticket Out"
+                                   min-width="95"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ formatNumber(row.ticketout ?? 0) }}
+                    </template>
+                  </el-table-column>
 
-                    <div>
-                      <span>OUT</span>
-
-                      <strong>
-                        {{
-                        displayValue(
-                          row.previousout
-                        )
-                        }}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div class="mobile-section-label">
-                    Current Reading
-                  </div>
-
-                  <div class="mobile-value-grid">
-                    <div>
-                      <span>IN</span>
-
-                      <strong>
-                        {{
-                        displayValue(
-                          row.currentin
-                        )
-                        }}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>OUT</span>
-
-                      <strong>
-                        {{
-                        displayValue(
-                          row.currentout
-                        )
-                        }}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div class="mobile-section-label">
-                    Daily
-                  </div>
-
-                  <div class="mobile-value-grid daily-grid">
-                    <div>
-                      <span>IN</span>
-
-                      <strong>
-                        {{
-                        displayValue(
-                          row.dailyin
-                        )
-                        }}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>OUT</span>
-
-                      <strong>
-                        {{
-                        displayValue(
-                          row.dailyout
-                        )
-                        }}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Ticket Out</span>
-                      <strong>
-                        {{ formatNumber(row.ticketout ?? 0) }}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>OUT Check</span>
+                  <el-table-column label="OUT Check"
+                                   min-width="100"
+                                   align="center">
+                    <template #default="{ row }">
                       <el-tag :type="
                               ticketReconcileType(row) === 'short'
                                 ? 'success'
@@ -914,84 +549,130 @@
                             : 'Even'
                         }}
                       </el-tag>
-                    </div>
-                  </div>
-                </el-card>
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column label="Difference"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      <el-tag v-if="
+                            row.difference !== null &&
+                              row.difference !== undefined
+                          "
+                              :type="
+                            differenceType(
+                              row.difference
+                            )
+                          "
+                              effect="light"
+                              round>
+                        {{
+                      formatNumber(
+                        row.difference
+                      )
+                        }}
+                      </el-tag>
+
+                      <span v-else>
+                        --
+                      </span>
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column prop="machinepoints"
+                                   label="Points"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{
+                    formatNumber(
+                      row.machinepoints
+                    )
+                      }}
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column label="Life Pay %"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ lifePayPercent(row) }}
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column label="Life Hold %"
+                                   min-width="90"
+                                   align="right">
+                    <template #default="{ row }">
+                      {{ lifeHoldPercent(row) }}
+                    </template>
+                  </el-table-column>
+                </el-table>
               </div>
             </el-card>
+
           </el-tab-pane>
           <el-tab-pane label="Machine Type Wise" name="type">
-            <el-card shadow="never" class="report-card mobile-report-container" v-loading="loadingReport">
+            <el-card shadow="never" class="report-card app-table-card reading-report-table-card" v-loading="loadingReport">
               <template #header>
-                <div class="report-card-header type-report-heading">
-                  <div>
-                    <strong>Totals by Machine Type</strong>
-                    <div class="small-text">{{ machineTypeRows.length }} machine types</div>
+                <div class="report-card-header">
+                  <div class="app-table-card-header">
+                    <el-icon><TrendCharts /></el-icon>
+                    <div class="app-table-card-title">
+                      <strong>Totals by Machine Type</strong>
+                      <div class="hint">
+                        {{ machineTypeRows.length }} machine types
+                      </div>
+                    </div>
+                    <div class="small-text" v-if="search.trim()">Based on filtered machines</div>
                   </div>
-                  <div class="small-text" v-if="search.trim()">Based on filtered machines</div>
-                </div>
+                  </div>
               </template>
               <el-empty v-if="!loadingReport && !machineTypeRows.length"
                         description="No machine type readings found." />
-              <el-table v-else-if="device !== 'mobile'"
-                        :data="machineTypeRows" stripe show-summary
-                        :summary-method="getTypeSummaries" class="report-table"
-                        style="width: 100%">
-                <el-table-column prop="typeName" label="Machine Type" min-width="160" fixed="left" />
-                <el-table-column prop="machineCount" label="Machines" align="right" min-width="90" />
-                <el-table-column label="IN" align="right" min-width="105">
-                  <template #default="{ row }">
-                    {{ formatNumber(row.dailyin) }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="OUT" align="right" min-width="105">
-                  <template #default="{ row }">
-                    {{ formatNumber(row.dailyout) }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="Difference" align="right" min-width="110">
-                  <template #default="{ row }">
-                    <el-tag :type="differenceType(row.difference)" effect="light" round>
-                      {{ formatNumber(row.difference) }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="Points" align="right" min-width="100">
-                  <template #default="{ row }">
-                    {{ formatNumber(row.machinepoints) }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="Bonus" align="right" min-width="90">
-                  <template #default="{ row }">
-                    {{ formatNumber(row.bonus) }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="Net" align="right" min-width="100">
-                  <template #default="{ row }">
-                    <strong :class="differenceTextClass(row.net)">{{ formatNumber(row.net) }}</strong>
-                  </template>
-                </el-table-column>
-              </el-table>
-              <div v-else class="mobile-report-list">
-                <el-card v-for="row in machineTypeRows" :key="row.typeKey"
-                         shadow="never" class="mobile-report-card">
-                  <div class="mobile-report-header">
-                    <div>
-                      <span class="machine-label">MACHINE TYPE · {{ row.machineCount }} MACHINES</span>
-                      <strong>{{ row.typeName }}</strong>
-                    </div>
-                    <strong :class="differenceTextClass(row.net)">Net: {{ formatNumber(row.net) }}</strong>
-                  </div>
-                  <div class="type-mobile-grid">
-                    <div><span>IN</span><strong>{{ formatNumber(row.dailyin) }}</strong></div>
-                    <div><span>OUT</span><strong>{{ formatNumber(row.dailyout) }}</strong></div>
-                    <div><span>Difference</span><strong>{{ formatNumber(row.difference) }}</strong></div>
-                    <div><span>Points</span><strong>{{ formatNumber(row.machinepoints) }}</strong></div>
-                    <div><span>Bonus</span><strong>{{ formatNumber(row.bonus) }}</strong></div>
-                    <div><span>Net</span><strong :class="differenceTextClass(row.net)">{{ formatNumber(row.net) }}</strong></div>
-                  </div>
-                </el-card>
+              <div v-else class="app-table-wrap reading-report-table-wrap reading-machine-type-table-wrap">
+                <el-table :data="machineTypeRows" show-summary
+                          :summary-method="getTypeSummaries"
+                          class="report-table app-data-table reading-machine-type-table"
+                          style="width: 100%">
+                  <el-table-column prop="typeName" label="Machine Type" min-width="160" fixed="left" />
+                  <el-table-column prop="machineCount" label="Machines" align="right" min-width="90" />
+                  <el-table-column label="IN" align="right" min-width="105">
+                    <template #default="{ row }">
+                      {{ formatNumber(row.dailyin) }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="OUT" align="right" min-width="105">
+                    <template #default="{ row }">
+                      {{ formatNumber(row.dailyout) }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="Difference" align="right" min-width="110">
+                    <template #default="{ row }">
+                      <el-tag :type="differenceType(row.difference)" effect="light" round>
+                        {{ formatNumber(row.difference) }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="Points" align="right" min-width="100">
+                    <template #default="{ row }">
+                      {{ formatNumber(row.machinepoints) }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="Bonus" align="right" min-width="90">
+                    <template #default="{ row }">
+                      {{ formatNumber(row.bonus) }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="Net" align="right" min-width="100">
+                    <template #default="{ row }">
+                      <strong :class="differenceTextClass(row.net)">{{ formatNumber(row.net) }}</strong>
+                    </template>
+                  </el-table-column>
+                </el-table>
               </div>
+
             </el-card>
           </el-tab-pane>
         </el-tabs>
@@ -1002,255 +683,262 @@
 
 <script lang="ts" setup>
 import {
-          computed,
-          onMounted,
-          ref,
-          watch
+            computed,
+            onMounted,
+            ref,
+            watch
 } from 'vue';
 
-import {
-          Refresh,
-          Search, Tickets, Clock, CircleCheck, Monitor, Coin, TrendCharts, Download, Wallet
-} from '@element-plus/icons-vue';
 
 import {
-          ElMessage,
-          ElMessageBox
+            ElMessage,
+            ElMessageBox
 } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';
 
 import {
-          getCompletedSessions,
-          getSessionReport,
-          endsession
+            getCompletedSessions,
+            getSessionReport,
+            endsession
 } from '@/api/reading';
 
 import {
-          getReadingProfitPosting,
-          postReadingProfit
+            getReadingProfitPosting,
+            postReadingProfit
 } from '@/api/employeefinance';
 
+import ShiftReport from '@/views/operation/employeesession/shiftreport.vue';
+import TicketReconciliationDialog from '@/views/components/ticket_reconciliation_dialog.vue';
+
 const userStore =
-                useUserStore();
+                  useUserStore();
 
 const appStore =
-                useAppStore();
+                  useAppStore();
+
 
 const locationid =
-                computed(
-                  () =>
-                    userStore.locationId
-                );
+                  computed(
+                    () =>
+                      userStore.locationId
+                  );
 
 const device =
-                computed(
-                  () =>
-                    appStore.device
-                );
+                  computed(
+                    () =>
+                      appStore.device
+                  );
 
 const isAdmin =
-                computed(
-                  () =>
-                    [
-                      'admin',
-                      'owner',
-                      'system admin'
-                    ].includes(
-                      String(
-                        userStore.roleName || ''
+                  computed(
+                    () =>
+                      [
+                        'admin',
+                        'owner',
+                        'system admin'
+                      ].includes(
+                        String(
+                          userStore.roleName || ''
+                        )
+                          .trim()
+                          .toLowerCase()
                       )
-                        .trim()
-                        .toLowerCase()
-                    )
-                );
+                  );
 
 const completedSessions =
-                ref<any[]>([]);
+                  ref<any[]>([]);
 
 const reportRows =
-                ref<any[]>([]);
+                  ref<any[]>([]);
 
 const coveredEmployeeSessions =
-                ref<any[]>([]);
+                  ref<any[]>([]);
 
 const selectedSession =
-                ref<any>(null);
+                  ref<any>(null);
 
 const selectedSessionId =
-                ref<number | null>(null);
+                  ref<number | null>(null);
 
 const search =
-                ref('');
+                  ref('');
 
 const activeReportTab = ref<'overview' | 'machine' | 'type'>('overview');
 
 const loadingSessions =
-                ref(false);
+                  ref(false);
 
 const loadingReport =
-                ref(false);
+                  ref(false);
 
 const checkingProfitPosting =
-                ref(false);
+                  ref(false);
 
 const postingProfit =
-                ref(false);
+                  ref(false);
 
 const profitPosting =
-                ref<any>(null);
+                  ref<any>(null);
+
+const actualPostingAmount = ref<number | undefined>(undefined);
+const postingVariance = computed(() => Number(actualPostingAmount.value ?? 0) - machineCollectionAmount.value);
 
 const postingError =
-                ref('');
+                  ref('');
 
 const totalPull =
-                ref(0);
+                  ref(0);
 
 const completingReconciliation =
-                ref(false);
+                  ref(false);
 
 const ticketReconcileDialogVisible =
-                ref(false);
+                  ref(false);
 
 const ticketReconcileFilter =
-                ref<'all' | 'even' | 'short' | 'over'>('all');
+                  ref<'all' | 'even' | 'short' | 'over'>('all');
+
+
+const employeeShiftDialogVisible = ref(false);
+const selectedEmployeeShiftSessionId = ref<number | null>(null);
 
 // Backend authenticates and authorizes every posting.
 // The browser never supplies actor or amount.
 
 const filteredRows =
-                computed(
-                  () => {
-                    const term =
-                            search.value
-                              .trim()
-                              .toLowerCase();
+                  computed(
+                    () => {
+                      const term =
+                              search.value
+                                .trim()
+                                .toLowerCase();
 
-                    if (!term) {
-                      return reportRows.value;
+                      if (!term) {
+                        return reportRows.value;
+                      }
+
+                      return reportRows.value.filter(
+                        row =>
+                          String(
+                            row.machinenumber ?? ''
+                          )
+                            .toLowerCase()
+                            .includes(term)
+                      );
                     }
-
-                    return reportRows.value.filter(
-                      row =>
-                        String(
-                          row.machinenumber ?? ''
-                        )
-                          .toLowerCase()
-                          .includes(term)
-                    );
-                  }
-                );
+                  );
 
 // Aggregate the SAME session rows used by the machine-wise report.
 // IN/OUT here are daily deltas, not lifetime meter readings.
 // No bonus field exists in the supplied reading data, so bonus is 0.
 const machineTypeRows = computed(() => {
-          const groups = new Map<string, any>();
-          for (const row of filteredRows.value) {
-            const typeKey = row.machinetypeid == null ? 'unassigned' : String(row.machinetypeid);
-            if (!groups.has(typeKey)) {
-              groups.set(typeKey, {
-                typeKey,
-                typeName: row.machinetypename || 'Unassigned',
-                machineCount: 0, dailyin: 0, dailyout: 0,
-                difference: 0, machinepoints: 0, bonus: 0, net: 0
-              });
+            const groups = new Map<string, any>();
+            for (const row of filteredRows.value) {
+              const typeKey = row.machinetypeid == null ? 'unassigned' : String(row.machinetypeid);
+              if (!groups.has(typeKey)) {
+                groups.set(typeKey, {
+                  typeKey,
+                  typeName: row.machinetypename || 'Unassigned',
+                  machineCount: 0, dailyin: 0, dailyout: 0,
+                  difference: 0, machinepoints: 0, bonus: 0, net: 0
+                });
+              }
+              const group = groups.get(typeKey);
+              group.machineCount++;
+              for (const field of ['dailyin', 'dailyout', 'difference', 'machinepoints']) {
+                const value = Number(row[field]);
+                if (Number.isFinite(value)) group[field] += value;
+              }
             }
-            const group = groups.get(typeKey);
-            group.machineCount++;
-            for (const field of ['dailyin', 'dailyout', 'difference', 'machinepoints']) {
-              const value = Number(row[field]);
-              if (Number.isFinite(value)) group[field] += value;
-            }
-          }
-          return Array.from(groups.values())
-            .map(group => ({ ...group, net: group.difference - group.machinepoints - group.bonus }))
-            .sort((a, b) => a.typeName.localeCompare(b.typeName));
+            return Array.from(groups.values())
+              .map(group => ({ ...group, net: group.difference - group.machinepoints - group.bonus }))
+              .sort((a, b) => a.typeName.localeCompare(b.typeName));
 });
 
 function getTypeSummaries({ columns, data }: { columns: any[], data: any[] }) {
-          const fields = ['typeName', 'machineCount', 'dailyin', 'dailyout',
-            'difference', 'machinepoints', 'bonus', 'net'];
-          return columns.map((_column, index) => {
-            if (index === 0) return 'TOTAL';
-            const field = fields[index];
-            if (!field) return '';
-            return formatNumber(data.reduce((sum, row) => sum + (Number(row[field]) || 0), 0));
-          });
+            const fields = ['typeName', 'machineCount', 'dailyin', 'dailyout',
+              'difference', 'machinepoints', 'bonus', 'net'];
+            return columns.map((_column, index) => {
+              if (index === 0) return 'Total';
+              const field = fields[index];
+              if (!field) return '';
+              return formatNumber(data.reduce((sum, row) => sum + (Number(row[field]) || 0), 0));
+            });
 }
 
 function formatDateTime(
-          value:
-                    string |
-                    Date |
-                    null |
-                    undefined
+            value:
+                      string |
+                      Date |
+                      null |
+                      undefined
 ) {
-          if (!value) {
-            return '--';
-          }
-
-          const date =
-                    new Date(value);
-
-          if (
-            Number.isNaN(
-              date.getTime()
-            )
-          ) {
-            return '--';
-          }
-
-          return new Intl.DateTimeFormat(
-            'en-US',
-            {
-              month: '2-digit',
-              day: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true
+            if (!value) {
+              return '--';
             }
-          ).format(date);
+
+            const date =
+                      new Date(value);
+
+            if (
+              Number.isNaN(
+                date.getTime()
+              )
+            ) {
+              return '--';
+            }
+
+            return new Intl.DateTimeFormat(
+              'en-US',
+              {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              }
+            ).format(date);
 }
 
 function formatNumber(
-          value: any
+            value: any
 ) {
-          if (
-            value === null ||
-                    value === undefined ||
-                    value === ''
-          ) {
-            return '--';
-          }
+            if (
+              value === null ||
+                      value === undefined ||
+                      value === ''
+            ) {
+              return '--';
+            }
 
-          const number =
-                    Number(value);
+            const number =
+                      Number(value);
 
-          if (
-            Number.isNaN(number)
-          ) {
-            return '--';
-          }
+            if (
+              Number.isNaN(number)
+            ) {
+              return '--';
+            }
 
-          return new Intl.NumberFormat(
-            'en-US'
-          ).format(number);
+            return new Intl.NumberFormat(
+              'en-US'
+            ).format(number);
 }
 
 function displayValue(
-          value: any
+            value: any
 ) {
-          return formatNumber(value);
+            return formatNumber(value);
 }
 
 const totalCoveredSessionPoints = computed(() =>
-          coveredEmployeeSessions.value.reduce((sum, employeeSession) => {
-            const points = Number(employeeSession.sessionPoints ?? 0);
-            return sum + (Number.isFinite(points) ? points : 0);
-          }, 0)
+            coveredEmployeeSessions.value.reduce((sum, employeeSession) => {
+              const points = Number(employeeSession.sessionPoints ?? 0);
+              return sum + (Number.isFinite(points) ? points : 0);
+            }, 0)
 );
 
 // ============================================================
@@ -1258,84 +946,84 @@ const totalCoveredSessionPoints = computed(() =>
 // ============================================================
 
 function employeeSessionHours(
-          employeeSession: any
+            employeeSession: any
 ) {
-          if (
-            !employeeSession?.clockIn ||
-                    !employeeSession?.clockOut
-          ) {
-            return 0;
-          }
+            if (
+              !employeeSession?.clockIn ||
+                      !employeeSession?.clockOut
+            ) {
+              return 0;
+            }
 
-          const start =
-                    new Date(
-                      employeeSession.clockIn
-                    ).getTime();
+            const start =
+                      new Date(
+                        employeeSession.clockIn
+                      ).getTime();
 
-          const end =
-                    new Date(
-                      employeeSession.clockOut
-                    ).getTime();
+            const end =
+                      new Date(
+                        employeeSession.clockOut
+                      ).getTime();
 
-          if (
-            !Number.isFinite(start) ||
-                    !Number.isFinite(end) ||
-                    end < start
-          ) {
-            return 0;
-          }
+            if (
+              !Number.isFinite(start) ||
+                      !Number.isFinite(end) ||
+                      end < start
+            ) {
+              return 0;
+            }
 
-          return (
-            end -
-                    start
-          ) / 3600000;
+            return (
+              end -
+                      start
+            ) / 3600000;
 }
 
 const totalCoveredWorkingHours =
-                computed(
-                  () =>
-                    coveredEmployeeSessions.value.reduce(
-                      (
-                        sum,
-                        employeeSession
-                      ) =>
-                        sum +
-                                employeeSessionHours(
-                                  employeeSession
-                                ),
-                      0
-                    )
-                );
+                  computed(
+                    () =>
+                      coveredEmployeeSessions.value.reduce(
+                        (
+                          sum,
+                          employeeSession
+                        ) =>
+                          sum +
+                                  employeeSessionHours(
+                                    employeeSession
+                                  ),
+                        0
+                      )
+                  );
 
 function formatHours(
-          value: any
+            value: any
 ) {
-          const hours =
-                    Number(
-                      value || 0
-                    );
+            const hours =
+                      Number(
+                        value || 0
+                      );
 
-          if (
-            !Number.isFinite(hours) ||
-                    hours < 0
-          ) {
-            return '0h 0m';
-          }
+            if (
+              !Number.isFinite(hours) ||
+                      hours < 0
+            ) {
+              return '0h 0m';
+            }
 
-          const totalMinutes =
-                    Math.round(
-                      hours * 60
-                    );
+            const totalMinutes =
+                      Math.round(
+                        hours * 60
+                      );
 
-          const wholeHours =
-                    Math.floor(
-                      totalMinutes / 60
-                    );
+            const wholeHours =
+                      Math.floor(
+                        totalMinutes / 60
+                      );
 
-          const minutes =
-                    totalMinutes % 60;
+            const minutes =
+                      totalMinutes % 60;
 
-          return `${wholeHours}h ${minutes}m`;
+            return `${wholeHours}h ${minutes}m`;
 }
 
 // ============================================================
@@ -1346,289 +1034,289 @@ function formatHours(
 // Filtered amount is display-only.
 
 const sessionProfit =
-                computed(
-                  () =>
-                    reportRows.value.reduce(
-                      (
-                        sum,
-                        row
-                      ) => {
-                        const value =
-                                    Number(
-                                      row.difference
-                                    );
+                  computed(
+                    () =>
+                      reportRows.value.reduce(
+                        (
+                          sum,
+                          row
+                        ) => {
+                          const value =
+                                      Number(
+                                        row.difference
+                                      );
 
-                        return (
-                          sum +
-                                    (
-                                      Number.isFinite(value)
-                                        ? value
-                                        : 0
-                                    )
-                        );
-                      },
-                      0
-                    )
-                );
+                          return (
+                            sum +
+                                      (
+                                        Number.isFinite(value)
+                                          ? value
+                                          : 0
+                                      )
+                          );
+                        },
+                        0
+                      )
+                  );
 
 const expectedRemainingAmount =
-                computed(
-                  () =>
-                    Number(sessionProfit.value || 0) -
-                    Number(totalPull.value || 0)
-                );
+                  computed(
+                    () =>
+                      Number(sessionProfit.value || 0) -
+                      Number(totalPull.value || 0)
+                  );
 
 const machineCollectionAmount =
-                computed(
-                  () =>
-                    Number(expectedRemainingAmount.value || 0) +
-                    Number(totalMachineOut.value || 0)
-                );
+                  computed(
+                    () =>
+                      Number(expectedRemainingAmount.value || 0) +
+                      Number(totalMachineOut.value || 0)
+                  );
 
 // Points come from customer assignments within the employee
 // sessions explicitly linked to this reading session.
 
 const sessionMachinePoints =
-                computed(
-                  () =>
-                    reportRows.value.reduce(
-                      (
-                        sum,
-                        row
-                      ) => {
-                        const value =
-                                    Number(
-                                      row.machinepoints
-                                    );
+                  computed(
+                    () =>
+                      reportRows.value.reduce(
+                        (
+                          sum,
+                          row
+                        ) => {
+                          const value =
+                                      Number(
+                                        row.machinepoints
+                                      );
 
-                        return (
-                          sum +
-                                    (
-                                      Number.isFinite(value)
-                                        ? value
-                                        : 0
-                                    )
-                        );
-                      },
-                      0
-                    )
-                );
+                          return (
+                            sum +
+                                      (
+                                        Number.isFinite(value)
+                                          ? value
+                                          : 0
+                                      )
+                          );
+                        },
+                        0
+                      )
+                  );
 
 const totalMachinePoints =
-                computed(
-                  () =>
-                    filteredRows.value.reduce(
-                      (
-                        sum,
-                        row
-                      ) => {
-                        const value =
-                                    Number(
-                                      row.machinepoints
-                                    );
+                  computed(
+                    () =>
+                      filteredRows.value.reduce(
+                        (
+                          sum,
+                          row
+                        ) => {
+                          const value =
+                                      Number(
+                                        row.machinepoints
+                                      );
 
-                        return (
-                          sum +
-                                    (
-                                      Number.isFinite(value)
-                                        ? value
-                                        : 0
-                                    )
-                        );
-                      },
-                      0
-                    )
-                );
+                          return (
+                            sum +
+                                      (
+                                        Number.isFinite(value)
+                                          ? value
+                                          : 0
+                                      )
+                          );
+                        },
+                        0
+                      )
+                  );
 
 const totalMachineOut =
-                computed(
-                  () =>
-                    filteredRows.value.reduce(
-                      (sum, row) => {
-                        const value = Number(row.dailyout);
-                        return sum + (Number.isFinite(value) ? value : 0);
-                      },
-                      0
-                    )
-                );
+                  computed(
+                    () =>
+                      filteredRows.value.reduce(
+                        (sum, row) => {
+                          const value = Number(row.dailyout);
+                          return sum + (Number.isFinite(value) ? value : 0);
+                        },
+                        0
+                      )
+                  );
 
 const totalTicketOut =
-                computed(
-                  () =>
-                    filteredRows.value.reduce(
-                      (sum, row) => {
-                        const value = Number(row.ticketout);
-                        return sum + (Number.isFinite(value) ? value : 0);
-                      },
-                      0
-                    )
-                );
+                  computed(
+                    () =>
+                      filteredRows.value.reduce(
+                        (sum, row) => {
+                          const value = Number(row.ticketout);
+                          return sum + (Number.isFinite(value) ? value : 0);
+                        },
+                        0
+                      )
+                  );
 
 const ticketOutTotalsMatch =
-                computed(
-                  () =>
-                    Math.abs(
-                      Number(totalMachineOut.value || 0) -
-                      Number(totalTicketOut.value || 0)
-                    ) < 0.005
-                );
+                  computed(
+                    () =>
+                      Math.abs(
+                        Number(totalMachineOut.value || 0) -
+                        Number(totalTicketOut.value || 0)
+                      ) < 0.005
+                  );
 
 const totalTicketCount =
-                computed(
-                  () =>
-                    reportRows.value.reduce(
-                      (sum, row) => sum + (Number(row.ticketcount) || 0),
-                      0
-                    )
-                );
+                  computed(
+                    () =>
+                      reportRows.value.reduce(
+                        (sum, row) => sum + (Number(row.ticketcount) || 0),
+                        0
+                      )
+                  );
 
 function ticketMachineVariance(row: any) {
-          return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
+            return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
 }
 
 function ticketReconcileType(row: any): 'even' | 'short' | 'over' {
-          const variance = ticketMachineVariance(row);
+            const variance = ticketMachineVariance(row);
 
-          if (Math.abs(variance) < 0.005) return 'even';
-          return variance > 0 ? 'short' : 'over';
+            if (Math.abs(variance) < 0.005) return 'even';
+            return variance > 0 ? 'short' : 'over';
 }
 
 const ticketShortPayTotal =
-                computed(
-                  () =>
-                    reportRows.value.reduce(
-                      (sum, row) => {
-                        const variance = ticketMachineVariance(row);
-                        return sum + (variance > 0 ? variance : 0);
-                      },
-                      0
-                    )
-                );
+                  computed(
+                    () =>
+                      reportRows.value.reduce(
+                        (sum, row) => {
+                          const variance = ticketMachineVariance(row);
+                          return sum + (variance > 0 ? variance : 0);
+                        },
+                        0
+                      )
+                  );
 
 const ticketOverPaidTotal =
-                computed(
-                  () =>
-                    reportRows.value.reduce(
-                      (sum, row) => {
-                        const variance = ticketMachineVariance(row);
-                        return sum + (variance < 0 ? Math.abs(variance) : 0);
-                      },
-                      0
-                    )
-                );
+                  computed(
+                    () =>
+                      reportRows.value.reduce(
+                        (sum, row) => {
+                          const variance = ticketMachineVariance(row);
+                          return sum + (variance < 0 ? Math.abs(variance) : 0);
+                        },
+                        0
+                      )
+                  );
 
 const ticketVariance =
-                computed(
-                  () =>
-                    Number(totalMachineOut.value || 0) -
-                    Number(totalTicketOut.value || 0)
-                );
+                  computed(
+                    () =>
+                      Number(totalMachineOut.value || 0) -
+                      Number(totalTicketOut.value || 0)
+                  );
 
 const ticketReconcileCounts =
-                computed(
-                  () => {
-                    const counts = {
-                      all: reportRows.value.length,
-                      even: 0,
-                      short: 0,
-                      over: 0
-                    };
+                  computed(
+                    () => {
+                      const counts = {
+                        all: reportRows.value.length,
+                        even: 0,
+                        short: 0,
+                        over: 0
+                      };
 
-                    for (const row of reportRows.value) {
-                      counts[ticketReconcileType(row)]++;
+                      for (const row of reportRows.value) {
+                        counts[ticketReconcileType(row)]++;
+                      }
+
+                      return counts;
                     }
-
-                    return counts;
-                  }
-                );
+                  );
 
 const filteredTicketReconcileRows =
-                computed(
-                  () => {
-                    if (ticketReconcileFilter.value === 'all') {
-                      return reportRows.value;
-                    }
+                  computed(
+                    () => {
+                      if (ticketReconcileFilter.value === 'all') {
+                        return reportRows.value;
+                      }
 
-                    return reportRows.value.filter(
-                      row => ticketReconcileType(row) === ticketReconcileFilter.value
-                    );
-                  }
-                );
+                      return reportRows.value.filter(
+                        row => ticketReconcileType(row) === ticketReconcileFilter.value
+                      );
+                    }
+                  );
 
 function formatMoney(value: any) {
-          const number = Number(value || 0);
+            const number = Number(value || 0);
 
-          return new Intl.NumberFormat(
-            'en-US',
-            {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }
-          ).format(Number.isFinite(number) ? number : 0);
+            return new Intl.NumberFormat(
+              'en-US',
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            ).format(Number.isFinite(number) ? number : 0);
 }
 
 function signedMoney(value: any) {
-          const number = Number(value || 0);
-          const absolute = formatMoney(Math.abs(number));
+            const number = Number(value || 0);
+            const absolute = formatMoney(Math.abs(number));
 
-          if (Math.abs(number) < 0.005) return '$0.00';
-          return number > 0 ? `+$${absolute}` : `-$${absolute}`;
+            if (Math.abs(number) < 0.005) return '$0.00';
+            return number > 0 ? `+$${absolute}` : `-$${absolute}`;
 }
 
 function ticketOutMatches(row: any) {
-          const machineOut = Number(row?.dailyout || 0);
-          const ticketOut = Number(row?.ticketout || 0);
+            const machineOut = Number(row?.dailyout || 0);
+            const ticketOut = Number(row?.ticketout || 0);
 
-          if (
-            !Number.isFinite(machineOut) ||
-            !Number.isFinite(ticketOut)
-          ) {
-            return false;
-          }
+            if (
+              !Number.isFinite(machineOut) ||
+              !Number.isFinite(ticketOut)
+            ) {
+              return false;
+            }
 
-          return Math.abs(machineOut - ticketOut) < 0.005;
+            return Math.abs(machineOut - ticketOut) < 0.005;
 }
 
 // Profit card and table footer use the same filtered rows.
 
 const totalProfit =
-                computed(
-                  () =>
-                    filteredRows.value.reduce(
-                      (
-                        sum,
-                        row
-                      ) => {
-                        const value =
-                                    Number(
-                                      row.difference
-                                    );
+                  computed(
+                    () =>
+                      filteredRows.value.reduce(
+                        (
+                          sum,
+                          row
+                        ) => {
+                          const value =
+                                      Number(
+                                        row.difference
+                                      );
 
-                        return (
-                          sum +
-                                    (
-                                      Number.isFinite(value)
-                                        ? value
-                                        : 0
-                                    )
-                        );
-                      },
-                      0
-                    )
-                );
+                          return (
+                            sum +
+                                      (
+                                        Number.isFinite(value)
+                                          ? value
+                                          : 0
+                                      )
+                          );
+                        },
+                        0
+                      )
+                  );
 
 function differenceTextClass(
-          value: number
+            value: number
 ) {
-          if (value > 0) {
-            return 'profit-positive';
-          }
+            if (value > 0) {
+              return 'profit-positive';
+            }
 
-          if (value < 0) {
-            return 'profit-negative';
-          }
+            if (value < 0) {
+              return 'profit-negative';
+            }
 
-          return 'profit-neutral';
+            return 'profit-neutral';
 }
 
 // ============================================================
@@ -1636,95 +1324,95 @@ function differenceTextClass(
 // ============================================================
 
 function getSummaries(
-          {
-            columns,
-            data
-          }:
-                    {
-                        columns: any[]
-                        data: any[]
-                    }
+            {
+              columns,
+              data
+            }:
+                      {
+                          columns: any[]
+                          data: any[]
+                      }
 ) {
-          const fields = [
-            '',
-            'previousin',
-            'previousout',
-            'currentin',
-            'currentout',
-            'dailyin',
-            'dailyout',
-            'ticketout',
-            '',
-            'difference',
-            'machinepoints'
-          ];
+            const fields = [
+              '',
+              'previousin',
+              'previousout',
+              'currentin',
+              'currentout',
+              'dailyin',
+              'dailyout',
+              'ticketout',
+              '',
+              'difference',
+              'machinepoints'
+            ];
 
-          return columns.map(
-            (
-              _column,
-              index
-            ) => {
-              if (
-                index === 0
-              ) {
-                return 'TOTAL';
-              }
+            return columns.map(
+              (
+                _column,
+                index
+              ) => {
+                if (
+                  index === 0
+                ) {
+                  return 'Total';
+                }
 
-              if (index === 8) {
-                const machineOut = data.reduce(
-                  (sum: number, row: any) => sum + (Number(row.dailyout) || 0),
-                  0
-                );
-                const ticketOut = data.reduce(
-                  (sum: number, row: any) => sum + (Number(row.ticketout) || 0),
-                  0
-                );
+                if (index === 8) {
+                  const machineOut = data.reduce(
+                    (sum: number, row: any) => sum + (Number(row.dailyout) || 0),
+                    0
+                  );
+                  const ticketOut = data.reduce(
+                    (sum: number, row: any) => sum + (Number(row.ticketout) || 0),
+                    0
+                  );
 
-                return Math.abs(machineOut - ticketOut) < 0.005
-                  ? 'MATCH'
-                  : 'MISMATCH';
-              }
+                  return Math.abs(machineOut - ticketOut) < 0.005
+                    ? 'MATCH'
+                    : 'MISMATCH';
+                }
 
-              // OUT Check, Life Pay % and Life Hold % are not numeric totals.
+                // OUT Check, Life Pay % and Life Hold % are not numeric totals.
 
-              if (
-                index >=
-                            fields.length
-              ) {
-                return '';
-              }
+                if (
+                  index >=
+                              fields.length
+                ) {
+                  return '';
+                }
 
-              const field =
-                            fields[index];
+                const field =
+                              fields[index];
 
-              const total =
-                            data.reduce(
-                              (
-                                sum: number,
-                                row: any
-                              ) => {
-                                const value =
-                                        Number(
-                                          row[field]
-                                        );
+                const total =
+                              data.reduce(
+                                (
+                                  sum: number,
+                                  row: any
+                                ) => {
+                                  const value =
+                                          Number(
+                                            row[field]
+                                          );
 
-                                return (
-                                  sum +
-                                        (
-                                          Number.isFinite(
-                                            value
+                                  return (
+                                    sum +
+                                          (
+                                            Number.isFinite(
+                                              value
+                                            )
+                                              ? value
+                                              : 0
                                           )
-                                            ? value
-                                            : 0
-                                        )
-                                );
-                              },
-                              0
-                            );
+                                  );
+                                },
+                                0
+                              );
 
-              return formatNumber(total);
-            }
-          );
+                return formatNumber(total);
+              }
+            );
 }
 
 // ============================================================
@@ -1732,95 +1420,95 @@ function getSummaries(
 // ============================================================
 
 function lifePayPercent(
-          row: any
+            row: any
 ) {
-          const currentIn =
-                    Number(
-                      row.currentin
-                    );
+            const currentIn =
+                      Number(
+                        row.currentin
+                      );
 
-          const currentOut =
-                    Number(
-                      row.currentout
-                    );
+            const currentOut =
+                      Number(
+                        row.currentout
+                      );
 
-          if (
-            !Number.isFinite(
-              currentIn
-            ) ||
-                    currentIn <= 0 ||
-                    !Number.isFinite(
-                      currentOut
-                    )
-          ) {
-            return '0.00%';
-          }
+            if (
+              !Number.isFinite(
+                currentIn
+              ) ||
+                      currentIn <= 0 ||
+                      !Number.isFinite(
+                        currentOut
+                      )
+            ) {
+              return '0.00%';
+            }
 
-          return `${(
-            (
-              currentOut /
-                            currentIn
-            ) *
-                        100
-          ).toFixed(2)
-          }%`;
+            return `${(
+              (
+                currentOut /
+                              currentIn
+              ) *
+                          100
+            ).toFixed(2)
+            }%`;
 }
 
 function lifeHoldPercent(
-          row: any
+            row: any
 ) {
-          const currentIn =
-                    Number(
-                      row.currentin
-                    );
+            const currentIn =
+                      Number(
+                        row.currentin
+                      );
 
-          const currentOut =
-                    Number(
-                      row.currentout
-                    );
+            const currentOut =
+                      Number(
+                        row.currentout
+                      );
 
-          if (
-            !Number.isFinite(
-              currentIn
-            ) ||
-                    currentIn <= 0 ||
-                    !Number.isFinite(
-                      currentOut
-                    )
-          ) {
-            return '0.00%';
-          }
+            if (
+              !Number.isFinite(
+                currentIn
+              ) ||
+                      currentIn <= 0 ||
+                      !Number.isFinite(
+                        currentOut
+                      )
+            ) {
+              return '0.00%';
+            }
 
-          return `${(
-            100 -
-                        (
-                          currentOut /
-                            currentIn
-                        ) *
-                        100
-          ).toFixed(2)
-          }%`;
+            return `${(
+              100 -
+                          (
+                            currentOut /
+                              currentIn
+                          ) *
+                          100
+            ).toFixed(2)
+            }%`;
 }
 
 function differenceType(
-          value: any
+            value: any
 ) {
-          const number =
-                    Number(value);
+            const number =
+                      Number(value);
 
-          if (
-            number > 0
-          ) {
-            return 'success';
-          }
+            if (
+              number > 0
+            ) {
+              return 'success';
+            }
 
-          if (
-            number < 0
-          ) {
-            return 'danger';
-          }
+            if (
+              number < 0
+            ) {
+              return 'danger';
+            }
 
-          return 'info';
+            return 'info';
 }
 
 // ============================================================
@@ -1828,35 +1516,35 @@ function differenceType(
 // ============================================================
 
 async function loadCompletedSessions() {
-          if (
-            !locationid.value
-          ) {
-            completedSessions.value = [];
+            if (
+              !locationid.value
+            ) {
+              completedSessions.value = [];
 
-            return;
-          }
+              return;
+            }
 
-          try {
-            loadingSessions.value = true;
+            try {
+              loadingSessions.value = true;
 
-            const response =
-                        await getCompletedSessions(
-                          locationid.value
-                        );
+              const response =
+                          await getCompletedSessions(
+                            locationid.value
+                          );
 
-            completedSessions.value =
-                        response.data ?? [];
-          } catch (error) {
-            console.error(error);
+              completedSessions.value =
+                          response.data ?? [];
+            } catch (error) {
+              console.error(error);
 
-            completedSessions.value = [];
+              completedSessions.value = [];
 
-            ElMessage.error(
-              'Unable to load completed reading sessions.'
-            );
-          } finally {
-            loadingSessions.value = false;
-          }
+              ElMessage.error(
+                'Unable to load completed reading sessions.'
+              );
+            } finally {
+              loadingSessions.value = false;
+            }
 }
 
 // ============================================================
@@ -1864,32 +1552,33 @@ async function loadCompletedSessions() {
 // ============================================================
 
 async function handleSessionChange(
-          value: number | null
+            value: number | null
 ) {
-          activeReportTab.value = 'overview';
-          profitPosting.value = null;
-          postingError.value = '';
-          reportRows.value = [];
-          coveredEmployeeSessions.value = [];
-          totalPull.value = 0;
-          ticketReconcileDialogVisible.value = false;
-          ticketReconcileFilter.value = 'all';
-          selectedSession.value = null;
+            activeReportTab.value = 'overview';
+            profitPosting.value = null;
+            actualPostingAmount.value = undefined;
+            postingError.value = '';
+            reportRows.value = [];
+            coveredEmployeeSessions.value = [];
+            totalPull.value = 0;
+            ticketReconcileDialogVisible.value = false;
+            ticketReconcileFilter.value = 'all';
+            selectedSession.value = null;
 
-          if (!value) {
-            return;
-          }
+            if (!value) {
+              return;
+            }
 
-          selectedSession.value =
-                    completedSessions.value.find(
-                      session =>
-                        Number(
-                          session.id
-                        ) ===
-                            Number(value)
-                    ) ?? null;
+            selectedSession.value =
+                      completedSessions.value.find(
+                        session =>
+                          Number(
+                            session.id
+                          ) ===
+                              Number(value)
+                      ) ?? null;
 
-          await loadReport();
+            await loadReport();
 }
 
 // ============================================================
@@ -1897,90 +1586,105 @@ async function handleSessionChange(
 // ============================================================
 
 async function loadReport() {
-          if (
-            !selectedSessionId.value ||
-                    !locationid.value
-          ) {
-            reportRows.value = [];
-            coveredEmployeeSessions.value = [];
-
-            return;
-          }
-
-          try {
-            loadingReport.value = true;
-
-            const response =
-                        await getSessionReport(
-                          selectedSessionId.value,
-                          locationid.value
-                        );
-
-            reportRows.value =
-                        (response.data?.readings ?? []).map(
-                          (row: any) => {
-                            const previousIn =
-                                    Number(row.previousin ?? 0);
-                            const previousOut =
-                                    Number(row.previousout ?? 0);
-                            const currentIn =
-                                    Number(row.currentin ?? 0);
-                            const currentOut =
-                                    Number(row.currentout ?? 0);
-
-                            const dailyIn =
-                                    currentIn - previousIn;
-                            const dailyOut =
-                                    currentOut - previousOut;
-
-                            return {
-                              ...row,
-                              previousin: previousIn,
-                              previousout: previousOut,
-                              currentin: currentIn,
-                              currentout: currentOut,
-                              dailyin: dailyIn,
-                              dailyout: dailyOut,
-                              difference:
-                                      dailyIn - dailyOut
-                            };
-                          }
-                        );
-
-            coveredEmployeeSessions.value =
-                        response.data?.employeeSessions ?? [];
-
-            totalPull.value =
-                        Number(response.data?.reconciliation?.totalPull || 0);
-
             if (
-              response.data?.session
+              !selectedSessionId.value ||
+                      !locationid.value
             ) {
-              selectedSession.value = {
-                ...selectedSession.value,
-                ...response.data.session
-              };
+              reportRows.value = [];
+              coveredEmployeeSessions.value = [];
+
+              return;
             }
 
-            if (
-              isAdmin.value &&
-              Number(selectedSession.value?.status) === 3
-            ) {
-              await loadProfitPosting();
+            try {
+              loadingReport.value = true;
+
+              const response =
+                          await getSessionReport(
+                            selectedSessionId.value,
+                            locationid.value
+                          );
+
+              reportRows.value =
+                          (response.data?.readings ?? []).map(
+                            (row: any) => {
+                              const previousIn =
+                                      Number(row.previousin ?? 0);
+                              const previousOut =
+                                      Number(row.previousout ?? 0);
+                              const currentIn =
+                                      Number(row.currentin ?? 0);
+                              const currentOut =
+                                      Number(row.currentout ?? 0);
+
+                              const dailyIn =
+                                      currentIn - previousIn;
+                              const dailyOut =
+                                      currentOut - previousOut;
+
+                              return {
+                                ...row,
+                                previousin: previousIn,
+                                previousout: previousOut,
+                                currentin: currentIn,
+                                currentout: currentOut,
+                                dailyin: dailyIn,
+                                dailyout: dailyOut,
+                                difference:
+                                        dailyIn - dailyOut
+                              };
+                            }
+                          );
+
+              coveredEmployeeSessions.value =
+                          response.data?.employeeSessions ?? [];
+
+              totalPull.value =
+                          Number(response.data?.reconciliation?.totalPull || 0);
+
+              if (
+                response.data?.session
+              ) {
+                selectedSession.value = {
+                  ...selectedSession.value,
+                  ...response.data.session
+                };
+              }
+
+              if (
+                isAdmin.value &&
+                Number(selectedSession.value?.status) === 3
+              ) {
+                await loadProfitPosting();
+              }
+            } catch (error) {
+              console.error(error);
+
+              reportRows.value = [];
+              coveredEmployeeSessions.value = [];
+              totalPull.value = 0;
+
+              ElMessage.error(
+                'Unable to load reading report.'
+              );
+            } finally {
+              loadingReport.value = false;
             }
-          } catch (error) {
-            console.error(error);
+}
 
-            reportRows.value = [];
-            coveredEmployeeSessions.value = [];
-            totalPull.value = 0;
+function openEmployeeShiftReport(employeeSession: any) {
+            const sessionId = Number(employeeSession?.id);
 
-            ElMessage.error(
-              'Unable to load reading report.'
-            );
-          } finally {
-            loadingReport.value = false;
-          }
+            if (!sessionId) {
+              return;
+            }
+
+            selectedEmployeeShiftSessionId.value = sessionId;
+            employeeShiftDialogVisible.value = true;
+}
+
+function handleEmployeeShiftDialogClosed() {
+            selectedEmployeeShiftSessionId.value = null;
 }
 
 // ============================================================
@@ -1988,47 +1692,50 @@ async function loadReport() {
 // ============================================================
 
 async function loadProfitPosting() {
-          const sessionId =
-                    selectedSessionId.value;
-
-          if (
-            !sessionId ||
-                    !locationid.value
-          ) {
-            return;
-          }
-
-          checkingProfitPosting.value = true;
-          postingError.value = '';
-
-          try {
-            const response =
-                        await getReadingProfitPosting(
-                          sessionId,
-                          locationid.value
-                        );
+            const sessionId =
+                      selectedSessionId.value;
 
             if (
-              Number(
-                selectedSessionId.value
-              ) ===
-                        Number(sessionId)
+              !sessionId ||
+                      !locationid.value
             ) {
-              profitPosting.value =
-                            response.data?.posting ??
-                            null;
+              return;
             }
-          } catch (error: any) {
-            postingError.value =
-                        error?.response?.data?.message ||
-                        'Unable to verify financial posting status. Posting is disabled until status can be checked.';
 
-            profitPosting.value =
-                        null;
-          } finally {
-            checkingProfitPosting.value =
-                        false;
-          }
+            checkingProfitPosting.value = true;
+            postingError.value = '';
+
+            try {
+              const response =
+                          await getReadingProfitPosting(
+                            sessionId,
+                            locationid.value
+                          );
+
+              if (
+                Number(
+                  selectedSessionId.value
+                ) ===
+                          Number(sessionId)
+              ) {
+                profitPosting.value =
+                              response.data?.posting ??
+                              null;
+                if (!profitPosting.value && actualPostingAmount.value === undefined) {
+                  actualPostingAmount.value = machineCollectionAmount.value;
+                }
+              }
+            } catch (error: any) {
+              postingError.value =
+                          error?.response?.data?.message ||
+                          'Unable to verify financial posting status. Posting is disabled until status can be checked.';
+
+              profitPosting.value =
+                          null;
+            } finally {
+              checkingProfitPosting.value =
+                          false;
+            }
 }
 
 // ============================================================
@@ -2036,79 +1743,84 @@ async function loadProfitPosting() {
 // ============================================================
 
 async function postSessionProfit() {
-          const sessionId =
-                    selectedSessionId.value;
+            const sessionId =
+                      selectedSessionId.value;
 
-          if (
-            !sessionId ||
-                    !locationid.value ||
-                    postingProfit.value ||
-                    profitPosting.value ||
-                    postingError.value
-          ) {
-            return;
-          }
+            if (
+              !sessionId ||
+                      !locationid.value ||
+                      postingProfit.value ||
+                      profitPosting.value ||
+                      postingError.value
+            ) {
+              return;
+            }
 
-          try {
-            await ElMessageBox.confirm(
-              `Post machine collection of ${formatNumber(machineCollectionAmount.value)} for reading session #${sessionId} to Admin cash custody? Remaining is ${formatNumber(expectedRemainingAmount.value)} plus Machine Daily OUT ${formatNumber(totalMachineOut.value)}. Profit is ${formatNumber(sessionProfit.value)} and PULL is ${formatNumber(totalPull.value)}. This financial entry is recorded once and cannot be posted twice.`,
-              'Confirm financial posting',
-              {
-                type: 'warning',
-                confirmButtonText:
-                                'Post Profit',
-                cancelButtonText:
-                                'Cancel'
+            try {
+              if (actualPostingAmount.value === undefined || !Number.isFinite(actualPostingAmount.value) || actualPostingAmount.value < 0) {
+                ElMessage.warning('Enter the actual cash collected.');
+                return;
               }
-            );
-          } catch {
-            return;
-          }
-
-          postingProfit.value =
-                    true;
-
-          try {
-            // No amount/user ID is accepted from the browser.
-            // The server recomputes profit and resolves the user.
-
-            const response =
-                        await postReadingProfit(
-                          sessionId,
-                          {
-                            locationid:
-                                    locationid.value
-                          }
-                        );
-
-            profitPosting.value =
-                        response.data?.posting ??
-                        null;
-
-            if (
-              !profitPosting.value
-            ) {
-              await loadProfitPosting();
+              await ElMessageBox.confirm(
+                `Post actual machine cash $${formatNumber(actualPostingAmount.value)} to Admin custody for Reading Session # ${selectedSession.value?.sessionNumber ?? sessionId}? Calculated collection is $${formatNumber(machineCollectionAmount.value)}; Finance Short/Over is $${formatNumber(postingVariance.value)}. This transaction cannot be posted twice.`,
+                'Confirm financial posting',
+                {
+                  type: 'warning',
+                  confirmButtonText:
+                                  'Post Profit',
+                  cancelButtonText:
+                                  'Cancel'
+                }
+              );
+            } catch {
+              return;
             }
 
-            ElMessage.success(
-              'Expected remaining machine cash posted to finance.'
-            );
-          } catch (error: any) {
-            ElMessage.error(
-              error?.response?.data?.message ||
-                        'Unable to post session profit.'
-            );
-
-            if (
-              isAdmin.value
-            ) {
-              await loadProfitPosting();
-            }
-          } finally {
             postingProfit.value =
-                        false;
-          }
+                      true;
+
+            try {
+              // No amount/user ID is accepted from the browser.
+              // The server recomputes profit and resolves the user.
+
+              const response =
+                          await postReadingProfit(
+                            sessionId,
+                            {
+                              locationid:
+                                      locationid.value,
+                              actualamount: actualPostingAmount.value
+                            }
+                          );
+
+              profitPosting.value =
+                          response.data?.posting ??
+                          null;
+
+              if (
+                !profitPosting.value
+              ) {
+                await loadProfitPosting();
+              }
+
+              ElMessage.success(
+                'Actual machine cash posted to finance.'
+              );
+            } catch (error: any) {
+              ElMessage.error(
+                error?.response?.data?.message ||
+                          'Unable to post session profit.'
+              );
+
+              if (
+                isAdmin.value
+              ) {
+                await loadProfitPosting();
+              }
+            } finally {
+              postingProfit.value =
+                          false;
+            }
 }
 
 // ============================================================
@@ -2116,51 +1828,51 @@ async function postSessionProfit() {
 // ============================================================
 
 async function completeReconciliation() {
-          if (
-            !selectedSessionId.value ||
-            !locationid.value ||
-            Number(selectedSession.value?.status) !== 2 ||
-            completingReconciliation.value
-          ) {
-            return;
-          }
+            if (
+              !selectedSessionId.value ||
+              !locationid.value ||
+              Number(selectedSession.value?.status) !== 2 ||
+              completingReconciliation.value
+            ) {
+              return;
+            }
 
-          try {
-            await ElMessageBox.confirm(
-              `Complete reconciliation for reading session #${selectedSessionId.value}? This locks the session as completed.`,
-              'Complete Reading Reconciliation',
-              {
-                type: 'warning',
-                confirmButtonText: 'Complete Reconciliation',
-                cancelButtonText: 'Cancel'
-              }
-            );
-          } catch {
-            return;
-          }
+            try {
+              await ElMessageBox.confirm(
+                `Complete reconciliation for reading session # ${selectedSession.value?.sessionNumber ?? selectedSessionId.value}? This locks the session as completed.`,
+                'Complete Reading Reconciliation',
+                {
+                  type: 'warning',
+                  confirmButtonText: 'Complete Reconciliation',
+                  cancelButtonText: 'Cancel'
+                }
+              );
+            } catch {
+              return;
+            }
 
-          try {
-            completingReconciliation.value = true;
+            try {
+              completingReconciliation.value = true;
 
-            await endsession(
-              selectedSessionId.value,
-              locationid.value
-            );
+              await endsession(
+                selectedSessionId.value,
+                locationid.value
+              );
 
-            ElMessage.success(
-              `Reading session #${selectedSessionId.value} reconciliation completed.`
-            );
+              ElMessage.success(
+                `Reading session # ${selectedSessionId.value} reconciliation completed.`
+              );
 
-            await loadCompletedSessions();
-            await loadReport();
-          } catch (error: any) {
-            ElMessage.error(
-              error?.response?.data?.message ||
-              'Unable to complete reading reconciliation.'
-            );
-          } finally {
-            completingReconciliation.value = false;
-          }
+              await loadCompletedSessions();
+              await loadReport();
+            } catch (error: any) {
+              ElMessage.error(
+                error?.response?.data?.message ||
+                'Unable to complete reading reconciliation.'
+              );
+            } finally {
+              completingReconciliation.value = false;
+            }
 }
 
 // ============================================================
@@ -2168,13 +1880,13 @@ async function completeReconciliation() {
 // ============================================================
 
 async function refreshReport() {
-          await loadCompletedSessions();
+            await loadCompletedSessions();
 
-          if (
-            selectedSessionId.value
-          ) {
-            await loadReport();
-          }
+            if (
+              selectedSessionId.value
+            ) {
+              await loadReport();
+            }
 }
 
 // ============================================================
@@ -2182,43 +1894,43 @@ async function refreshReport() {
 // ============================================================
 
 watch(
-          locationid,
-          async newLocation => {
-            selectedSessionId.value =
-                        null;
+            locationid,
+            async newLocation => {
+              selectedSessionId.value =
+                          null;
 
-            selectedSession.value =
-                        null;
+              selectedSession.value =
+                          null;
 
-            reportRows.value =
-                        [];
+              reportRows.value =
+                          [];
 
-            coveredEmployeeSessions.value =
-                        [];
+              coveredEmployeeSessions.value =
+                          [];
 
-            totalPull.value =
-                        0;
+              totalPull.value =
+                          0;
 
-            profitPosting.value =
-                        null;
+              profitPosting.value =
+                          null;
 
-            postingError.value =
-                        '';
+              postingError.value =
+                          '';
 
-            search.value =
-                        '';
+              search.value =
+                          '';
 
-            if (
-              newLocation
-            ) {
-              await loadCompletedSessions();
+              if (
+                newLocation
+              ) {
+                await loadCompletedSessions();
+              }
             }
-          }
 );
 
 onMounted(
-          async () => {
-            await loadCompletedSessions();
-          }
+            async () => {
+              await loadCompletedSessions();
+            }
 );
 </script>

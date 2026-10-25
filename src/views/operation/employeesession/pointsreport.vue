@@ -8,7 +8,7 @@
         <div>
           <h2 class="page-title">Points Report</h2>
           <div class="page-subtitle" v-if="report?.session">
-            Session # {{ report.session.id }} · {{ report.session.employeeName }}
+            Session # {{ (report.session.sessionNumber ?? report.session.id) }} · {{ report.session.employeeName }}
           </div>
         </div>
       </div>
@@ -23,7 +23,7 @@
             <el-avatar :size="54" :src="report.session.employeeAvatar">{{ initials(report.session.employeeName) }}</el-avatar>
             <div class="employee-profile-text">
               <h2>{{ report.session.employeeName || 'Employee' }}</h2>
-              <div class="employee-period">Session # {{ report.session.id }}</div>
+              <div class="employee-period">Session # {{ (report.session.sessionNumber ?? report.session.id) }}</div>
             </div>
           </div>
           <div class="session-grid">
@@ -43,12 +43,15 @@
       <div class="report-grid">
         <el-card shadow="never" class="panel review-panel">
           <template #header>
-            <div class="panel-header">
-              <div>
-                <strong>Photo Review</strong>
-                <span>{{ report.summary.reviewedCount }} of {{ report.summary.assignmentCount }} reviewed</span>
+              <div class="app-table-card-header">
+                <el-icon><Camera /></el-icon>
+                <div class="app-table-card-title">
+                  <strong>Photo Review</strong>
+                  <div class="small-text">
+                    {{ report.summary.reviewedCount }} of {{ report.summary.assignmentCount }} reviewed
+                  </div>
+                </div>
               </div>
-            </div>
             <div class="review-progress-divider" aria-hidden="true">
               <div class="review-progress-divider__fill" :style="{ width: `${reviewProgress}%` }"></div>
             </div>
@@ -79,9 +82,10 @@
         </el-card>
       </div>
 
-      <el-card shadow="never" class="panel entries-panel">
+      <el-card shadow="never" class="panel entries-panel app-table-card">
         <template #header>
-          <div class="panel-header entries-header">
+          <div class="panel-header entries-header app-table-card-header">
+            <el-icon><List /></el-icon>
             <div>
               <strong>Point Entries</strong>
               <span>{{ report.entries.length }} assignments in this session</span>
@@ -89,7 +93,7 @@
           </div>
         </template>
 
-        <div v-if="report.breakdown.length" class="entry-breakdown">
+        <div v-if="report.breakdown.length" class="entry-breakdown app-table-extra-content">
           <div class="breakdown-title">BREAKDOWN BY AMOUNT · TAP TO FILTER</div>
           <div class="breakdown-chips">
             <button v-for="(item, index) in report.breakdown"
@@ -105,11 +109,12 @@
           </div>
         </div>
 
-        <el-empty v-if="report.entries.length === 0"
-                  description="No points were assigned during this session" />
+        <div v-if="report.entries.length === 0" class="app-table-empty">
+          <el-empty description="No points were assigned during this session" />
+        </div>
 
         <template v-else>
-          <div class="compact-entry-list">
+          <div class="compact-entry-list point-entries-generic-list">
             <button v-for="entry in filteredEntries"
                     :key="entry.id"
                     type="button"
@@ -254,7 +259,7 @@
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
       import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
       import { useRoute, useRouter } from 'vue-router';
       import { ElMessage } from 'element-plus';

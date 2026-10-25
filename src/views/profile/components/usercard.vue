@@ -128,13 +128,6 @@
 import { formatPhone } from '@/utils/phone';
 import PointsBadge from '@/components/pointsbadge/index.vue';
 
-import {
-  Calendar,
-  Document,
-  Phone,
-  StarFilled,
-  TrendCharts
-} from '@element-plus/icons-vue';
 
 defineProps({
   customer: {

@@ -119,24 +119,32 @@
           </el-col>
 
           <el-col :xs="24" :md="14">
-            <el-card shadow="never" class="detail-card camera-card">
-              <template #header>
-                <div>
-                  <strong>Machine Screen Photo</strong>
-                  <div class="small-text">Capture the screen showing the Ticket-Out amount.</div>
+              <el-card shadow="never" class="detail-card camera-card">
+                <template #header>
+                  <div>
+                    <strong>Machine Screen Photo</strong>
+                    <div class="small-text">Capture the screen showing the Ticket-Out amount.</div>
+                  </div>
+                </template>
+
+                <div class="camera-capture-summary">
+                  <div v-if="photoPreview" class="camera-capture-preview">
+                    <img :src="photoPreview" alt="Machine screen">
+                    <div class="camera-capture-preview-info">
+                      <strong>Photo captured</strong>
+                      <span>Ready to save</span>
+                    </div>
+                    <el-button @click="retakePhoto">Retake Photo</el-button>
+                  </div>
+
+                  <el-button v-else
+                             type="primary"
+                             class="camera-capture-button"
+                             @click="openPhotoDialog">
+                    Take Photo
+                  </el-button>
                 </div>
-              </template>
-
-              <div v-if="photoPreview" class="photo-preview">
-                <img :src="photoPreview" alt="Machine screen">
-                <el-button @click="retakePhoto">Retake Photo</el-button>
-              </div>
-
-              <div v-else class="camera-frame">
-                <CameraApp ref="cameraRef" shape="custom" width="100%" height="375px"
-                           border-radius="0 0 2% 2%" @captured="handleCapturedImage" />
-              </div>
-            </el-card>
+              </el-card>
           </el-col>
         </el-row>
       </div>
@@ -146,7 +154,10 @@
       <div v-if="step === 2" class="fixed-actions" :style="actionBarStyle">
         <div class="action-inner">
           <div class="action-left">
-            <el-button :icon="ArrowLeft" :disabled="saving" @click="backToScan">Back</el-button>
+            <el-button :disabled="saving" @click="backToScan">
+              <el-icon><ArrowLeft /></el-icon>
+              <span>Back</span>
+            </el-button>
           </div>
           <div class="action-right">
             <el-button type="success" :loading="saving" :disabled="!canSubmit" @click="submitTicketOut">
@@ -156,6 +167,30 @@
         </div>
       </div>
     </Transition>
+
+    <el-dialog v-model="photoDialogOpen"
+               title="Take Ticket-Out Photo"
+               width="420px"
+               class="extra-match-dialog camera-capture-dialog"
+               destroy-on-close
+               @closed="closePhotoDialog">
+      <div class="extra-match-camera-section">
+        <div class="extra-match-photo-box">
+          <CameraApp v-if="photoDialogOpen"
+                     ref="cameraRef"
+                     shape="custom"
+                     width="100%"
+                     height="100%"
+                     border-radius="12px"
+                     @captured="handleCapturedImage" />
+        </div>
+      </div>
+
+      <div class="extra-match-dialog-actions">
+        <el-button @click="photoDialogOpen = false">Cancel</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -163,7 +198,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { ArrowLeft, Cellphone, Connection } from '@element-plus/icons-vue';
+
 import { Capacitor } from '@capacitor/core';
 import { CapacitorNfc } from '@capgo/capacitor-nfc';
 import { useUserStore } from '@/store/modules/user';
@@ -189,6 +224,7 @@ const employeeInitials = computed(() =>
 const currentTime = ref('');
 const ticketPageRef = ref(null);
 const cameraRef = ref(null);
+const photoDialogOpen = ref(false);
 const step = ref(1);
 const state = reactive({ sessionId: null, locationId: null, balance: 0, cashReady: false });
 const machineNumber = ref('');
@@ -432,19 +468,37 @@ async function openDetails() {
             scheduleActionBarUpdate();
 }
 
+async function openPhotoDialog() {
+        photoDialogOpen.value = true;
+
+        await nextTick();
+
+        cameraRef.value?.startCamera?.();
+}
+
+function closePhotoDialog() {
+        cameraRef.value?.stopCamera?.();
+}
+
 function handleCapturedImage(image) {
             if (!image) return;
             photoFile.value = image;
             if (photoPreview.value) URL.revokeObjectURL(photoPreview.value);
             photoPreview.value = URL.createObjectURL(image);
+
+
+        photoDialogOpen.value = false;
 }
 
 async function retakePhoto() {
-            if (photoPreview.value) URL.revokeObjectURL(photoPreview.value);
-            photoPreview.value = '';
-            photoFile.value = null;
-            await nextTick();
-            cameraRef.value?.startCamera?.();
+        if (photoPreview.value) {
+          URL.revokeObjectURL(photoPreview.value);
+        }
+
+        photoPreview.value = '';
+        photoFile.value = null;
+
+        await openPhotoDialog();
 }
 
 async function resetToScan() {
@@ -533,5 +587,6 @@ onBeforeUnmount(async () => {
             window.removeEventListener('resize', scheduleActionBarUpdate);
             window.removeEventListener('transitionend', scheduleActionBarUpdate);
             if (photoPreview.value) URL.revokeObjectURL(photoPreview.value);
+        closePhotoDialog();
 });
 </script>

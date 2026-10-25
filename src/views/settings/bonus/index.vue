@@ -14,8 +14,9 @@
             Create, schedule, and manage customer bonus payouts.
           </p>
         </div>
-        <el-button type="primary" size="large" :icon="Plus" @click="createNew">
-          Create Bonus
+        <el-button type="primary" size="large" @click="createNew">
+          <el-icon><Plus /></el-icon>
+          <span>Create Bonus</span>
         </el-button>
       </div>
       <!-- SUMMARY STRIP -->
@@ -56,8 +57,9 @@
     <!-- EMPTY -->
     <!-- ==================================================== -->
     <el-empty v-else-if="bonuses.length === 0" description="No bonus programs have been created." class="content-space">
-      <el-button type="primary" :icon="Plus" @click="createNew">
-        Create Your First Bonus
+      <el-button type="primary" @click="createNew">
+        <el-icon><Plus /></el-icon>
+        <span>Create Your First Bonus</span>
       </el-button>
     </el-empty>
     <!-- ==================================================== -->
@@ -157,11 +159,6 @@ import {
   onMounted
 } from 'vue';
 
-import {
-  Plus,
-  Clock,
-  Money
-} from '@element-plus/icons-vue';
 
 import {
   ElMessage

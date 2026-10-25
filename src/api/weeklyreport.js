@@ -15,3 +15,16 @@ export function getWeeklyReportDay(params) {
     params
   })
 }
+
+export function getWeeklyReportLoans(params) {
+  return request({
+    url: `/employeefinance/reports/reading-session/${params.sessionid}/loans`,
+    method: 'get',
+    params: { locationid: params.locationid }
+  })
+}
+
+// Dedicated loan report, independent from Weekly Report cash calculations.
+export function getLoanReport(params) {
+  return request({ url: '/employeefinance/reports/loans', method: 'get', params })
+}

@@ -2,13 +2,34 @@ import axios from 'axios';
 import { getToken } from '@/utils/auth';
 import { useUserStore } from '@/store/modules/user';
 
-// console.log('import.meta.env=', import.meta.env)
-
 // Create an axios instance
 const service = axios.create({
   baseURL: import.meta.env.VITE_BASE_API,
   timeout: 30000
 });
+
+const defaultErrorMessages = {
+  400: 'Invalid or missing information.',
+  401: 'Unauthorized. Please log in again.',
+  403: 'You do not have permission to perform this action.',
+  404: 'Requested resource was not found.',
+  409: 'This request conflicts with existing information.',
+  413: 'The uploaded file is too large.',
+  429: 'Too many requests. Please try again later.',
+  500: 'Server error. Please try again later.',
+  503: 'Service is temporarily unavailable.'
+};
+
+function notifyRequestError(error, message) {
+  // The New Customer page displays a more helpful face-detection instruction.
+  if (error?.config?.skipGlobalError || error?.response?.data?.errorCode === 'NO_FACE') {
+    return;
+  }
+
+  ElMessage({ message, type: 'error', duration: 5000, grouping: true });
+  // Page-level catch handlers can avoid displaying this error a second time.
+  error.requestMessageShown = true;
+}
 
 // Request interceptor
 service.interceptors.request.use(config => {
@@ -29,41 +50,7 @@ error => {
 
 // Response interceptor
 service.interceptors.response.use(
-  response => {
-    const res = response.data;
-
-    if (res.code !== 20000) {
-      ElMessage({
-        message: res.message || 'Error',
-        type: 'error',
-        duration: 5000
-      });
-
-      if (
-        res.code === 50008 ||
-                res.code === 50012 ||
-                res.code === 50014
-      ) {
-        ElMessageBox.confirm(
-          'You have been logged out. Please log in again.',
-          'Session Expired',
-          {
-            confirmButtonText: 'Re-Login',
-            cancelButtonText: 'Cancel',
-            type: 'warning'
-          }
-        ).then(() => {
-          const userStore = useUserStore();
-          userStore.resetToken();
-          location.reload();
-        });
-      }
-
-      return Promise.reject(new Error(res.message || 'Error'));
-    }
-
-    return res;
-  },
+  response => response.data,
 
   error => {
     console.log('response error:', error);
@@ -71,34 +58,18 @@ service.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401) {
-      ElMessage({
-        message: 'Unauthorized. Please log in again.',
-        type: 'error',
-        duration: 5000
-      });
       const userStore = useUserStore();
       userStore.resetToken();
-    } else if (status === 403) {
-      // ElMessage({
-      //   message: 'You do not have permission to perform this action.',
-      //   type: 'error'
-      // });
-    } else if (status === 404) {
-      ElMessage({
-        message: 'Requested resource was not found.',
-        type: 'error'
-      });
-    } else if (status === 500) {
-      ElMessage({
-        message: 'Server error. Please try again later.',
-        type: 'error'
-      });
-    } else {
-      ElMessage({
-        message: error.response?.data?.message || error.message,
-        type: 'error'
-      });
     }
+
+    const backendMessage = error.response?.data?.message;
+    const message = (typeof backendMessage === 'string' && backendMessage.trim()) ||
+      defaultErrorMessages[status] ||
+      (error.code === 'ECONNABORTED'
+        ? 'Request timed out. Please try again.'
+        : 'Unable to connect to the server. Please try again.');
+
+    notifyRequestError(error, message);
 
     return Promise.reject(error);
   }

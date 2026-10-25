@@ -1,4 +1,5 @@
 import request from '@/utils/request';
+import { useUserStore } from '@/store/modules/user';
 
 export function uploadphoto(data) {
   return request({
@@ -28,21 +29,21 @@ export function getcustomerbyid(id) {
   return request({
     url: '/customer/getcustomerbyid',
     method: 'get',
-    params: { id }
+    params: { id, locationid: useUserStore().locationId }
   });
 }
 export function deletecustomer(id) {
   return request({
     url: '/customer/delete',
     method: 'delete',
-    params: { id }
+    params: { id, locationid: useUserStore().locationId }
   });
 }
 export function updatestatus(id) {
   return request({
     url: '/customer/updatestatus',
     method: 'put',
-    params: { id }
+    params: { id, locationid: useUserStore().locationId }
   });
 }
 
@@ -69,7 +70,7 @@ export function approvecheckin(id, userid) {
   return request({
     url: '/customer/approvecheckin',
     method: 'put',
-    params: { id, userid }
+    params: { id, locationid: useUserStore().locationId }
   });
 }
 
@@ -85,7 +86,7 @@ export function updateCustomerAccount(data) {
   return request({
     url: '/customer/updateCustomerAccount',
     method: 'PUT',
-    data
+    data: { ...data, locationid: useUserStore().locationId }
   });
 }
 
@@ -93,7 +94,7 @@ export function getcustomerlogs(id) {
   return request({
     url: '/customer/getcustomerlogs',
     method: 'get',
-    params: { id }
+    params: { id, locationid: useUserStore().locationId }
   });
 }
 

@@ -24,10 +24,10 @@ export function resetInitialMachineReading(machineId, locationid) {
   });
 }
 
-export function deactivateMachine(machineId, locationId) {
+export function deactivateMachine(machineId, locationid) {
   return request({
     url: `/machine/deactivate/${machineId}`,
     method: 'patch',
-    data: { locationId }
+    data: { locationid }
   });
 }

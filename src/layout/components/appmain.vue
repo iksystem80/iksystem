@@ -16,7 +16,7 @@ import { storeToRefs } from 'pinia';
 import { useTagsViewStore } from '@/store/modules/tagsview';
 
 defineOptions({
-  name: 'AppMain'
+    name: 'AppMain'
 });
 
 const tagsViewStore = useTagsViewStore();

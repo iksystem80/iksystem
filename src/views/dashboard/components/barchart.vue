@@ -10,7 +10,7 @@ import resize from './mixins/resize';
 import { getMatchPointsByEmployee } from '@/api/dashboard';
 import { useUserStore } from '@/store/modules/user';
 
-const animationDuration = 6000;
+const animationDuration = 1500;
 
 export default defineComponent({
   mixins: [resize],
@@ -82,11 +82,9 @@ export default defineComponent({
 
     async loadChartData() {
       try {
-        const userStore =
-              useUserStore();
+        const userStore = useUserStore();
 
-        const locationId =
-              userStore.locationId;
+        const locationId = userStore.locationId;
 
         if (!locationId) {
           console.warn(
@@ -98,9 +96,7 @@ export default defineComponent({
         }
 
         const response =
-              await getMatchPointsByEmployee(
-                locationId
-              );
+              await getMatchPointsByEmployee(locationId);
 
         const data =
               response?.data || {};
@@ -142,7 +138,7 @@ export default defineComponent({
       // API:
       // [
       //   { date: '2026-09-17', label: 'Thu' },
-      //   { date: '2026-09-18', label: 'Fri' },
+      //   { date: '2026-09-18', label: 'Fri' animationDuration
       //   ...
       // ]
       // ----------------------------------------------------------
@@ -207,8 +203,21 @@ export default defineComponent({
             // 默认为直线，可选为：'line' | 'shadow'
           },
 
-          valueFormatter: value =>
-            `${Number(value || 0).toLocaleString()} pts`
+          formatter: params => {
+            const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+              '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+
+            const visible = (Array.isArray(params) ? params : [params])
+              .filter(item => Number(item.value) > 0);
+
+            const day = escapeHtml(params?.[0]?.axisValueLabel ?? '');
+            const rows = visible.map(item =>
+              `${item.marker}${escapeHtml(item.seriesName)}: <b>${Number(item.value).toLocaleString()} pts</b>`
+            );
+
+            return [day, ...rows].join('<br/>');
+          }
         },
 
         grid: {

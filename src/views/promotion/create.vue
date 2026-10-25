@@ -1,5 +1,5 @@
 <template>
-  <div class="page irfan-promotion-create irfan-ui-page">
+  <div ref="promotionPageRef" class="app-container promotion-create-page">
     <div class="page-header">
       <div class="header-left">
         <el-button class="back-button" circle aria-label="Back" @click="goBack">
@@ -16,6 +16,10 @@
           </div>
         </div>
       </div>
+      <el-radio-group v-model="form.channel" class="promotion-channel-switch" aria-label="Promotion channel">
+        <el-radio-button label="MMS">MMS</el-radio-button>
+        <el-radio-button label="WhatsApp">WhatsApp</el-radio-button>
+      </el-radio-group>
     </div>
     <el-card shadow="never" class="form-card">
       <el-form ref="formRef" :model="form" label-position="top" >
@@ -23,56 +27,89 @@
           <el-form-item label="Promotion Name">
             <el-input v-model="form.name" placeholder="Enter promotion name" />
           </el-form-item>
-          <el-form-item label="Channel">
-            <el-radio-group v-model="form.channel">
-              <el-radio-button label="MMS">
-                MMS
-              </el-radio-button>
-              <el-radio-button label="WhatsApp">
-                WhatsApp
-              </el-radio-button>
-            </el-radio-group>
-          </el-form-item>
         </div>
-        <el-form-item label="Template">
-          <el-select v-model="form.templateid" filterable placeholder="Select a generated template" style="width: 100%" @change="syncTemplateImage">
-            <el-option v-for="item in templates" :key="item.id" :label="item.name" :value="Number(item.id)" />
-          </el-select>
-        </el-form-item>
-        <div v-if="selectedTemplate?.finalimageurl" class="poster-preview" >
-          <el-image :src="selectedTemplate.finalimageurl" fit="contain" preview-teleported :preview-src-list="[selectedTemplate.finalimageurl]" />
-        </div>
-        <el-form-item label="Message">
-          <el-input v-model="form.messagetext" type="textarea" :rows="3" placeholder="Optional message to send with the promotion" />
-        </el-form-item>
-        <el-divider />
-        <div class="customer-section-header">
-          <div>
-            <div class="section-title">
-              Customers
+        <div class="promotion-compose-grid">
+          <div class="promotion-compose-fields">
+            <el-form-item label="Promotion Template">
+              <el-select
+                v-model="form.templateid"
+                filterable
+                clearable
+                placeholder="Choose a generated template"
+                class="promotion-template-select"
+                @change="syncTemplateImage"
+              >
+                <el-option
+                  v-for="item in templates"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="Number(item.id)"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Message">
+              <el-input
+                v-model="form.messagetext"
+                type="textarea"
+                :rows="3"
+                placeholder="Optional message to send with the promotion"
+              />
+            </el-form-item>
+          </div>
+          <div class="promotion-template-preview">
+            <div class="preview-heading">Template Preview</div>
+            <div v-if="selectedTemplate?.finalimageurl" class="poster-preview">
+              <el-image
+                class="poster-preview-image"
+                :src="selectedTemplate.finalimageurl"
+                fit="contain"
+                preview-teleported
+                :preview-src-list="[selectedTemplate.finalimageurl]"
+              />
+              <div class="preview-name">{{ selectedTemplate.name }}</div>
+              <div class="preview-hint">Click the image to enlarge</div>
             </div>
-            <div class="section-subtitle">
-              {{ selectedCustomers.length }} selected ·
-              {{ eligibleCustomerCount }} eligible
+            <div v-else class="preview-placeholder">
+              Select a template to see its preview
             </div>
           </div>
-          <div class="customer-actions">
-            <el-button size="small" :disabled="!eligibleCustomerCount" @click="selectAllEligible" >
-              Select All Eligible
-            </el-button>
-            <el-button size="small" :disabled="!selectedCustomers.length" @click="clearSelection" >
-              Clear
-            </el-button>
+        </div>
+      </el-form>
+    </el-card>
+
+    <el-card shadow="never" class="app-table-card promotion-customers-card space-top">
+      <template #header>
+        <div class="app-table-card-header">
+          <el-icon><User /></el-icon>
+          <div class="app-table-card-title">
+            <strong>Customers</strong>
+            <div class="small-text">
+              {{ selectedCustomers.length }} selected · {{ eligibleCustomerCount }} eligible
+            </div>
           </div>
         </div>
+      </template>
+      <div class="promotion-customers-controls">
         <el-alert v-if="!locationId" title="A location is required before customers can be loaded." type="warning" :closable="false" show-icon class="customer-note" />
-        <el-input v-model="customerSearch" placeholder="Search by customer name or phone" clearable class="customer-search" />
-        <el-table ref="customerTableRef" v-loading="loadingCustomers" :data="filteredCustomers" row-key="id" empty-text="No customers found" @selection-change="handleCustomerSelection" >
+        <div class="promotion-customer-toolbar">
+          <el-radio-group v-model="verificationFilter" class="promotion-verification-filter" aria-label="Customer verification filter">
+            <el-radio-button label="all">All</el-radio-button>
+            <el-radio-button label="verified">Verified</el-radio-button>
+            <el-radio-button label="unverified">Unverified</el-radio-button>
+          </el-radio-group>
+          <el-input v-model="customerSearch" placeholder="Search by customer name or phone" clearable class="customer-search" />
+          <div class="customer-actions">
+            <el-button size="small" :disabled="!eligibleCustomerCount" @click="selectAllEligible">Select All Eligible</el-button>
+            <el-button size="small" :disabled="!selectedCustomers.length" @click="clearSelection">Clear</el-button>
+          </div>
+        </div>
+      </div>
+        <el-table class="app-data-table is-compact" ref="customerTableRef" v-loading="loadingCustomers" :data="filteredCustomers" row-key="id" :height="customerTableHeight" empty-text="No customers found" @selection-change="handleCustomerSelection" >
           <el-table-column type="selection" width="52" :selectable="isCustomerSelectable" :reserve-selection="true" />
           <el-table-column label="Customer" min-width="230" >
             <template #default="{ row }">
-              <div class="customer-cell">
-                <el-avatar :size="34" :src="row.avatar || undefined" >
+              <div class="customer-cell" style="display: flex; align-items: center; gap: 10px;">
+                <el-avatar :size="34" :src="row.avatar || undefined" style="flex-shrink: 0;" >
                   {{ customerInitials(row) }}
                 </el-avatar>
                 <div class="customer-name-wrap">
@@ -125,32 +162,29 @@
             </template>
           </el-table-column>
         </el-table>
-
-        <div class="footer-actions">
-          <el-button
-            type="primary"
-            :loading="saving"
-            @click="saveDraft"
-          >
+    </el-card>
+    <div class="fixed-actions" :style="actionBarStyle">
+      <div class="action-inner">
+        <div class="action-left promotion-bar-selection">
+          <strong>{{ selectedCustomers.length }}</strong> customers selected
+        </div>
+        <div class="action-right">
+          <el-button type="primary" :loading="saving" :disabled="sending" @click="saveDraft">
             Save Draft
           </el-button>
-
-          <el-button
-            type="success"
-            :loading="sending"
-            @click="saveAndSend"
-          >
+          <el-button type="success" :loading="sending" :disabled="saving" @click="saveAndSend">
             Send Promotion
           </el-button>
         </div>
-      </el-form>
-    </el-card>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import {
   computed,
+  onBeforeUnmount,
   nextTick,
   onMounted,
   reactive,
@@ -158,11 +192,12 @@ import {
 } from 'vue';
 
 import { useRoute, useRouter } from 'vue-router';
+import { User } from '@element-plus/icons-vue';
 import {
   ElMessage,
   ElMessageBox
 } from 'element-plus';
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 
 import { useUserStore } from '@/store/modules/user';
 import { getcustomers } from '@/api/customer';
@@ -176,6 +211,25 @@ import {
   sendPromotion,
   updatePromotion
 } from '@/api/promotion';
+
+
+// Keep the fixed footer aligned with the page content when the sidebar changes width.
+const promotionPageRef = ref<HTMLElement | null>(null);
+const actionBarStyle = ref({ left: '0px', width: '100%' });
+const customerTableHeight = 340;
+let layoutObserver: ResizeObserver | null = null;
+let layoutFrame = 0;
+
+function updateBarPosition() {
+  if (!promotionPageRef.value) return;
+  const rect = promotionPageRef.value.getBoundingClientRect();
+  actionBarStyle.value = { left: `${rect.left}px`, width: `${rect.width}px` };
+}
+
+function scheduleBarPosition() {
+  cancelAnimationFrame(layoutFrame);
+  layoutFrame = requestAnimationFrame(updateBarPosition);
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -191,6 +245,7 @@ const templates = ref<any[]>([]);
 const customers = ref<any[]>([]);
 const selectedCustomers = ref<any[]>([]);
 const customerSearch = ref('');
+const verificationFilter = ref<'all' | 'verified' | 'unverified'>('all');
 
 const loadingCustomers = ref(false);
 const saving = ref(false);
@@ -224,11 +279,12 @@ const filteredCustomers = computed(() => {
       .trim()
       .toLowerCase();
 
-  if (!term) {
-    return customers.value;
-  }
-
   return customers.value.filter(item => {
+    const isVerified = item.phoneverified === true;
+    if (verificationFilter.value === 'verified' && !isVerified) return false;
+    if (verificationFilter.value === 'unverified' && isVerified) return false;
+    if (!term) return true;
+
     const searchable = [
       item.firstname,
       item.lastname,
@@ -633,6 +689,13 @@ function goBack() {
 }
 
 onMounted(async () => {
+  await nextTick();
+  updateBarPosition();
+  if (promotionPageRef.value && typeof ResizeObserver !== 'undefined') {
+    layoutObserver = new ResizeObserver(scheduleBarPosition);
+    layoutObserver.observe(promotionPageRef.value);
+  }
+  window.addEventListener('resize', scheduleBarPosition);
   try {
     await Promise.all([
       loadTemplates(),
@@ -650,5 +713,9 @@ onMounted(async () => {
     }
   }
 });
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', scheduleBarPosition);
+  layoutObserver?.disconnect();
+  cancelAnimationFrame(layoutFrame);
+});
 </script>
-

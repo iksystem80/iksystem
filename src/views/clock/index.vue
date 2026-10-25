@@ -121,9 +121,9 @@
               </strong>
 
               <el-button text
-                         :icon="Refresh"
                          @click="loadSessions">
-                Refresh
+                <el-icon><Refresh /></el-icon>
+                <span>Refresh</span>
               </el-button>
             </div>
 
@@ -245,12 +245,6 @@ import {
         onMounted,
         onBeforeUnmount
 } from 'vue';
-
-import {
-        VideoPlay,
-        SwitchButton,
-        Refresh
-} from '@element-plus/icons-vue';
 
 import {
         ElMessage,

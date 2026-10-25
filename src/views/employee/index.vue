@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue';
+
 import NewEmployee from './newemployee.vue';
 import { getemployees, deleteemployee, updateemployeestatus } from '@/api/employee';
 import { useUserStore } from '@/store/modules/user';

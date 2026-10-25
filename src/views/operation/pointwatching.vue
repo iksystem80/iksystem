@@ -9,11 +9,11 @@
       </div>
       <div class="header-actions">
         <el-radio-group v-model="viewMode" class="view-mode-switch">
-          <el-radio-button label="date">
+          <el-radio-button value="date">
             <el-icon><Calendar /></el-icon>
             By Date
           </el-radio-button>
-          <el-radio-button label="employee">
+          <el-radio-button value="employee">
             <el-icon><User /></el-icon>
             By Employee
           </el-radio-button>
@@ -30,7 +30,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { Calendar, User } from '@element-plus/icons-vue';
+
 
 import PointsByDate from './components/pointsbydate.vue';
 import PointsByEmployee from './components/pointsbyemployee.vue';

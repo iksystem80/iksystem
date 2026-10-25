@@ -8,13 +8,11 @@
         <el-button circle class="back-button" @click="goBack">
           <el-icon><ArrowLeft /></el-icon>
         </el-button>
-
         <div>
           <h2 class="page-title">New Customer</h2>
-
-          <div class="page-subtitle">
+          <p>
             Add customer information and capture a profile photo.
-          </div>
+          </p>
         </div>
       </div>
     </div>
@@ -37,9 +35,8 @@
               <div class="section-title">
                 Customer Photo
               </div>
-
               <div class="section-description">
-                Capture a clear photo for the customer profile.
+                Capture a clear photo for the profile.
               </div>
             </div>
           </div>
@@ -298,15 +295,6 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import {
-        ArrowLeft,
-        Camera,
-        User,
-        Phone,
-        CircleCheck,
-        Check,
-        Lock
-} from '@element-plus/icons-vue'
 
 import { useUserStore } from '@/store/modules/user'
 import { useRouter } from 'vue-router'

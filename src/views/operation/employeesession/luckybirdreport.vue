@@ -9,7 +9,7 @@
         <div>
           <h2 class="page-title">Lucky Bird Report</h2>
           <div v-if="report?.session" class="page-subtitle">
-            Session # {{ report.session.id }} · {{ report.session.employeeName }}
+            Session # {{ (report.session.sessionNumber ?? report.session.id) }} · {{ report.session.employeeName }}
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
 
             <div class="employee-profile-text">
               <h2>{{ report.session.employeeName || 'Employee' }}</h2>
-              <div class="employee-period">Session # {{ report.session.id }}</div>
+              <div class="employee-period">Session # {{ (report.session.sessionNumber ?? report.session.id) }}</div>
             </div>
           </div>
 
@@ -104,16 +104,24 @@
       <div v-if="auditVerificationEnabled && report.entries.length" class="report-grid">
         <el-card shadow="never" class="panel review-panel">
           <template #header>
-            <div class="panel-header">
-              <div>
+            <!--<div class="panel-header">
+    <div>
+      <strong>Photo Review</strong>
+      <span>
+        {{ report.summary.reviewedCount || 0 }} of
+        {{ report.summary.luckyBirdCount || 0 }} reviewed
+      </span>
+    </div>
+  </div>-->
+            <div class="app-table-card-header">
+              <el-icon><Camera /></el-icon>
+              <div class="app-table-card-title">
                 <strong>Photo Review</strong>
-                <span>
-                  {{ report.summary.reviewedCount || 0 }} of
-                  {{ report.summary.luckyBirdCount || 0 }} reviewed
-                </span>
+                <div class="small-text">
+                  {{ report.summary.reviewedCount }} of {{ report.summary.luckyBirdCount }} reviewed
+                </div>
               </div>
             </div>
-
             <div class="review-progress-divider" aria-hidden="true">
               <div class="review-progress-divider__fill"
                    :style="{ width: `${reviewProgress}%` }"></div>
@@ -152,10 +160,13 @@
 
       <el-card v-else shadow="never" class="panel entries-panel">
         <template #header>
-          <div class="panel-header entries-header">
-            <div>
+          <div class="app-table-card-header">
+            <el-icon><Tickets /></el-icon>
+            <div class="app-table-card-title">
               <strong>Lucky Bird Entries</strong>
-              <span>{{ number(report.summary.luckyBirdCount) }} entries in this session</span>
+              <div class="small-text">
+                {{ number(report.summary.luckyBirdCount) }} entries in this session
+              </div>
             </div>
           </div>
         </template>
@@ -180,7 +191,7 @@
             <div v-if="entry.imageUrl"
                  style="position:relative;width:42px;height:42px;flex:0 0 42px;">
               <el-image :src="entry.imageUrl"
-                        fit="cover"
+                        fit="cover" :preview-src-list="[entry.imageUrl]"
                         style="width:42px;height:42px;border-radius:6px;" />
 
               <span class="photo-indicator"
@@ -400,7 +411,7 @@
 </template>
 
 <script setup>
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';

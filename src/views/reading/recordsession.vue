@@ -1,5 +1,5 @@
 <template>
-  <div ref="readingPageRef" class="app-container">
+  <div ref="readingPageRef" class="app-container reading-session-page">
     <div class="page-header">
       <div>
         <h2 class="page-title">Reading Sessions</h2>
@@ -52,7 +52,7 @@
           <template #header>
             <div class="session-card-header">
               <div class="session-number">
-                Session # {{ item.id }}
+                Session # {{ item.sessionNumber ?? item.id }}
               </div>
 
               <div class="session-header-right">
@@ -109,7 +109,7 @@
       <div class="step-heading">
         <h2>Employee Sessions Covered</h2>
         <p>
-          Select the completed employee shifts included in reading session #{{ sessionId }}.
+          Select the completed employee shifts included in reading session #{{ currentSession?.sessionNumber ?? sessionId }}.
           Active shifts and shifts used by another reading session are excluded.
         </p>
       </div>
@@ -130,7 +130,7 @@
                        :value="Number(item.id)" class="coverage-option">
             <span class="coverage-option-main">
               <strong>{{ item.employeeName }}</strong>
-              <span class="small-text">Employee session #{{ item.id }} · {{ formatDateTime(item.clockIn) }} – {{ formatDateTime(item.clockOut) }}</span>
+              <span class="small-text">Employee session #{{ item.sessionNumber ?? item.id }} · {{ formatDateTime(item.clockIn) }} – {{ formatDateTime(item.clockOut) }}</span>
             </span>
             <el-tag v-if="Number(item.readingSessionId) === Number(sessionId)" size="small" type="success" effect="plain">Selected earlier</el-tag>
           </el-checkbox>
@@ -153,7 +153,7 @@
           </div>
 
           <h2>
-            Session #{{ sessionId }}
+            Session #{{ currentSession?.sessionNumber ?? sessionId }}
           </h2>
 
           <div class="small-text">
@@ -570,7 +570,7 @@
                          border
                          class="review-summary">
           <el-descriptions-item label="Session #">
-            {{ sessionId }}
+            {{ currentSession?.sessionNumber ?? sessionId }}
           </el-descriptions-item>
 
           <el-descriptions-item label="Started">
@@ -592,7 +592,7 @@
         <div class="review-coverage">
           <h3>Covered Employee Sessions</h3>
           <div v-for="item in selectedCoverageRows" :key="item.id" class="review-coverage-row">
-            <strong>{{ item.employeeName }} · Session #{{ item.id }}</strong>
+            <strong>{{ item.employeeName }} · Session #{{ item.sessionNumber ?? item.id }}</strong>
             <span class="small-text">{{ formatDateTime(item.clockIn) }} – {{ formatDateTime(item.clockOut) }}</span>
           </div>
         </div>
@@ -787,13 +787,6 @@ import {
         ElMessageBox
 } from 'element-plus';
 
-import {
-        Delete,
-        CircleCheckFilled,
-        ArrowLeft,
-        ArrowRight,
-        Plus
-} from '@element-plus/icons-vue';
 
 import {
         useUserStore
@@ -1578,7 +1571,7 @@ async function deleteSelectedSession(
 ) {
         try {
           await ElMessageBox.confirm(
-            `Delete Session #${row.ID}? All readings inside this open session will also be deleted.`,
+            `Delete Session #${row.sessionNumber ?? row.id}? All readings inside this open session will also be deleted.`,
             'Delete Session',
             {
               confirmButtonText:
@@ -1709,7 +1702,7 @@ async function endSession() {
           );
 
           ElMessage.success(
-            `Session #${sessionId.value} is ready for reconciliation.`
+            `Session #${currentSession.value?.sessionNumber ?? sessionId.value} is ready for reconciliation.`
           );
 
           activeStep.value = 0;

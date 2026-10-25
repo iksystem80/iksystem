@@ -12,10 +12,10 @@
     <!-- No Customer Permission -->
     <el-alert v-else title="Customer information is not available for your account." type="info" :closable="false" show-icon class="permission-alert" />
     <!-- Charts -->
-    <el-row :gutter="32" v-if="userStore.isOwner">
+    <el-row :gutter="32" v-if="userStore.isOwnerOrAdmin">
       <el-col :xs="24" :sm="24" :lg="8">
         <div class="chart-wrapper">
-          <!-- Reserved for CheckinCustomer -->
+          <NetProfitChart />
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :lg="8">
@@ -33,12 +33,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted, defineAsyncComponent } from 'vue';
 import PanelGroup from '../components/panelgroup';
 import CurrentEmployeeSessions from '../components/currentemployeesessions';
 import CurrentCustomer from '../../components/currentcustomer';
-import PieChart from '../components/piechart';
-import BarChart from '../components/barchart';
+// Load chart code separately so it does not block the dashboard's main bundle.
+const PieChart = defineAsyncComponent(() => import('../components/piechart.vue'));
+const BarChart = defineAsyncComponent(() => import('../components/barchart.vue'));
+const NetProfitChart = defineAsyncComponent(() => import('../components/netprofitchart.vue'));
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
 import { getClockStatus } from '@/api/employeesession';

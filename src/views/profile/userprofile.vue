@@ -184,7 +184,7 @@ import type {
     UploadFile
 } from 'element-plus';
 import { ElMessage } from 'element-plus';
-import { ArrowLeft } from '@element-plus/icons-vue';
+
 
 import { useUserStore } from '@/store/modules/user';
 import UserProfileCard from './components/userprofilecard.vue';

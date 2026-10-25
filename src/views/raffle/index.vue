@@ -5,9 +5,9 @@
         <h2 class="page-title">Raffle</h2>
         <p>{{ step === 1 ? "Spin the wheel to select today's winning machine." : step === 2 ? 'Select the raffle prize' : 'Select the winner and capture a photo.' }}</p>
       </div>
-      <el-button class="action-button"
+      <!--<el-button class="action-button"
                  :icon="Setting"
-                 @click="router.push('/raffle/settings')" />
+                 @click="router.push('/raffle/settings')" />-->
     </div>
 
 
@@ -157,29 +157,32 @@
             </el-col>
 
             <el-col :xs="24" :md="14">
-              <el-card shadow="never" class="payout-section camera-card step-three-camera-card">
-                <template #header>
-                  <div>
-                    <strong>Winner Photo</strong>
-                    <div class="small-text">Capture a current photo of the raffle winner.</div>
+                <el-card shadow="never" class="payout-section camera-card step-three-camera-card">
+                  <template #header>
+                    <div>
+                      <strong>Winner Photo</strong>
+                      <div class="small-text">Capture a current photo of the raffle winner.</div>
+                    </div>
+                  </template>
+
+                  <div class="camera-capture-summary">
+                    <div v-if="photoPreview" class="camera-capture-preview">
+                      <img :src="photoPreview" alt="Winner photo">
+                      <div class="camera-capture-preview-info">
+                        <strong>Photo captured</strong>
+                        <span>Ready to save</span>
+                      </div>
+                      <el-button @click="retakePhoto">Retake Photo</el-button>
+                    </div>
+
+                    <el-button v-else
+                               type="primary"
+                               class="camera-capture-button"
+                               @click="openPhotoDialog">
+                      Take Photo
+                    </el-button>
                   </div>
-                </template>
-
-                <div v-if="photoPreview" class="winner-photo-preview">
-                  <img :src="photoPreview" alt="Winner photo">
-                  <el-button @click="retakePhoto">Retake Photo</el-button>
-                </div>
-
-                <div class="raffle-camera-frame">
-                  <CameraApp v-if="!photoPreview"
-                             ref="cameraRef"
-                             shape="custom"
-                             width="100%"
-                             height="375px"
-                             border-radius="0 0 2% 2%"
-                             @captured="handleCapturedImage" />
-                </div>
-              </el-card>
+                </el-card>
             </el-col>
           </el-row>
         </div>
@@ -192,7 +195,10 @@
            :style="actionBarStyle">
         <div class="action-inner">
           <div class="action-left">
-            <el-button v-if="step === 3" :icon="ArrowLeft" @click="backToPrize">Back</el-button>
+            <el-button v-if="step === 3" @click="backToPrize">
+              <el-icon><ArrowLeft /></el-icon>
+              <span>Back</span>
+            </el-button>
             <el-button v-else @click="resetRaffle">New Raffle</el-button>
           </div>
 
@@ -223,6 +229,30 @@
         </div>
       </div>
     </Transition>
+
+    <el-dialog v-model="photoDialogOpen"
+               title="Take Winner Photo"
+               width="420px"
+               class="extra-match-dialog camera-capture-dialog"
+               destroy-on-close
+               @closed="closePhotoDialog">
+      <div class="extra-match-camera-section">
+        <div class="extra-match-photo-box">
+          <CameraApp v-if="photoDialogOpen"
+                     ref="cameraRef"
+                     shape="custom"
+                     width="100%"
+                     height="100%"
+                     border-radius="12px"
+                     @captured="handleCapturedImage" />
+        </div>
+      </div>
+
+      <div class="extra-match-dialog-actions">
+        <el-button @click="photoDialogOpen = false">Cancel</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -230,7 +260,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { ArrowLeft, ArrowRight, Loading, Setting } from '@element-plus/icons-vue';
+
 import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/mycamera';
 import { getcustomers } from '@/api/customer';
@@ -241,6 +271,7 @@ const userStore = useUserStore();
 
 const rafflePageRef = ref(null);
 const cameraRef = ref(null);
+const photoDialogOpen = ref(false);
 const loading = ref(true);
 const customersLoading = ref(false);
 const spinning = ref(false);
@@ -434,6 +465,18 @@ async function openWinner() {
           }
 }
 
+async function openPhotoDialog() {
+        photoDialogOpen.value = true;
+
+        await nextTick();
+
+        cameraRef.value?.startCamera?.();
+}
+
+function closePhotoDialog() {
+        cameraRef.value?.stopCamera?.();
+}
+
 function handleCapturedImage(image) {
           if (!image) return;
 
@@ -444,18 +487,20 @@ function handleCapturedImage(image) {
           }
 
           photoPreview.value = URL.createObjectURL(image);
+
+
+        photoDialogOpen.value = false;
 }
 
 async function retakePhoto() {
-          if (photoPreview.value) {
-            URL.revokeObjectURL(photoPreview.value);
-          }
+        if (photoPreview.value) {
+          URL.revokeObjectURL(photoPreview.value);
+        }
 
-          photoPreview.value = '';
-          photoFile.value = null;
+        photoPreview.value = '';
+        photoFile.value = null;
 
-          await nextTick();
-          cameraRef.value?.startCamera?.();
+        await openPhotoDialog();
 }
 
 async function saveWinner() {
@@ -542,5 +587,6 @@ onBeforeUnmount(() => {
           if (photoPreview.value) {
             URL.revokeObjectURL(photoPreview.value);
           }
+        closePhotoDialog();
 });
 </script>

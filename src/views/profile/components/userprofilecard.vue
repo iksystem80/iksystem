@@ -86,13 +86,6 @@
 
 <script setup lang="ts">
 import type { UploadFile } from 'element-plus';
-import {
-  Camera,
-  Location,
-  OfficeBuilding,
-  User,
-  UserFilled
-} from '@element-plus/icons-vue';
 
 defineProps<{
   name: string;

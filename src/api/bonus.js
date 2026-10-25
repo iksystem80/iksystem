@@ -24,13 +24,14 @@ export function getActiveBonusChoices() {
   });
 }
 
-export function saveBonusAward(data) {
+export function saveBonusAward(data, idempotencyKey = null) {
   return request({
     url: '/bonus/give/save',
     method: 'post',
     data,
     headers: {
-      'Content-Type': 'multipart/form-data'
+      'Content-Type': 'multipart/form-data',
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
     }
   });
 }

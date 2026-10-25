@@ -8,7 +8,6 @@
 
 <script setup>
 import { computed } from 'vue';
-import { Coin } from '@element-plus/icons-vue';
 
 const props = defineProps({
   points: {

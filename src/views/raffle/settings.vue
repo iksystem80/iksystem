@@ -99,7 +99,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, ArrowRight, Timer } from '@element-plus/icons-vue';
+
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { getRaffleSettings, getRaffleWinnerHistory, getRaffleWinners, saveRaffleSettings } from '@/api/raffle';

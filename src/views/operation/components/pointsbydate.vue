@@ -44,6 +44,10 @@
                          :src="item.avatar">
                 {{ getInitial(item.name) }}
               </el-avatar>
+              <span v-if="employeeIsClockedIn(item.id)"
+                    class="pointwatch-online-dot"
+                    title="Clocked in"
+                    aria-label="Clocked in"></span>
             </el-badge>
 
             <div v-if="selectedEmployeeDetails"
@@ -267,18 +271,12 @@ import {
     watch
 } from 'vue';
 
-import {
-    Search,
-    User,
-    Refresh,
-    Tickets,
-    Coin
-} from '@element-plus/icons-vue';
 
 import { ElMessage } from 'element-plus';
 
 import {
     getPointWatchingEmployees,
+    getPointsByEmployee,
     getPointsByDate
 } from '@/api/pointwatching';
 
@@ -310,6 +308,7 @@ const search = ref('');
 
 const employees = ref([]);
 const entries = ref([]);
+const employeeActiveSessions = ref({});
 
 const selectedEmployeeDetails = computed(() => selectedEmployee.value == null ? null : employees.value.find(item => String(item.id) === String(selectedEmployee.value)) || null);
 
@@ -320,6 +319,35 @@ const displayedEmployees = computed(() =>
 );
 
 const getInitial = value => String(value || '?').trim().charAt(0).toUpperCase();
+
+const employeeIsClockedIn = employeeId =>
+    (employeeActiveSessions.value[String(employeeId)] || 0) > 0;
+
+const loadEmployeeActiveSessions = async () => {
+    if (!props.locationId || !employees.value.length) {
+      employeeActiveSessions.value = {};
+      return;
+    }
+
+    const results = await Promise.allSettled(
+      employees.value.map(item =>
+        getPointsByEmployee(item.id, props.locationId, 14)
+      )
+    );
+
+    const activeSessions = {};
+    results.forEach((result, index) => {
+      const employeeId = employees.value[index]?.id;
+      if (employeeId == null) return;
+
+      activeSessions[String(employeeId)] =
+        result.status === 'fulfilled'
+          ? Number(result.value?.data?.summary?.activeSessions || 0)
+          : 0;
+    });
+
+    employeeActiveSessions.value = activeSessions;
+};
 
 const selectEmployee = item => {
     if (selectedEmployeeDetails.value) return;
@@ -358,6 +386,9 @@ const loadEmployees = async () => {
               .toLowerCase() === 'employee'
         );
       });
+
+      // Load live status without delaying the date report.
+      loadEmployeeActiveSessions();
 
       if (
         selectedEmployee.value != null &&

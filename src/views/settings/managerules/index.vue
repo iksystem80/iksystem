@@ -158,7 +158,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Check } from '@element-plus/icons-vue';
 
 import { useUserStore } from '@/store/modules/user';
 import { getManageRules, updateManageRules } from '@/api/managerules';
@@ -206,6 +205,8 @@ function applyRules(data: any) {
     data || {},
     {
       locationId: Number(userStore.locationId || 0),
+      // PostgreSQL TIME is often HH:mm:ss; Element Plus uses HH:mm.
+      matchResetDayTime: String(data?.matchResetDayTime || '07:00').slice(0, 5),
       matchResetTimes: Array.isArray(data?.matchResetTimes)
         ? data.matchResetTimes
         : []
@@ -258,9 +259,12 @@ async function saveRules() {
   try {
     saving.value = true;
 
+    // Keep locationId in the UI model; API requests use lowercase locationid.
+    const { locationId: _locationId, ...ruleValues } = form;
     const response = await updateManageRules({
-      ...form,
-      locationId: Number(userStore.locationId)
+      ...ruleValues,
+      matchResetDayTime: String(form.matchResetDayTime || '07:00').slice(0, 5),
+      locationid: Number(userStore.locationId)
     });
 
     applyRules(response?.data);
@@ -269,7 +273,7 @@ async function saveRules() {
       response?.message || 'Rules saved successfully.'
     );
   } catch (error: any) {
-    console.error(error);
+    console.error('Manage Rules save response:', error?.response?.data || error);
 
     ElMessage.error(
       error?.response?.data?.message ||

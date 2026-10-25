@@ -18,7 +18,6 @@
 <script>
 import { addClass, removeClass } from '@/utils';
 import { defineComponent } from 'vue';
-import { Close, Setting } from '@element-plus/icons-vue';
 
 export default defineComponent({
   name: 'RightPanel',
