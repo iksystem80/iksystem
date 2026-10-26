@@ -24,18 +24,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create iOS environment
+      - name: Create iOS demo environment
         run: |
-          echo "VITE_ENV='production'" > .env.ios
-          echo "VITE_BASE_API='${{ vars.VITE_BASE_API }}'" >> .env.ios
-          echo "VITE_BASE_SERVER='${{ vars.VITE_BASE_SERVER }}'" >> .env.ios
-          echo "VITE_COOKIE=''" >> .env.ios
+          echo "VITE_ENV='production'" > .env.ios-demo
+          echo "VITE_BASE_API='https://demo.iklogy.com/api'" >> .env.ios-demo
+          echo "VITE_BASE_SERVER='https://demo.iklogy.com/'" >> .env.ios-demo
+          echo "VITE_COOKIE=''" >> .env.ios-demo
 
-      - name: Build Vue application
-        run: npm run build:ios
+      - name: Build Vue demo application
+        run: npm run build:ios-demo
 
-      - name: Synchronize Capacitor iOS
-        run: npx cap sync ios
+      - name: Synchronize Capacitor iOS Demo
+        run: |
+          export IKLOGY_APP_VARIANT=demo
+          npx cap sync ios
 
       - name: Set iOS build number
         run: |
@@ -148,10 +150,13 @@ jobs:
             -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$RUNNER_TEMP/IKlogy.xcarchive" \
+            -destination generic/platform=iOS \
+            -archivePath "$RUNNER_TEMP/IKlogy-Demo.xcarchive" \
             CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
+            DEVELOPMENT_TEAM=58D5VB6494 \
+            PRODUCT_BUNDLE_IDENTIFIER=com.iklogy.demo \
+            PROVISIONING_PROFILE_SPECIFIER="IKlogy Demo App Store" \
+            CODE_SIGN_ENTITLEMENTS=App/App-Demo.entitlements \
             clean archive
 
       - name: Create export options
@@ -182,7 +187,7 @@ jobs:
 
           xcodebuild \
             -exportArchive \
-            -archivePath "$RUNNER_TEMP/IKlogy.xcarchive" \
+            -archivePath "$RUNNER_TEMP/IKlogy-Demo.xcarchive" \
             -exportPath ipa \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
 
