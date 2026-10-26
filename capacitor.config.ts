@@ -1,8 +1,10 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+const isDemo = process.env.IKLOGY_APP_VARIANT === 'demo';
+
 const config: CapacitorConfig = {
-  appId: 'com.iklogy.app',
-  appName: 'IKlogy',
+  appId: isDemo ? 'com.iklogy.demo' : 'com.iklogy.app',
+  appName: isDemo ? 'IKlogy Demo' : 'IK',
   webDir: 'dist',
 
   server: {

@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build:ios": "vite build --mode ios",
+    "build:ios-demo": "vite build --mode ios-demo",
     "build:android": "vite build --mode android",
     "dev:test": "vite --mode dev_test --open",
     "dev:prod": "vite --mode dev_prod",
