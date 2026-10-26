@@ -207,7 +207,7 @@
           <template #header>
             <div class="weekly-analytics-card-title">
               <el-icon><DataAnalysis /></el-icon>
-              <div><strong>Weekly Short / Over</strong><div class="small-text">Employee variance summary by completed Reading day.</div></div>
+              <div><strong>Weekly Shift Detail</strong><div class="small-text">Employee shift summary by completed Reading day.</div></div>
             </div>
           </template>
           <div class="weekly-report-table-wrap weekly-summary-shortover-wrap">
@@ -216,8 +216,8 @@
               <el-table-column label="Day" min-width="115"><template #default="{ row }">{{ dayName(row.date) }}</template></el-table-column>
               <el-table-column label="Short / Over" min-width="120"><template #default="{ row }"><span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span></template></el-table-column>
               <el-table-column label="Employee Names" min-width="360"><template #default="{ row }">{{ row.employeeNames || '—' }}</template></el-table-column>
-              <el-table-column label="Zelle" min-width="100" align="right"><template #default="{ row }">{{ money(row.zelle || 0) }}</template></el-table-column>
-              <el-table-column label="Receive By" min-width="130"><template #default="{ row }">{{ row.receiveBy || '—' }}</template></el-table-column>
+              <!--<el-table-column label="Zelle" min-width="100" align="right"><template #default="{ row }">{{ money(row.zelle || 0) }}</template></el-table-column>-->
+              <!--<el-table-column label="Receive By" min-width="130"><template #default="{ row }">{{ row.receiveBy || '—' }}</template></el-table-column>-->
             </el-table>
           </div>
           <div class="weekly-report-mobile-list weekly-summary-shortover-mobile-list">
@@ -225,8 +225,8 @@
               <strong>{{ dayName(row.date) }}</strong>
               <div><span>Short / Over</span><b :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</b></div>
               <div><span>Employees</span><b>{{ row.employeeNames || '—' }}</b></div>
-              <div><span>Zelle</span><b>{{ money(row.zelle || 0) }}</b></div>
-              <div><span>Receive By</span><b>{{ row.receiveBy || '—' }}</b></div>
+              <!--<div><span>Zelle</span><b>{{ money(row.zelle || 0) }}</b></div>-->
+              <!--<div><span>Receive By</span><b>{{ row.receiveBy || '—' }}</b></div>-->
             </div>
           </div>
         </el-card>
@@ -290,11 +290,13 @@
                       <div><strong>Daily IN</strong></div>
                       <strong class="credit">+{{ money(report.cashFlow.dailyIn ?? report.cashFlow.readingTotalIn) }}</strong>
                     </div>
-                    <div class="ledger-item">
+                  </div>
+                  <template #footer>
+                    <div class="weekly-analytics-card-footer">
                       <div><strong>Total IN</strong></div>
                       <strong class="credit-total">+{{ money(report.cashFlow.totalIn) }}</strong>
                     </div>
-                  </div>
+                  </template>
                 </el-card>
 
                 <el-card shadow="never" class="ledger-card expense-ledger">
@@ -313,11 +315,13 @@
                       <div><strong>All Expenses</strong></div>
                       <strong class="debit">−{{ money(report.cashFlow.allExpenses) }}</strong>
                     </div>
-                    <div class="ledger-item">
+                  </div>
+                  <template #footer>
+                    <div class="weekly-analytics-card-footer">
                       <div><strong>Total OUT</strong></div>
                       <strong class="debit-total">−{{ money(report.cashFlow.totalOut) }}</strong>
                     </div>
-                  </div>
+                  </template>
                 </el-card>
               </div>
 
@@ -487,7 +491,14 @@
                                 show-summary
                                 :summary-method="machineReadingSummaryMethod"
                                 class="report-table weekly-report-table"
-                :class="{ 'app-data-table': true }">
+                                :class="{ 'app-data-table': true }"
+                                :cell-style="({ column }) => column.property === 'difference'
+                                    ? {
+                                        backgroundColor: 'var(--el-color-success-light-9) !important',
+                                        color: 'var(--el-color-success)'
+                                      }
+                                    : {}"
+                                >
                         <el-table-column prop="machinenumber" label="Mch #" min-width="60" fixed="left">
                           <template #default="{ row }">
                             <span class="weekly-machine-number-badge ">
@@ -539,7 +550,7 @@
                         </el-table-column>
                         <el-table-column prop="difference" label="Difference" min-width="90" align="right">
                           <template #default="{ row }">
-                            {{ money(row.difference) }}
+                              {{ money(row.difference) }}
                           </template>
                         </el-table-column>
                         <el-table-column prop="points" label="Points" min-width="90" align="right">
@@ -573,7 +584,14 @@
                                 show-summary
                                 :summary-method="readingSummaryMethod"
                                 class="report-table weekly-report-table"
-                :class="{ 'app-data-table': true }">
+                                :class="{ 'app-data-table': true }"
+                                :cell-style="({ column }) => column.property === 'difference'
+                                ? {
+                                    backgroundColor: 'var(--el-color-success-light-9) !important',
+                                    color: 'var(--el-color-success)'
+                                  }
+                                : {}"
+                                >
                         <el-table-column prop="machineType" label="Machine Type" min-width="115" fixed="left" />
                         <el-table-column prop="machineCount" label="Machines" min-width="90" align="center" />
                         <el-table-column prop="in" label="IN" min-width="105" align="right">

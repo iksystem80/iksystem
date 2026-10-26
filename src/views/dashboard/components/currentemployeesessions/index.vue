@@ -1,5 +1,5 @@
 <template>
-  <section class="current-sessions-section">
+  <section v-if="employees.length" class="current-sessions-section">
     <div class="current-employee-heading">
       <h3>Current Employee Sessions</h3>
       <!--<el-tag v-if="employees.length" type="success" effect="light" round size="small">
@@ -8,10 +8,10 @@
     </div>
 
     <el-skeleton v-if="loading && !loaded" :rows="2" animated />
-    <el-empty v-else-if="!employees.length"
+    <!--<el-empty v-else-if="!employees.length"
               :image-size="54"
               description="No employees are currently clocked in."
-              class="current-employee-empty" />
+              class="current-employee-empty" />-->
 
     <el-row v-else :gutter="18" class="panel-group current-employee-grid">
       <el-col v-for="employee in employees"

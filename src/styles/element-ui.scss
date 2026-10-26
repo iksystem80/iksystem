@@ -28,6 +28,10 @@
     margin-bottom: 0px !important;
     color: var(--el-text-color-secondary) !important;
 }
+.el-empty {
+    --el-empty-padding: 10px 0 !important;
+    --el-empty-image-width: 70px !important;
+}
     /*.el-button:hover {
     color: #818cf8 !important;
     border-color: #e1dafa !important;

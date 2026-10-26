@@ -414,6 +414,12 @@
             <el-table-column label="Opening" min-width="115" align="right">
               <template #default="{ row }">{{ money(row.opening) }}</template>
             </el-table-column>
+            <el-table-column label="Handover" min-width="115" align="right">
+              <template #default="{ row }">
+                <span v-if="Number(row.handover)" style="color: var(--el-color-success)">+{{ money(row.handover) }}</span>
+                <span v-else>{{ money(0) }}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="Collection" min-width="125" align="right">
               <template #default="{ row }">
                 <span v-if="Number(row.collection)" style="color: var(--el-color-success)">+{{ money(row.collection) }}</span>

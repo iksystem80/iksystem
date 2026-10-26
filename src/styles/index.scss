@@ -2181,6 +2181,7 @@ html[data-theme='cloud-mint'] {
 
 .debit-total {
     color: var(--el-color-danger);
+    font-size: var(--app-font-size-16);
 }
 
 .credit {
@@ -2189,6 +2190,7 @@ html[data-theme='cloud-mint'] {
 
 .credit-total {
     color: var(--el-color-success);
+    font-size: var(--app-font-size-16);
 }
 
 .balance-value {
@@ -3854,7 +3856,7 @@ html[data-theme='cloud-mint'] {
 }
 
 .ledger-card .el-card__body {
-    padding: 6px 14px 8px;
+    padding: 6px 14px 0px;
     color: #5d5d5d;
 }
 
@@ -9370,13 +9372,26 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
     font-size:22px;
 }
 
-    .weekly-report-page .weekly-analytics-kpis {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--el-border-color-lighter);
-    }
+.weekly-analytics-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding:0px;
+    min-width: 0;
+}
+.ledger-card > .el-card__footer {
+    padding: calc(var(--el-card-padding) - 10px) var(--el-card-padding);
+    background-color: var(--el-fill-color-light);
+}
+
+.weekly-report-page .weekly-analytics-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
 
         .weekly-report-page .weekly-analytics-kpis > div {
             min-width: 0;
@@ -12642,65 +12657,65 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             gap: 10px 12px !important;
         }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid)::after {
-            content: "";
-            grid-area: divider;
-            display: block;
-            width: 100%;
-            height: 1px;
-            background: rgba(255, 255, 255, .12);
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid)::after {
+                content: "";
+                grid-area: divider;
+                display: block;
+                width: 100%;
+                height: 1px;
+                background: rgba(255, 255, 255, .12);
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
-            grid-area: profile;
-            width: auto !important;
-            min-width: 0 !important;
-            margin: 0 !important;
-        }
-        /* Let the three metric boxes become direct grid items of employee-header. */
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid {
-            display: contents !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
+                grid-area: profile;
+                width: auto !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+            }
+            /* Let the three metric boxes become direct grid items of employee-header. */
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid {
+                display: contents !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1) {
-            grid-area: clockin;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1) {
+                    grid-area: clockin;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
-            grid-area: clockout;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+                    grid-area: clockout;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
-            grid-area: duration;
-            align-self: center;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+                    grid-area: duration;
+                    align-self: center;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div {
-            min-width: 0 !important;
-            padding: 8px 10px !important;
-            text-align: center !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div {
+                    min-width: 0 !important;
+                    padding: 8px 10px !important;
+                    text-align: center !important;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
-            width: 100% !important;
-        }
+                    .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+                        width: 100% !important;
+                    }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid span {
-            display: block !important;
-            margin-bottom: 3px !important;
-            font-size: var(--app-font-size-8) !important;
-            line-height: 1.1 !important;
-            text-align: center !important;
-            white-space: nowrap !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid span {
+                    display: block !important;
+                    margin-bottom: 3px !important;
+                    font-size: var(--app-font-size-8) !important;
+                    line-height: 1.1 !important;
+                    text-align: center !important;
+                    white-space: nowrap !important;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
-            display: block !important;
-            font-size: var(--app-font-label) !important;
-            line-height: 1.2 !important;
-            text-align: center !important;
-            white-space: normal !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
+                    display: block !important;
+                    font-size: var(--app-font-label) !important;
+                    line-height: 1.2 !important;
+                    text-align: center !important;
+                    white-space: normal !important;
+                }
         /* --------------------------------------------------------
        Two-value employee-session banners such as
        Match Points / Cash Expenses.
@@ -12713,22 +12728,22 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             gap: 10px !important;
         }
 
-        .employee-banner.employee-session-banner .employee-header:not(:has(.session-grid)) .employee-profile {
-            flex: 1 1 auto !important;
-            width: auto !important;
-            min-width: 0 !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:not(:has(.session-grid)) .employee-profile {
+                flex: 1 1 auto !important;
+                width: auto !important;
+                min-width: 0 !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:not(:has(.session-grid)) .employee-right {
-            flex: 0 0 auto !important;
-            display: grid !important;
-            grid-template-columns: repeat(2, minmax(62px, auto)) !important;
-            width: auto !important;
-            margin: 0 0 0 auto !important;
-            padding: 0 !important;
-            border-top: 0 !important;
-            gap: 5px !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:not(:has(.session-grid)) .employee-right {
+                flex: 0 0 auto !important;
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(62px, auto)) !important;
+                width: auto !important;
+                margin: 0 0 0 auto !important;
+                padding: 0 !important;
+                border-top: 0 !important;
+                gap: 5px !important;
+            }
 
         .employee-banner.employee-session-banner .employee-header:has(.session-grid) {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -12736,20 +12751,20 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
                 "profile duration" "divider divider" "clockin clockout" !important;
         }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
-            min-width: 0 !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
+                min-width: 0 !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
-            justify-self: end;
-            width: auto !important;
-            min-width: 92px !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+                justify-self: end;
+                width: auto !important;
+                min-width: 92px !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
-            width: 100% !important;
-            min-width: 0 !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
 
         .mobile-select-refresh-row {
             grid-template-columns: minmax(0, 1fr) auto !important;
@@ -14325,21 +14340,21 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             gap: 8px 9px !important;
         }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div {
-            padding: 7px 7px !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div {
+                padding: 7px 7px !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid span {
-            font-size: var(--app-font-size-7) !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid span {
+                font-size: var(--app-font-size-7) !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
-            font-size: var(--app-font-small) !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
+                font-size: var(--app-font-small) !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
-            min-width: 82px !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+                min-width: 82px !important;
+            }
 
         .raffle-page .wheel-stage {
             width: 280px;
@@ -14735,58 +14750,58 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             gap: 14px 12px !important;
         }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid)::after {
-            content: "";
-            grid-area: divider;
-            display: block;
-            width: 100%;
-            height: 1px;
-            background: rgba(255, 255, 255, .12);
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid)::after {
+                content: "";
+                grid-area: divider;
+                display: block;
+                width: 100%;
+                height: 1px;
+                background: rgba(255, 255, 255, .12);
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
-            grid-area: profile;
-            width: auto !important;
-            min-width: 0 !important;
-            margin: 0 !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
+                grid-area: profile;
+                width: auto !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid {
-            display: contents !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid {
+                display: contents !important;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1) {
-            grid-area: clockin;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1) {
+                    grid-area: clockin;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
-            grid-area: clockout;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+                    grid-area: clockout;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
-            grid-area: duration;
-            justify-self: end;
-            align-self: center;
-            min-width: 120px !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+                    grid-area: duration;
+                    justify-self: end;
+                    align-self: center;
+                    min-width: 120px !important;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
-            width: 100% !important;
-            min-width: 0 !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+                    width: 100% !important;
+                    min-width: 0 !important;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div {
-            padding: 10px 12px !important;
-            text-align: center !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div {
+                    padding: 10px 12px !important;
+                    text-align: center !important;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid span, .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
-            text-align: center !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid span, .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
+                    text-align: center !important;
+                }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
-            white-space: nowrap !important;
-        }
+                .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid strong {
+                    white-space: nowrap !important;
+                }
     }
     /* ============================================================
    EMPLOYEE SESSION BANNER - EQUAL CLOCK ROW
@@ -14797,22 +14812,22 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
         }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
-            grid-column: 1 / 2;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .employee-profile {
+                grid-column: 1 / 2;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
-            grid-column: 2 / 3;
-            width: auto !important;
-            min-width: 120px !important;
-            max-width: 220px;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(3) {
+                grid-column: 2 / 3;
+                width: auto !important;
+                min-width: 120px !important;
+                max-width: 220px;
+            }
 
-        .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
-            width: 100% !important;
-            max-width: none !important;
-            min-width: 0 !important;
-        }
+            .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(1), .employee-banner.employee-session-banner .employee-header:has(.session-grid) > .session-grid > div:nth-child(2) {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+            }
     }
     /* ============================================================
    READING ENTRY CARD - EMPLOYEE BANNER THEME
@@ -15578,31 +15593,30 @@ settings/bonus/index.vue / original style block 1 (page-isolated)
         font-weight: 600;
         box-shadow: 0 2px 6px rgba(0, 0, 0, .24);
     }
-
     /* Current clock-in status: a small dot overlapping the avatar. */
-.pointwatch-employee-badge .pointwatch-online-dot {
-    position: absolute;
-    right: -1px;
-    bottom: 1px;
-    z-index: 2;
-    width: 12px;
-    height: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 50%;
-    background: var(--el-color-success);
-    pointer-events: none;
-}
+    .pointwatch-employee-badge .pointwatch-online-dot {
+        position: absolute;
+        right: -1px;
+        bottom: 1px;
+        z-index: 2;
+        width: 12px;
+        height: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 50%;
+        background: var(--el-color-success);
+        pointer-events: none;
+    }
 
     .pointwatch-employee-choice.is-selected .pointwatch-online-dot {
         width: 14px;
         height: 14px;
     }
-        /* Badge overlaps the top-right avatar border. */
-        .pointwatch-employee-badge .el-badge__content.is-fixed {
-            top: 0px;
-            right: 0px;
-            transform: translateY(0) translateX(30%);
-        }
+    /* Badge overlaps the top-right avatar border. */
+    .pointwatch-employee-badge .el-badge__content.is-fixed {
+        top: 0px;
+        right: 0px;
+        transform: translateY(0) translateX(30%);
+    }
 
     .pointwatch-view-all {
         flex: 0 0 auto;
