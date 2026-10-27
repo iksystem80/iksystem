@@ -146,14 +146,20 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="Last Session"  align="center"
+        <el-table-column label="Ticket Out" min-width="90" align="center">
+          <template #default="{ row }">
+            {{ formatMoney(row.ticketOutExpenses) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column label="Last Session" align="center"
                          min-width="90">
           <template #default="{ row }">
             {{ formatDateTime(row.lastSession) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="Hours" 
+        <el-table-column label="Hours"
                          min-width="80"
                          align="center">
           <template #default="{ row }">
@@ -186,9 +192,9 @@
           <template #default>
             <el-button circle
                        text
-                       aria-label="View employee sessions" >
-              <el-icon><ArrowRight/></el-icon>
-              </el-button>
+                       aria-label="View employee sessions">
+              <el-icon><ArrowRight /></el-icon>
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -252,6 +258,10 @@
             </div>
           </div>
           <div class="mobile-session-count">
+            <span>Ticket Out</span>
+            <strong>{{ formatMoney(employee.ticketOutExpenses) }}</strong>
+          </div>
+          <div class="mobile-session-count">
             <span>Sessions</span>
             <strong>{{ Number(employee.sessionCount || 0) }}</strong>
           </div>
@@ -287,58 +297,58 @@ const period = ref('all');
 const reconciliation = ref('unreconciled');
 const dateRange = ref([]);
 const chicagoDate = (date) => new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit'
+      timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit'
 }).format(date);
 const selectedDates = computed(() => {
-    if (period.value === 'all') return {};
-    if (period.value === 'custom') {
-      if (!dateRange.value || dateRange.value.length !== 2) return null;
-      return { startDate: dateRange.value[0], endDate: dateRange.value[1] };
-    }
-    const today = chicagoDate(new Date());
-    if (period.value === 'today') return { startDate: today, endDate: today };
-    const start = new Date(`${today}T12:00:00Z`);
-    start.setUTCDate(start.getUTCDate() - (Number(period.value) - 1));
-    return { startDate: start.toISOString().slice(0, 10), endDate: today };
+      if (period.value === 'all') return {};
+      if (period.value === 'custom') {
+        if (!dateRange.value || dateRange.value.length !== 2) return null;
+        return { startDate: dateRange.value[0], endDate: dateRange.value[1] };
+      }
+      const today = chicagoDate(new Date());
+      if (period.value === 'today') return { startDate: today, endDate: today };
+      const start = new Date(`${today}T12:00:00Z`);
+      start.setUTCDate(start.getUTCDate() - (Number(period.value) - 1));
+      return { startDate: start.toISOString().slice(0, 10), endDate: today };
 });
 function openFilterDrawer() {
-    draftPeriod.value = period.value;
-    draftReconciliation.value = reconciliation.value;
-    draftDateRange.value = Array.isArray(dateRange.value) ? [...dateRange.value] : [];
-    filterDrawer.value = true;
+      draftPeriod.value = period.value;
+      draftReconciliation.value = reconciliation.value;
+      draftDateRange.value = Array.isArray(dateRange.value) ? [...dateRange.value] : [];
+      filterDrawer.value = true;
 }
 function onPeriodChange(value) {
-    // A custom period takes effect once both dates have been selected.
-    if (value === 'custom') {
-      if (Array.isArray(draftDateRange.value) && draftDateRange.value.length === 2) {
-        onDateRangeChange(draftDateRange.value);
+      // A custom period takes effect once both dates have been selected.
+      if (value === 'custom') {
+        if (Array.isArray(draftDateRange.value) && draftDateRange.value.length === 2) {
+          onDateRangeChange(draftDateRange.value);
+        }
+        return;
       }
-      return;
-    }
-    period.value = value;
-    dateRange.value = [];
-    draftDateRange.value = [];
-    loadEmployees();
+      period.value = value;
+      dateRange.value = [];
+      draftDateRange.value = [];
+      loadEmployees();
 }
 function onReconciliationChange(value) {
-    reconciliation.value = value;
-    loadEmployees();
+      reconciliation.value = value;
+      loadEmployees();
 }
 function onDateRangeChange(value) {
-    if (draftPeriod.value !== 'custom') return;
-    if (!Array.isArray(value) || value.length !== 2) return;
-    period.value = 'custom';
-    dateRange.value = [...value];
-    loadEmployees();
+      if (draftPeriod.value !== 'custom') return;
+      if (!Array.isArray(value) || value.length !== 2) return;
+      period.value = 'custom';
+      dateRange.value = [...value];
+      loadEmployees();
 }
 function clearFilters() {
-    draftPeriod.value = 'all';
-    draftReconciliation.value = 'unreconciled';
-    draftDateRange.value = [];
-    period.value = 'all';
-    reconciliation.value = 'unreconciled';
-    dateRange.value = [];
-    loadEmployees();
+      draftPeriod.value = 'all';
+      draftReconciliation.value = 'unreconciled';
+      draftDateRange.value = [];
+      period.value = 'all';
+      reconciliation.value = 'unreconciled';
+      dateRange.value = [];
+      loadEmployees();
 }
 const formatMoney = value => Number(value || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
@@ -348,103 +358,103 @@ const totalPoints = computed(() => filteredEmployees.value.reduce((sum, item) =>
 const totalExpenses = computed(() => filteredEmployees.value.reduce((sum, item) => sum + Number(item.cashExpenses || 0), 0));
 
 const totalSessions = computed(() => {
-    return filteredEmployees.value.reduce(
-      (total, item) =>
-        total +
-                  Number(item.sessionCount || 0),
-      0
-    );
+      return filteredEmployees.value.reduce(
+        (total, item) =>
+          total +
+                    Number(item.sessionCount || 0),
+        0
+      );
 });
 
 function initials(name) {
-    return String(name || 'E')
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
+      return String(name || 'E')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase();
 }
 
 function formatDateTime(value) {
-    if (!value) {
-      return '—';
-    }
+      if (!value) {
+        return '—';
+      }
 
-    return new Date(value)
-      .toLocaleString(
-        [],
-        {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit'
-        }
-      );
+      return new Date(value)
+        .toLocaleString(
+          [],
+          {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          }
+        );
 }
 
 function formatHours(value) {
-    const hours = Number(value || 0);
+      const hours = Number(value || 0);
 
-    if (!Number.isFinite(hours)) {
-      return '0h';
-    }
+      if (!Number.isFinite(hours)) {
+        return '0h';
+      }
 
-    const whole = Math.floor(hours);
-    const minutes =
-              Math.round(
-                (hours - whole) * 60
-              );
+      const whole = Math.floor(hours);
+      const minutes =
+                Math.round(
+                  (hours - whole) * 60
+                );
 
-    return minutes
-      ? `${whole}h ${minutes}m`
-      : `${whole}h`;
+      return minutes
+        ? `${whole}h ${minutes}m`
+        : `${whole}h`;
 }
 
 function openEmployee(employee) {
-    router.push({
-      name: 'EmployeeSessionList',
-      params: {
-        employeeId:
-                      employee.userId
-      },
-      query: { ...selectedDates.value, period: period.value, reconciliation: reconciliation.value }
-    });
+      router.push({
+        name: 'EmployeeSessionList',
+        params: {
+          employeeId:
+                        employee.userId
+        },
+        query: { ...selectedDates.value, period: period.value, reconciliation: reconciliation.value }
+      });
 }
 
 async function loadEmployees() {
-    if (selectedDates.value === null) {
-      employees.value = [];
-      return;
-    }
-    try {
-      loading.value = true;
+      if (selectedDates.value === null) {
+        employees.value = [];
+        return;
+      }
+      try {
+        loading.value = true;
 
-      const response =
-                  await getEmployeeSessionSummary(
-                    userStore.locationId,
-                    { ...selectedDates.value, reconciliation: reconciliation.value }
-                  );
+        const response =
+                    await getEmployeeSessionSummary(
+                      userStore.locationId,
+                      { ...selectedDates.value, reconciliation: reconciliation.value }
+                    );
 
-      employees.value =
-                  response?.data || [];
-    } catch (error) {
-      console.error(error);
+        employees.value =
+                    response?.data || [];
+      } catch (error) {
+        console.error(error);
 
-      ElMessage.error(
-        error?.response?.data?.message ||
-                  error?.message ||
-                  'Unable to load employee sessions.'
-      );
-    } finally {
-      loading.value = false;
-    }
+        ElMessage.error(
+          error?.response?.data?.message ||
+                    error?.message ||
+                    'Unable to load employee sessions.'
+        );
+      } finally {
+        loading.value = false;
+      }
 }
 
 watch(
-  () => refreshStore.key('employeeSessions'),
-  () => loadEmployees()
+    () => refreshStore.key('employeeSessions'),
+    () => loadEmployees()
 );
 
 onMounted(loadEmployees);

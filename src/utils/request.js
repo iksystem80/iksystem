@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getToken } from '@/utils/auth';
-import { useUserStore } from '@/store/modules/user';
+import { scheduleInvalidSessionLogout } from '@/services/sessionSecurity';
 
 // Create an axios instance
 const service = axios.create({
@@ -58,8 +58,12 @@ service.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401) {
-      const userStore = useUserStore();
-      userStore.resetToken();
+      // Keep the old token long enough for the real-time Yes/No security alert.
+      // Without Socket.IO, the fallback signs out and redirects automatically.
+      if (getToken()) {
+        scheduleInvalidSessionLogout();
+        return Promise.reject(error);
+      }
     }
 
     const backendMessage = error.response?.data?.message;

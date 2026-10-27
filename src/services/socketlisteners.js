@@ -3,6 +3,7 @@ import { useUserStore } from '@/store/modules/user';
 import { useCheckinStore } from '@/store/modules/checkin';
 import { useRefreshStore } from '@/store/modules/refresh';
 import { ElNotification } from 'element-plus';
+import { handleSessionReplaced, handleSessionRevoked } from './sessionSecurity';
 
 let initialized = false;
 let currentLocationId = null;
@@ -84,6 +85,8 @@ export function initializeSocketListeners(locationId, companyId = null) {
     socket.on('app-refresh', NotifyAppRefresh);
     socket.on('access-status', NotifyAccessStatus);
     socket.on('locations-refresh', NotifyLocationsRefresh);
+    socket.on('session-replaced', handleSessionReplaced);
+    socket.on('session-revoked', handleSessionRevoked);
   }
 
   if (socket.connected) {
@@ -99,6 +102,8 @@ export function cleanupSocket() {
   socket.off('app-refresh', NotifyAppRefresh);
   socket.off('access-status', NotifyAccessStatus);
   socket.off('locations-refresh', NotifyLocationsRefresh);
+  socket.off('session-replaced', handleSessionReplaced);
+  socket.off('session-revoked', handleSessionRevoked);
 
   initialized = false;
   currentLocationId = null;

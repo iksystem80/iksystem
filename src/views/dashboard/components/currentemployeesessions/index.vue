@@ -33,7 +33,7 @@
               </div>
               <div class="stat-content current-employee-info">
                 <div class="current-employee-name" :title="employee.name">{{ employee.name }}</div>
-                <div class="stat-label current-employee-role">{{ employee.jobTitle || 'Employee' }}</div>
+                <!--<div class="stat-label current-employee-role">{{ employee.jobTitle || 'Employee' }}</div>-->
               </div>
               <div class="current-employee-balance">
                 <span class="stat-label">Balance</span>
@@ -131,8 +131,8 @@ function money(value) {
     return Number(value || 0).toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     })
 }
 

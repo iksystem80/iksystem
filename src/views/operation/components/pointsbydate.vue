@@ -35,7 +35,7 @@
                   class="pointwatch-employee-choice"
                   :class="{ 'is-selected': !!selectedEmployeeDetails }"
                   :title="item.name"
-                  @click="selectEmployee(item)">
+                  @click="selectedEmployeeDetails ? clearEmployee() : selectEmployee(item)">
 
             <el-badge :value="employeeEntryCount(item.id)"
                       :hidden="!!selectedEmployeeDetails"
@@ -67,13 +67,13 @@
         <el-button v-if="selectedEmployeeDetails"
                    class="pointwatch-view-all"
                    link
-                   @click="selectedEmployee = null">
+                   @click="clearEmployee">
           view all
         </el-button>
 
-        <div v-if="!selectedEmployeeDetails && !employees.length"
+        <div v-if="!loading && !selectedEmployeeDetails && !displayedEmployees.length"
              class="employee-period">
-          No employees found for this location.
+          No employees with point entries for this date.
         </div>
       </div>
     </el-card>
@@ -226,12 +226,12 @@
           <el-row :gutter="10">
             <el-col :span="12">
               <div class="section-label">
-                Check-In Photo
+                Profile Photo
               </div>
-              <el-image :src="item.checkinPhoto ? item.checkinPhoto : item.avatar"
+              <el-image :src="item.avatar"
                         fit="cover"
                         class="section-image"
-                        :preview-src-list="item.checkinPhoto? [item.checkinPhoto]: []"
+                        :preview-src-list="item.avatar ? [item.avatar] : []"
                         preview-teleported>
                 <template #error>
                   <div class="section-empty">
@@ -266,40 +266,40 @@
 
 <script setup>
 import {
-    ref,
-    computed,
-    watch
+          ref,
+          computed,
+          watch
 } from 'vue';
 
 
 import { ElMessage } from 'element-plus';
 
 import {
-    getPointWatchingEmployees,
-    getPointsByEmployee,
-    getPointsByDate
+          getPointWatchingEmployees,
+          getPointsByEmployee,
+          getPointsByDate
 } from '@/api/pointwatching';
 
 const props = defineProps({
-    locationId: {
-      type: [Number, String],
-      required: true
-    }
+          locationId: {
+            type: [Number, String],
+            required: true
+          }
 });
 
 const today = () => {
-    const date = new Date();
+          const date = new Date();
 
-    const year = date.getFullYear();
-    const month = String(
-      date.getMonth() + 1
-    ).padStart(2, '0');
+          const year = date.getFullYear();
+          const month = String(
+            date.getMonth() + 1
+          ).padStart(2, '0');
 
-    const day = String(
-      date.getDate()
-    ).padStart(2, '0');
+          const day = String(
+            date.getDate()
+          ).padStart(2, '0');
 
-    return `${year}-${month}-${day}`;
+          return `${year}-${month}-${day}`;
 };
 
 const selectedDate = ref(today());
@@ -313,254 +313,258 @@ const employeeActiveSessions = ref({});
 const selectedEmployeeDetails = computed(() => selectedEmployee.value == null ? null : employees.value.find(item => String(item.id) === String(selectedEmployee.value)) || null);
 
 const displayedEmployees = computed(() =>
-    selectedEmployeeDetails.value
-      ? [selectedEmployeeDetails.value]
-      : employees.value
+          selectedEmployeeDetails.value
+            ? [selectedEmployeeDetails.value].filter(item => employeeEntryCount(item.id) > 0)
+            : employees.value.filter(item => employeeEntryCount(item.id) > 0)
 );
 
 const getInitial = value => String(value || '?').trim().charAt(0).toUpperCase();
 
 const employeeIsClockedIn = employeeId =>
-    (employeeActiveSessions.value[String(employeeId)] || 0) > 0;
+          (employeeActiveSessions.value[String(employeeId)] || 0) > 0;
 
 const loadEmployeeActiveSessions = async () => {
-    if (!props.locationId || !employees.value.length) {
-      employeeActiveSessions.value = {};
-      return;
-    }
+          if (!props.locationId || !employees.value.length) {
+            employeeActiveSessions.value = {};
+            return;
+          }
 
-    const results = await Promise.allSettled(
-      employees.value.map(item =>
-        getPointsByEmployee(item.id, props.locationId, 14)
-      )
-    );
+          const results = await Promise.allSettled(
+            employees.value.map(item =>
+              getPointsByEmployee(item.id, props.locationId, 14)
+            )
+          );
 
-    const activeSessions = {};
-    results.forEach((result, index) => {
-      const employeeId = employees.value[index]?.id;
-      if (employeeId == null) return;
+          const activeSessions = {};
+          results.forEach((result, index) => {
+            const employeeId = employees.value[index]?.id;
+            if (employeeId == null) return;
 
-      activeSessions[String(employeeId)] =
-        result.status === 'fulfilled'
-          ? Number(result.value?.data?.summary?.activeSessions || 0)
-          : 0;
-    });
+            activeSessions[String(employeeId)] =
+              result.status === 'fulfilled'
+                ? Number(result.value?.data?.summary?.activeSessions || 0)
+                : 0;
+          });
 
-    employeeActiveSessions.value = activeSessions;
+          employeeActiveSessions.value = activeSessions;
 };
 
 const selectEmployee = item => {
-    if (selectedEmployeeDetails.value) return;
-    selectedEmployee.value = item.id;
+          if (selectedEmployeeDetails.value) return;
+          selectedEmployee.value = item.id;
+};
+
+const clearEmployee = () => {
+        selectedEmployee.value = null;
 };
 
 const loading = ref(false);
 
 const loadEmployees = async () => {
-    if (!props.locationId) return;
+          if (!props.locationId) return;
 
-    try {
-      const response =
-                  await getPointWatchingEmployees(
-                    props.locationId
-                  );
+          try {
+            const response =
+                        await getPointWatchingEmployees(
+                          props.locationId
+                        );
 
-      employees.value = (response.data ?? []).filter(item => {
-        const rawRole =
-          item.roleName ??
-          item.role ??
-          item.roles ??
-          '';
+            employees.value = (response.data ?? []).filter(item => {
+              const rawRole =
+                item.roleName ??
+                item.role ??
+                item.roles ??
+                '';
 
-        const values = Array.isArray(rawRole)
-          ? rawRole
-          : String(rawRole)
-              .split(',')
-              .map(value => value.trim())
-              .filter(Boolean);
+              const values = Array.isArray(rawRole)
+                ? rawRole
+                : String(rawRole)
+                    .split(',')
+                    .map(value => value.trim())
+                    .filter(Boolean);
 
-        return values.some(
-          value =>
-            String(value)
-              .trim()
-              .toLowerCase() === 'employee'
-        );
-      });
+              return values.some(
+                value =>
+                  String(value)
+                    .trim()
+                    .toLowerCase() === 'employee'
+              );
+            });
 
-      // Load live status without delaying the date report.
-      loadEmployeeActiveSessions();
+            // Load live status without delaying the date report.
+            loadEmployeeActiveSessions();
 
-      if (
-        selectedEmployee.value != null &&
-        !employees.value.some(
-          item =>
-            String(item.id) ===
-            String(selectedEmployee.value)
-        )
-      ) {
-        selectedEmployee.value = null;
-      }
-    } catch (error) {
-      ElMessage.error(
-        error.response?.data?.message ||
-                  'Unable to load employees.'
-      );
-    }
+            if (
+              selectedEmployee.value != null &&
+              !employees.value.some(
+                item =>
+                  String(item.id) ===
+                  String(selectedEmployee.value)
+              )
+            ) {
+              selectedEmployee.value = null;
+            }
+          } catch (error) {
+            ElMessage.error(
+              error.response?.data?.message ||
+                        'Unable to load employees.'
+            );
+          }
 };
 
 const loadEntries = async () => {
-    if (
-      !props.locationId ||
-              !selectedDate.value
-    ) {
-      return;
-    }
+          if (
+            !props.locationId ||
+                    !selectedDate.value
+          ) {
+            return;
+          }
 
-    try {
-      loading.value = true;
+          try {
+            loading.value = true;
 
-      const response =
-                  await getPointsByDate(
-                    props.locationId,
-                    selectedDate.value
-                  );
+            const response =
+                        await getPointsByDate(
+                          props.locationId,
+                          selectedDate.value
+                        );
 
-      entries.value =
-                  response.data ?? [];
-    } catch (error) {
-      ElMessage.error(
-        error.response?.data?.message ||
-                  'Unable to load point entries.'
-      );
-    } finally {
-      loading.value = false;
-    }
+            entries.value =
+                        response.data ?? [];
+          } catch (error) {
+            ElMessage.error(
+              error.response?.data?.message ||
+                        'Unable to load point entries.'
+            );
+          } finally {
+            loading.value = false;
+          }
 };
 
 const employeeEntryCounts = computed(() => {
-    const counts = new Map();
+          const counts = new Map();
 
-    for (const item of entries.value) {
-      const key = String(item.employeeId ?? '');
-      if (!key) continue;
+          for (const item of entries.value) {
+            const key = String(item.employeeId ?? '');
+            if (!key) continue;
 
-      counts.set(
-        key,
-        (counts.get(key) || 0) + 1
-      );
-    }
+            counts.set(
+              key,
+              (counts.get(key) || 0) + 1
+            );
+          }
 
-    return counts;
+          return counts;
 });
 
 const employeeEntryCount = employeeId =>
-    employeeEntryCounts.value.get(
-      String(employeeId)
-    ) || 0;
+          employeeEntryCounts.value.get(
+            String(employeeId)
+          ) || 0;
 
 const filteredEntries = computed(() => {
-    let data = entries.value;
+          let data = entries.value;
 
-    if (selectedEmployee.value) {
-      data = data.filter(
-        item =>
-          Number(item.employeeId) ===
-                      Number(selectedEmployee.value)
-      );
-    }
+          if (selectedEmployee.value) {
+            data = data.filter(
+              item =>
+                Number(item.employeeId) ===
+                            Number(selectedEmployee.value)
+            );
+          }
 
-    const value =
-              search.value
-                .trim()
-                .toLowerCase();
+          const value =
+                    search.value
+                      .trim()
+                      .toLowerCase();
 
-    if (value) {
-      data = data.filter(item => {
-        const customer =
-                      item.fullName
-                        ?.toLowerCase() ?? '';
+          if (value) {
+            data = data.filter(item => {
+              const customer =
+                            item.fullName
+                              ?.toLowerCase() ?? '';
 
-        const machine =
-                      String(
-                        item.machineNumber ?? ''
-                      ).toLowerCase();
+              const machine =
+                            String(
+                              item.machineNumber ?? ''
+                            ).toLowerCase();
 
-        return (
-          customer.includes(value) ||
-                      machine.includes(value)
-        );
-      });
-    }
+              return (
+                customer.includes(value) ||
+                            machine.includes(value)
+              );
+            });
+          }
 
-    return data;
+          return data;
 });
 
 const totalPoints = computed(() => {
-    return filteredEntries.value.reduce(
-      (total, item) =>
-        total + Number(item.points || 0),
-      0
-    );
+          return filteredEntries.value.reduce(
+            (total, item) =>
+              total + Number(item.points || 0),
+            0
+          );
 });
 
 const employeeCount = computed(() => {
-    const ids = new Set(
-      filteredEntries.value
-        .map(item => item.employeeId)
-        .filter(Boolean)
-    );
+          const ids = new Set(
+            filteredEntries.value
+              .map(item => item.employeeId)
+              .filter(Boolean)
+          );
 
-    return ids.size;
+          return ids.size;
 });
 
 const displayDate = computed(() => {
-    if (!selectedDate.value) return '';
+          if (!selectedDate.value) return '';
 
-    return new Date(
-      `${selectedDate.value}T12:00:00`
-    ).toLocaleDateString(
-      'en-US',
-      {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      }
-    );
+          return new Date(
+            `${selectedDate.value}T12:00:00`
+          ).toLocaleDateString(
+            'en-US',
+            {
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            }
+          );
 });
 
 const formatTime = value => {
-    if (!value) return '';
+          if (!value) return '';
 
-    return new Date(value)
-      .toLocaleTimeString(
-        'en-US',
-        {
-          hour: 'numeric',
-          minute: '2-digit'
-        }
-      );
+          return new Date(value)
+            .toLocaleTimeString(
+              'en-US',
+              {
+                hour: 'numeric',
+                minute: '2-digit'
+              }
+            );
 };
 
 watch(
-    () => props.locationId,
-    async value => {
-      if (!value) return;
+          () => props.locationId,
+          async value => {
+            if (!value) return;
 
-      selectedEmployee.value = null;
-      await loadEmployees();
-      await loadEntries();
-    },
-    {
-      immediate: true
-    }
+            selectedEmployee.value = null;
+            await loadEmployees();
+            await loadEntries();
+          },
+          {
+            immediate: true
+          }
 );
 
 watch(
-    selectedDate,
-    () => {
-      loadEntries();
-    }
+          selectedDate,
+          () => {
+            loadEntries();
+          }
 );
 </script>
 

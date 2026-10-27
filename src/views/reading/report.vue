@@ -10,7 +10,7 @@
         <div class="filter-layout mobile-select-refresh-row reading-session-row">
           <div class="filter-session">
             <label>Reading Session</label>
-            <el-select class="reading-session-select" v-model="selectedSessionId" placeholder="Select a reconcile or completed session" filterable clearable style="width: 100%" @change="handleSessionChange">
+            <el-select class="reading-session-select" v-model="selectedSessionId" placeholder="Select a reconcile or completed session" clearable style="width: 100%" @change="handleSessionChange">
               <el-option v-for="session in completedSessions" :key="session.id" :label="`Session # ${session.sessionNumber ?? session.id} - ${formatDateTime(session.endedat)}`" :value="session.id">
                 <div class="session-option">
                   <strong>Session # {{ session.sessionNumber ?? session.id }} </strong>

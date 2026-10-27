@@ -1586,7 +1586,7 @@ async function deleteSelectedSession(
           );
 
           await deletesession(
-            row.ID,
+            row.id,
             locationid.value
           );
 

@@ -11,16 +11,16 @@
         <el-radio-group v-model="viewMode" class="view-mode-switch">
           <el-radio-button value="date">
             <el-icon><Calendar /></el-icon>
-            By Date
+            <span class="view-mode-label"> By Date</span>
           </el-radio-button>
           <el-radio-button value="employee">
             <el-icon><User /></el-icon>
-            By Employee
+            <span class="view-mode-label"> By Employee</span>
           </el-radio-button>
         </el-radio-group>
       </div>
     </div>
-   
+
     <div>
       <PointsByDate v-if="viewMode === 'date'" :location-id="locationId" />
       <PointsByEmployee v-else :location-id="locationId" />
@@ -43,4 +43,12 @@ const viewMode = ref('date');
 
 const locationId = computed(() => userStore.locationId);
 </script>
+
+<style scoped>
+  @media (max-width: 767px) {
+    .view-mode-switch .view-mode-label {
+      display: none !important;
+    }
+  }
+</style>
 

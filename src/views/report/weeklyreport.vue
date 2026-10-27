@@ -149,7 +149,7 @@
             <el-table :data="weekSummaryRows" size="small"
                       class="report-table weekly-report-table weekly-summary-table"
                       show-summary :summary-method="weeklySummaryMethod"
-                :class="{ 'app-data-table': true }">
+                      :class="{ 'app-data-table': true }">
               <el-table-column label="Day" min-width="110">
                 <template #default="{ row }">
                   <div class="weekly-summary-day-cell">
@@ -158,16 +158,46 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column label="Customers" min-width="90" align="right"><template #default="{ row }">{{ number(row.customers) }}</template></el-table-column>
-              <el-table-column label="Total IN" min-width="115" align="right"><template #default="{ row }">{{ money(row.totalIn) }}</template></el-table-column>
-              <el-table-column label="Total OUT" min-width="115" align="right"><template #default="{ row }">{{ money(row.totalOut) }}</template></el-table-column>
-              <el-table-column label="Match" min-width="110" align="right"><template #default="{ row }">{{ money(row.match) }}</template></el-table-column>
-              <el-table-column label="Match %" min-width="90" align="right"><template #default="{ row }">{{ percentage(row.matchPercentage) }}</template></el-table-column>
-              <el-table-column label="Payout %" min-width="90" align="right"><template #default="{ row }">{{ percentage(row.payoutPercentage) }}</template></el-table-column>
-              <el-table-column label="Hold %" min-width="85" align="right"><template #default="{ row }">{{ percentage(row.holdPercentage) }}</template></el-table-column>
-              <el-table-column label="Gross Profit" min-width="115" align="right"><template #default="{ row }">{{ money(row.grossProfit) }}</template></el-table-column>
-              <el-table-column label="Net Profit" min-width="115" align="right"><template #default="{ row }"><strong :class="amountClass(row.netProfit)">{{ signedMoney(row.netProfit) }}</strong></template></el-table-column>
-              <el-table-column label="Short / Over" min-width="110" align="right"><template #default="{ row }"><span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span></template></el-table-column>
+              <el-table-column label="Customers" min-width="90" align="right">
+              <template #default="{ row }">
+                {{ number(row.customers) }}
+              </template></el-table-column>
+              <el-table-column label="Total IN" min-width="115" align="right">
+              <template #default="{ row }">
+                {{ money(row.totalIn) }}
+              </template></el-table-column>
+              <el-table-column label="Total OUT" min-width="115" align="right">
+              <template #default="{ row }">
+                {{ money(row.totalOut) }}
+              </template></el-table-column>
+              <el-table-column label="Match" min-width="110" align="right">
+              <template #default="{ row }">
+                {{ money(row.match) }}
+              </template></el-table-column>
+              <el-table-column label="Match %" min-width="90" align="right">
+              <template #default="{ row }">
+                {{ percentage(row.matchPercentage) }}
+              </template></el-table-column>
+              <el-table-column label="Payout %" min-width="90" align="right">
+              <template #default="{ row }">
+                {{ percentage(row.payoutPercentage) }}
+              </template></el-table-column>
+              <el-table-column label="Hold %" min-width="85" align="right">
+              <template #default="{ row }">
+                {{ percentage(row.holdPercentage) }}
+              </template></el-table-column>
+              <el-table-column label="Gross Profit" min-width="115" align="right">
+              <template #default="{ row }">
+                {{ money(row.grossProfit) }}
+              </template></el-table-column>
+              <el-table-column label="Net Profit" min-width="115" align="right">
+              <template #default="{ row }">
+                <strong :class="amountClass(row.netProfit)">{{ signedMoney(row.netProfit) }}</strong>
+              </template></el-table-column>
+              <el-table-column label="Short / Over" min-width="110" align="right">
+              <template #default="{ row }">
+                <span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span>
+              </template></el-table-column>
             </el-table>
           </div>
 
@@ -212,10 +242,19 @@
           </template>
           <div class="weekly-report-table-wrap weekly-summary-shortover-wrap">
             <el-table :data="weekSummaryRows" size="small" class="report-table weekly-report-table weekly-summary-shortover-table" show-summary :summary-method="weeklyShortOverSummaryMethod"
-                :class="{ 'app-data-table': true }">
-              <el-table-column label="Day" min-width="115"><template #default="{ row }">{{ dayName(row.date) }}</template></el-table-column>
-              <el-table-column label="Short / Over" min-width="120"><template #default="{ row }"><span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span></template></el-table-column>
-              <el-table-column label="Employee Names" min-width="360"><template #default="{ row }">{{ row.employeeNames || '—' }}</template></el-table-column>
+                      :class="{ 'app-data-table': true }">
+              <el-table-column label="Day" min-width="115">
+              <template #default="{ row }">
+                {{ dayName(row.date) }}
+              </template></el-table-column>
+              <el-table-column label="Short / Over" min-width="120">
+              <template #default="{ row }">
+                <span :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</span>
+              </template></el-table-column>
+              <el-table-column label="Employee Names" min-width="360">
+              <template #default="{ row }">
+                {{ row.employeeNames || '—' }}
+              </template></el-table-column>
               <!--<el-table-column label="Zelle" min-width="100" align="right"><template #default="{ row }">{{ money(row.zelle || 0) }}</template></el-table-column>-->
               <!--<el-table-column label="Receive By" min-width="130"><template #default="{ row }">{{ row.receiveBy || '—' }}</template></el-table-column>-->
             </el-table>
@@ -264,12 +303,10 @@
         </div>
       </el-card>
 
-      <el-tabs
-        v-model="activeTab"
-        class="weekly-report-tabs"
-        :before-leave="beforeWeeklyTabLeave"
-        :style="{ '--weekly-tab-min-height': `${weeklyTabMinHeight}px` }"
-      >
+      <el-tabs v-model="activeTab"
+               class="weekly-report-tabs"
+               :before-leave="beforeWeeklyTabLeave"
+               :style="{ '--weekly-tab-min-height': `${weeklyTabMinHeight}px` }">
         <el-tab-pane label="Cash Flow" name="cashflow">
           <div v-loading="dayLoading" class="weekly-report-tab-body">
             <template v-if="report">
@@ -400,9 +437,9 @@
 
                   <div class="weekly-report-table-wrap weekly-session-cashflow-table-wrap">
                     <el-table :data="cashFlowSessionRows" size="small" class="report-table weekly-report-table"
-                :class="{ 'app-data-table': true }"
-                :row-style="({ row }) => ({ cursor: row.isAdmin ? 'default' : 'pointer' })"
-                @row-click="openCashFlowShiftReport">
+                              :class="{ 'app-data-table': true }"
+                              :row-style="({ row }) => ({ cursor: row.isAdmin ? 'default' : 'pointer' })"
+                              @row-click="openCashFlowShiftReport">
                       <el-table-column label="Employee / Session" min-width="250">
                         <template #default="{ row }">
                           <div class="weekly-report-shift-main">
@@ -497,8 +534,7 @@
                                         backgroundColor: 'var(--el-color-success-light-9) !important',
                                         color: 'var(--el-color-success)'
                                       }
-                                    : {}"
-                                >
+                                    : {}">
                         <el-table-column prop="machinenumber" label="Mch #" min-width="60" fixed="left">
                           <template #default="{ row }">
                             <span class="weekly-machine-number-badge ">
@@ -550,7 +586,7 @@
                         </el-table-column>
                         <el-table-column prop="difference" label="Difference" min-width="90" align="right">
                           <template #default="{ row }">
-                              {{ money(row.difference) }}
+                            {{ money(row.difference) }}
                           </template>
                         </el-table-column>
                         <el-table-column prop="points" label="Points" min-width="90" align="right">
@@ -590,8 +626,7 @@
                                     backgroundColor: 'var(--el-color-success-light-9) !important',
                                     color: 'var(--el-color-success)'
                                   }
-                                : {}"
-                                >
+                                : {}">
                         <el-table-column prop="machineType" label="Machine Type" min-width="115" fixed="left" />
                         <el-table-column prop="machineCount" label="Machines" min-width="90" align="center" />
                         <el-table-column prop="in" label="IN" min-width="105" align="right">
@@ -756,9 +791,9 @@
 
                 <el-table :data="report.expenses.employeeSessions"
                           size="small" class="weekly-report-table"
-                :class="{ 'app-data-table': true }"
-                :row-style="() => ({ cursor: 'pointer' })"
-                @row-click="openShiftExpenses">
+                          :class="{ 'app-data-table': true }"
+                          :row-style="() => ({ cursor: 'pointer' })"
+                          @row-click="openShiftExpenses">
                   <el-table-column label="Employee / Session" min-width="310">
                     <template #default="{ row: shift }">
                       <div class="weekly-report-shift-main">
@@ -890,15 +925,23 @@
                 <el-table-column prop="employeeName" label="Employee" min-width="140" />
                 <el-table-column prop="lenderName" label="Lender" min-width="140" />
                 <el-table-column label="Loan Amount" min-width="125" align="right">
-                  <template #default="{ row }">{{ money(row.loanAmount) }}</template>
+                  <template #default="{ row }">
+                    {{ money(row.loanAmount) }}
+                  </template>
                 </el-table-column>
                 <el-table-column label="Returned" min-width="120" align="right">
-                  <template #default="{ row }">{{ money(row.returnAmount) }}</template>
+                  <template #default="{ row }">
+                    {{ money(row.returnAmount) }}
+                  </template>
                 </el-table-column>
                 <el-table-column label="Remaining Balance" min-width="155" align="right">
-                  <template #default="{ row }"><strong>{{ money(row.remainingBalance) }}</strong></template>
+                  <template #default="{ row }">
+                    <strong>{{ money(row.remainingBalance) }}</strong>
+                  </template>
                 </el-table-column>
-                <template #empty>No outstanding loans for employees in this Reading Session.</template>
+                <template #empty>
+                  No outstanding loans for employees in this Reading Session.
+                </template>
               </el-table>
             </el-card>
             <el-card shadow="never" class="weekly-report-section-card" style="margin-top: 16px;">
@@ -913,12 +956,16 @@
               </template>
               <el-table :data="loanHistoryRows" size="small" class="weekly-report-table app-data-table">
                 <el-table-column label="Date" min-width="155">
-                  <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
+                  <template #default="{ row }">
+                    {{ formatDateTime(row.createdAt) }}
+                  </template>
                 </el-table-column>
                 <el-table-column prop="employeeName" label="Employee" min-width="130" />
                 <el-table-column prop="lenderName" label="Lender" min-width="130" />
                 <el-table-column label="Transaction" min-width="125">
-                  <template #default="{ row }">{{ row.type === 'LOAN' ? 'Loan to Bank' : 'Loan Return' }}</template>
+                  <template #default="{ row }">
+                    {{ row.type === 'LOAN' ? 'Loan to Bank' : 'Loan Return' }}
+                  </template>
                 </el-table-column>
                 <el-table-column label="Amount" min-width="120" align="right">
                   <template #default="{ row }">
@@ -926,9 +973,13 @@
                   </template>
                 </el-table-column>
                 <el-table-column label="Employee Session" min-width="130">
-                  <template #default="{ row }">#{{ row.employeeSessionId }}</template>
+                  <template #default="{ row }">
+                    #{{ row.employeeSessionId }}
+                  </template>
                 </el-table-column>
-                <template #empty>No loan transactions in this Reading Session.</template>
+                <template #empty>
+                  No loan transactions in this Reading Session.
+                </template>
               </el-table>
             </el-card>
           </div>
@@ -1186,7 +1237,7 @@
 
                 <div class="weekly-report-table-wrap">
                   <el-table :data="employeeCashFlowRows" size="small" class="report-table weekly-report-table weekly-clickable-rows" @row-click="openCashFlowShiftReport"
-                :class="{ 'app-data-table': true }">
+                            :class="{ 'app-data-table': true }">
                     <el-table-column label="Employee / Session" min-width="250">
                       <template #default="{ row }">
                         <div class="weekly-report-shift-main">
@@ -1226,6 +1277,28 @@
                       </template>
                     </el-table-column>
                   </el-table>
+                </div>
+                <div class="weekly-report-mobile-list weekly-analytics-employee-mobile-list">
+                  <div v-for="row in employeeCashFlowRows"
+                       :key="`analytics-employee-${row.id}`"
+                       class="weekly-report-mobile-card weekly-analytics-employee-mobile-card"
+                       role="button"
+                       tabindex="0"
+                       @click="openCashFlowShiftReport(row)"
+                       @keydown.enter.prevent="openCashFlowShiftReport(row)"
+                       @keydown.space.prevent="openCashFlowShiftReport(row)">
+                    <strong>{{ row.name }}</strong>
+                    <div><span>Session</span><b>#{{ row.sessionNumber ?? row.id }}</b></div>
+                    <div><span>Clock In</span><b>{{ formatDateTime(row.clockIn) }}</b></div>
+                    <div><span>Clock Out</span><b>{{ formatDateTime(row.clockOut) }}</b></div>
+                    <div><span>Opening Bank</span><b>{{ money(row.opening) }}</b></div>
+                    <div><span>Pull / Credits</span><b class="credit">+{{ money(row.received) }}</b></div>
+                    <div><span>Expense</span><b class="debit">-{{ money(row.expenses) }}</b></div>
+                    <div><span>Calculated</span><b>{{ money(row.calculated) }}</b></div>
+                    <div><span>Actual</span><b>{{ money(row.actual) }}</b></div>
+                    <div><span>Short / Over</span><b :class="amountClass(row.shortOver)">{{ signedMoney(row.shortOver) }}</b></div>
+                  </div>
+                  <el-empty v-if="!employeeCashFlowRows.length" description="No employee sessions found." />
                 </div>
               </el-card>
             </template>
@@ -1592,30 +1665,30 @@ const loanHistoryRows = ref<any[]>([]);
 let loanRequestSequence = 0;
 
 watch([activeTab, selectedSessionId], async ([tab, sessionId]) => {
-  const requestSequence = ++loanRequestSequence;
-  loanOpenRows.value = [];
-  loanHistoryRows.value = [];
-  if (tab !== 'loan' || !sessionId || !userStore.locationId) {
-    loanReportLoading.value = false;
-    return;
-  }
-  loanReportLoading.value = true;
-  try {
-    const response = await getWeeklyReportLoans({
-      locationid: Number(userStore.locationId),
-      sessionid: Number(sessionId)
-    });
-    if (requestSequence !== loanRequestSequence) return;
-    loanOpenRows.value = response.data?.openLoans || [];
-    loanHistoryRows.value = response.data?.history || [];
-  } catch (error) {
-    if (requestSequence === loanRequestSequence) {
-      console.error('Loan report:', error);
-      ElMessage.error('Unable to load loan report.');
+    const requestSequence = ++loanRequestSequence;
+    loanOpenRows.value = [];
+    loanHistoryRows.value = [];
+    if (tab !== 'loan' || !sessionId || !userStore.locationId) {
+      loanReportLoading.value = false;
+      return;
     }
-  } finally {
-    if (requestSequence === loanRequestSequence) loanReportLoading.value = false;
-  }
+    loanReportLoading.value = true;
+    try {
+      const response = await getWeeklyReportLoans({
+        locationid: Number(userStore.locationId),
+        sessionid: Number(sessionId)
+      });
+      if (requestSequence !== loanRequestSequence) return;
+      loanOpenRows.value = response.data?.openLoans || [];
+      loanHistoryRows.value = response.data?.history || [];
+    } catch (error) {
+      if (requestSequence === loanRequestSequence) {
+        console.error('Loan report:', error);
+        ElMessage.error('Unable to load loan report.');
+      }
+    } finally {
+      if (requestSequence === loanRequestSequence) loanReportLoading.value = false;
+    }
 });
 
 const weekLoading = ref(false);
@@ -1644,9 +1717,9 @@ const adminExpenseSaving = ref(false);
 const adminExpenseTypesLoading = ref(false);
 const adminExpenseTypes = ref<any[]>([]);
 const adminExpenseForm = ref({
-                              expensetypeid: null as number | null,
-                              amount: '',
-                              notes: ''
+                                expensetypeid: null as number | null,
+                                amount: '',
+                                notes: ''
 });
 
 const adminCreditDialogVisible = ref(false);
@@ -1654,682 +1727,653 @@ const adminCreditSaving = ref(false);
 const adminCreditTypesLoading = ref(false);
 const adminCreditTypes = ref<any[]>([]);
 const adminCreditForm = ref({
-                              credittypeid: null as number | null,
-                              amount: '',
-                              notes: ''
+                                credittypeid: null as number | null,
+                                amount: '',
+                                notes: ''
 });
 
 const isAdminUser = computed(() =>
-                              String(userStore.roleName || '').trim().toLowerCase() === 'admin'
+                                String(userStore.roleName || '').trim().toLowerCase() === 'admin'
 );
 
 const expenseCategories = computed(() =>
-                          Array.isArray(report.value?.expenses?.categories)
-                            ? report.value.expenses.categories
-                            : []
+                            Array.isArray(report.value?.expenses?.categories)
+                              ? report.value.expenses.categories
+                              : []
 );
 
 const expenseTotal = computed(() => Number(report.value?.expenses?.total || 0));
 
 const adminReadingCredits = computed(() =>
-                          Array.isArray(report.value?.readingSessionCash?.credits)
-                            ? report.value.readingSessionCash.credits
-                            : []
+                            Array.isArray(report.value?.readingSessionCash?.credits)
+                              ? report.value.readingSessionCash.credits
+                              : []
 );
 
 const adminReadingExpenses = computed(() =>
-                          Array.isArray(report.value?.readingSessionCash?.expenses)
-                            ? report.value.readingSessionCash.expenses
-                            : []
+                            Array.isArray(report.value?.readingSessionCash?.expenses)
+                              ? report.value.readingSessionCash.expenses
+                              : []
 );
 
 const adminCreditTotal = computed(() => Number(report.value?.readingSessionCash?.creditTotal || 0));
 const adminExpenseTotal = computed(() => Number(report.value?.readingSessionCash?.expenseTotal || 0));
 
 const cashFlowSessionRows = computed(() => {
-                          const employeeRows = Array.isArray(report.value?.cashFlow?.sessionBreakdown)
-                            ? report.value.cashFlow.sessionBreakdown
-                            : [];
-                          const admin = report.value?.cashFlow?.adminBreakdown;
+                            const employeeRows = Array.isArray(report.value?.cashFlow?.sessionBreakdown)
+                              ? report.value.cashFlow.sessionBreakdown
+                              : [];
+                            const admin = report.value?.cashFlow?.adminBreakdown;
 
-                          return admin ? [...employeeRows, admin] : employeeRows;
+                            return admin ? [...employeeRows, admin] : employeeRows;
 });
 
 const employeeCashFlowRows = computed(() =>
-                          Array.isArray(report.value?.cashFlow?.sessionBreakdown)
-                            ? report.value.cashFlow.sessionBreakdown
-                            : []
+                            Array.isArray(report.value?.cashFlow?.sessionBreakdown)
+                              ? report.value.cashFlow.sessionBreakdown
+                              : []
 );
 
 const selectedExpenseTypeDetails = computed(() => {
-                          const category = selectedExpenseCategory.value;
-                          const sessions = report.value?.expenses?.employeeSessions ?? [];
+                            const category = selectedExpenseCategory.value;
+                            const sessions = report.value?.expenses?.employeeSessions ?? [];
 
-                          const employeeDetails = sessions.flatMap((session: any) =>
-                            (Array.isArray(session.expenseDetails) ? session.expenseDetails : [])
-                              .filter((item: any) => String(item.category || '') === category)
-                              .map((item: any) => ({
-                                ...item,
-                                employeeName: session.name || 'Employee',
-                                sessionId: session.id
-                              }))
-                          );
+                            const employeeDetails = sessions.flatMap((session: any) =>
+                              (Array.isArray(session.expenseDetails) ? session.expenseDetails : [])
+                                .filter((item: any) => String(item.category || '') === category)
+                                .map((item: any) => ({
+                                  ...item,
+                                  employeeName: session.name || 'Employee',
+                                  sessionId: session.id
+                                }))
+                            );
 
-                          const adminDetails = (report.value?.expenses?.adminDetails ?? [])
-                            .filter((item: any) => String(item.category || 'Expense') === category);
+                            const adminDetails = (report.value?.expenses?.adminDetails ?? [])
+                              .filter((item: any) => String(item.category || 'Expense') === category);
 
-                          return [...employeeDetails, ...adminDetails];
+                            return [...employeeDetails, ...adminDetails];
 });
 const selectedExpenseTypeTotal = computed(() =>
-                          selectedExpenseTypeDetails.value.reduce(
-                            (sum: number, item: any) => sum + Number(item.amount || 0),
-                            0
-                          )
+                            selectedExpenseTypeDetails.value.reduce(
+                              (sum: number, item: any) => sum + Number(item.amount || 0),
+                              0
+                            )
 );
 
 const expenseTypeDialogTitle = computed(() =>
-                          selectedExpenseCategory.value
-                            ? `${selectedExpenseCategory.value} Details`
-                            : 'Expense Details'
+                            selectedExpenseCategory.value
+                              ? `${selectedExpenseCategory.value} Details`
+                              : 'Expense Details'
 );
 
 function validExpenseAmount(value: any) {
-                          return /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) &&
-                            Number(value) > 0;
+                            return /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) &&
+                              Number(value) > 0;
 }
 
 async function loadAdminExpenseTypes() {
-                          if (!userStore.locationId || adminExpenseTypesLoading.value) return;
+                            if (!userStore.locationId || adminExpenseTypesLoading.value) return;
 
-                          try {
-                            adminExpenseTypesLoading.value = true;
-                            const response = await getExpenseTypes(Number(userStore.locationId));
-                            adminExpenseTypes.value = response?.data || response || [];
-                          } catch (error: any) {
-                            ElMessage.error(
-                              error?.response?.data?.message ||
-                              error?.message ||
-                              'Unable to load expense types.'
-                            );
-                          } finally {
-                            adminExpenseTypesLoading.value = false;
-                          }
+                            try {
+                              adminExpenseTypesLoading.value = true;
+                              const response = await getExpenseTypes(Number(userStore.locationId));
+                              adminExpenseTypes.value = response?.data || response || [];
+                            } catch (error: any) {
+                              ElMessage.error(
+                                error?.response?.data?.message ||
+                                error?.message ||
+                                'Unable to load expense types.'
+                              );
+                            } finally {
+                              adminExpenseTypesLoading.value = false;
+                            }
 }
 
 async function loadAdminCreditTypes() {
-                          if (!userStore.locationId || adminCreditTypesLoading.value) return;
+                            if (!userStore.locationId || adminCreditTypesLoading.value) return;
 
-                          try {
-                            adminCreditTypesLoading.value = true;
-                            const response = await request({
-                              url: '/employeefinance/credit-types',
-                              method: 'get',
-                              params: { locationid: Number(userStore.locationId) }
-                            });
-                            adminCreditTypes.value = response?.data || response || [];
-                          } catch (error: any) {
-                            ElMessage.error(
-                              error?.response?.data?.message ||
-                              error?.message ||
-                              'Unable to load credit types.'
-                            );
-                          } finally {
-                            adminCreditTypesLoading.value = false;
-                          }
+                            try {
+                              adminCreditTypesLoading.value = true;
+                              const response = await request({
+                                url: '/employeefinance/credit-types',
+                                method: 'get',
+                                params: { locationid: Number(userStore.locationId) }
+                              });
+                              adminCreditTypes.value = response?.data || response || [];
+                            } catch (error: any) {
+                              ElMessage.error(
+                                error?.response?.data?.message ||
+                                error?.message ||
+                                'Unable to load credit types.'
+                              );
+                            } finally {
+                              adminCreditTypesLoading.value = false;
+                            }
 }
 
 async function openAdminCreditDialog() {
-                          if (!isAdminUser.value || !selectedSessionId.value) return;
+                            if (!isAdminUser.value || !selectedSessionId.value) return;
 
-                          adminCreditForm.value = {
-                            credittypeid: null,
-                            amount: '',
-                            notes: ''
-                          };
+                            adminCreditForm.value = {
+                              credittypeid: null,
+                              amount: '',
+                              notes: ''
+                            };
 
-                          adminCreditDialogVisible.value = true;
-                          await loadAdminCreditTypes();
+                            adminCreditDialogVisible.value = true;
+                            await loadAdminCreditTypes();
 }
 
 async function saveAdminCredit() {
-                          if (!isAdminUser.value || !selectedSessionId.value) return;
+                            if (!isAdminUser.value || !selectedSessionId.value) return;
 
-                          if (!adminCreditForm.value.credittypeid) {
-                            return ElMessage.warning('Select a credit type.');
-                          }
+                            if (!adminCreditForm.value.credittypeid) {
+                              return ElMessage.warning('Select a credit type.');
+                            }
 
-                          if (!validExpenseAmount(adminCreditForm.value.amount)) {
-                            return ElMessage.warning('Enter a positive amount with up to two decimals.');
-                          }
+                            if (!validExpenseAmount(adminCreditForm.value.amount)) {
+                              return ElMessage.warning('Enter a positive amount with up to two decimals.');
+                            }
 
-                          try {
-                            adminCreditSaving.value = true;
+                            try {
+                              adminCreditSaving.value = true;
 
-                            await request({
-                              url: '/employeefinance/admin/reading-session-credit',
-                              method: 'post',
-                              data: {
-                                locationid: Number(userStore.locationId),
-                                readingsessionid: Number(selectedSessionId.value),
-                                credittypeid: Number(adminCreditForm.value.credittypeid),
-                                amount: adminCreditForm.value.amount,
-                                notes: adminCreditForm.value.notes
-                              }
-                            });
+                              await request({
+                                url: '/employeefinance/admin/reading-session-credit',
+                                method: 'post',
+                                data: {
+                                  locationid: Number(userStore.locationId),
+                                  readingsessionid: Number(selectedSessionId.value),
+                                  credittypeid: Number(adminCreditForm.value.credittypeid),
+                                  amount: adminCreditForm.value.amount,
+                                  notes: adminCreditForm.value.notes
+                                }
+                              });
 
-                            ElMessage.success('Admin credit added.');
-                            adminCreditDialogVisible.value = false;
-                            await loadDayReport();
-                          } catch (error: any) {
-                            ElMessage.error(
-                              error?.response?.data?.message ||
-                              error?.message ||
-                              'Unable to add Admin credit.'
-                            );
-                          } finally {
-                            adminCreditSaving.value = false;
-                          }
+                              ElMessage.success('Admin credit added.');
+                              adminCreditDialogVisible.value = false;
+                              await loadDayReport();
+                            } catch (error: any) {
+                              ElMessage.error(
+                                error?.response?.data?.message ||
+                                error?.message ||
+                                'Unable to add Admin credit.'
+                              );
+                            } finally {
+                              adminCreditSaving.value = false;
+                            }
 }
 
 async function openAdminExpenseDialog() {
-                          if (!isAdminUser.value || !selectedSessionId.value) return;
+                            if (!isAdminUser.value || !selectedSessionId.value) return;
 
-                          adminExpenseForm.value = {
-                            expensetypeid: null,
-                            amount: '',
-                            notes: ''
-                          };
+                            adminExpenseForm.value = {
+                              expensetypeid: null,
+                              amount: '',
+                              notes: ''
+                            };
 
-                          adminExpenseDialogVisible.value = true;
-                          await loadAdminExpenseTypes();
+                            adminExpenseDialogVisible.value = true;
+                            await loadAdminExpenseTypes();
 }
 
 async function saveAdminExpense() {
-                          if (!isAdminUser.value || !selectedSessionId.value) return;
+                            if (!isAdminUser.value || !selectedSessionId.value) return;
 
-                          if (!adminExpenseForm.value.expensetypeid) {
-                            return ElMessage.warning('Select an expense type.');
-                          }
+                            if (!adminExpenseForm.value.expensetypeid) {
+                              return ElMessage.warning('Select an expense type.');
+                            }
 
-                          if (!validExpenseAmount(adminExpenseForm.value.amount)) {
-                            return ElMessage.warning('Enter a positive amount with up to two decimals.');
-                          }
+                            if (!validExpenseAmount(adminExpenseForm.value.amount)) {
+                              return ElMessage.warning('Enter a positive amount with up to two decimals.');
+                            }
 
-                          try {
-                            adminExpenseSaving.value = true;
+                            try {
+                              adminExpenseSaving.value = true;
 
-                            await request({
-                              url: '/employeefinance/admin/reading-session-expense',
-                              method: 'post',
-                              data: {
-                                locationid: Number(userStore.locationId),
-                                readingsessionid: Number(selectedSessionId.value),
-                                expensetypeid: Number(adminExpenseForm.value.expensetypeid),
-                                amount: adminExpenseForm.value.amount,
-                                notes: adminExpenseForm.value.notes
-                              }
-                            });
+                              await request({
+                                url: '/employeefinance/admin/reading-session-expense',
+                                method: 'post',
+                                data: {
+                                  locationid: Number(userStore.locationId),
+                                  readingsessionid: Number(selectedSessionId.value),
+                                  expensetypeid: Number(adminExpenseForm.value.expensetypeid),
+                                  amount: adminExpenseForm.value.amount,
+                                  notes: adminExpenseForm.value.notes
+                                }
+                              });
 
-                            ElMessage.success('Admin expense added.');
-                            adminExpenseDialogVisible.value = false;
-                            await loadDayReport();
-                          } catch (error: any) {
-                            ElMessage.error(
-                              error?.response?.data?.message ||
-                              error?.message ||
-                              'Unable to add Admin expense.'
-                            );
-                          } finally {
-                            adminExpenseSaving.value = false;
-                          }
+                              ElMessage.success('Admin expense added.');
+                              adminExpenseDialogVisible.value = false;
+                              await loadDayReport();
+                            } catch (error: any) {
+                              ElMessage.error(
+                                error?.response?.data?.message ||
+                                error?.message ||
+                                'Unable to add Admin expense.'
+                              );
+                            } finally {
+                              adminExpenseSaving.value = false;
+                            }
 }
 
 function openExpenseTypeDetails(item: any) {
-                          selectedExpenseCategory.value = String(item?.category || '');
-                          expenseTypeDialogVisible.value = true;
+                            selectedExpenseCategory.value = String(item?.category || '');
+                            expenseTypeDialogVisible.value = true;
 }
 
 const selectedShiftExpenses = computed(() =>
-                              Array.isArray(selectedExpenseShift.value?.expenseDetails)
-                                ? selectedExpenseShift.value.expenseDetails
-                                : []
+                                Array.isArray(selectedExpenseShift.value?.expenseDetails)
+                                  ? selectedExpenseShift.value.expenseDetails
+                                  : []
 );
 
 const selectedShiftExpenseTotal = computed(() =>
-                              selectedShiftExpenses.value.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
+                                selectedShiftExpenses.value.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
 );
 
 const expenseDialogTitle = computed(() => {
-                              const shift = selectedExpenseShift.value;
-                              if (!shift) return 'Employee Session Expenses';
-                              return `${shift.name} · Session #${shift.sessionNumber ?? shift.id} Expenses`;
+                                const shift = selectedExpenseShift.value;
+                                if (!shift) return 'Employee Session Expenses';
+                                return `${shift.name} · Session #${shift.sessionNumber ?? shift.id} Expenses`;
 });
 
 function openCashFlowShiftReport(row: any) {
-                              if (row?.isAdmin) return;
-                              const sessionId = Number(row?.id);
-                              if (!Number.isSafeInteger(sessionId) || sessionId <= 0) return;
-                              selectedEmployeeShiftSessionId.value = sessionId;
-                              employeeShiftDialogVisible.value = true;
+                                if (row?.isAdmin) return;
+                                const sessionId = Number(row?.id);
+                                if (!Number.isSafeInteger(sessionId) || sessionId <= 0) return;
+                                selectedEmployeeShiftSessionId.value = sessionId;
+                                employeeShiftDialogVisible.value = true;
 }
 
 function openShiftExpenses(shift: any) {
-                              selectedExpenseShift.value = shift;
-                              expenseDialogVisible.value = true;
+                                selectedExpenseShift.value = shift;
+                                expenseDialogVisible.value = true;
 }
 
 function machineOutVariance(row: any) {
-                              return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
+                                return Number(row?.dailyout || 0) - Number(row?.ticketout || 0);
 }
 
 function machineOutCheckType(row: any) {
-                              const variance = machineOutVariance(row);
-                              if (Math.abs(variance) < 0.005) return 'info';
-                              return variance > 0 ? 'success' : 'danger';
+                                const variance = machineOutVariance(row);
+                                if (Math.abs(variance) < 0.005) return 'info';
+                                return variance > 0 ? 'success' : 'danger';
 }
 
 function machineOutCheckLabel(row: any) {
-                              const variance = machineOutVariance(row);
-                              if (Math.abs(variance) < 0.005) return 'Even';
-                              return variance > 0 ? 'Short Paid' : 'Over Paid';
+                                const variance = machineOutVariance(row);
+                                if (Math.abs(variance) < 0.005) return 'Even';
+                                return variance > 0 ? 'Short Paid' : 'Over Paid';
 }
 
 function machineLifePayPercent(row: any) {
-                              const currentIn = Number(row?.currentin || 0);
-                              const currentOut = Number(row?.currentout || 0);
-                              if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
-                              return `${((currentOut / currentIn) * 100).toFixed(2)}%`;
+                                const currentIn = Number(row?.currentin || 0);
+                                const currentOut = Number(row?.currentout || 0);
+                                if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
+                                return `${((currentOut / currentIn) * 100).toFixed(2)}%`;
 }
 
 function machineLifeHoldPercent(row: any) {
-                              const currentIn = Number(row?.currentin || 0);
-                              const currentOut = Number(row?.currentout || 0);
-                              if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
-                              return `${(100 - ((currentOut / currentIn) * 100)).toFixed(2)}%`;
+                                const currentIn = Number(row?.currentin || 0);
+                                const currentOut = Number(row?.currentout || 0);
+                                if (!Number.isFinite(currentIn) || currentIn <= 0 || !Number.isFinite(currentOut)) return '0.00%';
+                                return `${(100 - ((currentOut / currentIn) * 100)).toFixed(2)}%`;
 }
 
 function machineReadingSummaryMethod({ columns, data }: any) {
+                                return columns.map((column: any, index: number) => {
+                                  if (index === 0) return 'Total';
+
+                                  switch (column.property) {
+                                    case 'dailyin':
+                                      return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyin || 0), 0));
+                                    case 'dailyout':
+                                      return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyout || 0), 0));
+                                    case 'ticketout':
+                                      return number(data.reduce((sum: number, row: any) => sum + Number(row.ticketout || 0), 0));
+                                    case 'difference':
+                                      return money(data.reduce((sum: number, row: any) => sum + Number(row.difference || 0), 0));
+                                    case 'points':
+                                      return money(data.reduce((sum: number, row: any) => sum + Number(row.points || 0), 0));
+                                    case 'net':
+                                      return money(data.reduce((sum: number, row: any) => sum + Number(row.net || 0), 0));
+                                    default:
+                                      return '';
+                                  }
+                                });
+}
+
+function readingSummaryMethod({ columns }: any) {
+                              const totals = report.value?.reading?.totals || {};
+
                               return columns.map((column: any, index: number) => {
                                 if (index === 0) return 'Total';
 
                                 switch (column.property) {
-                                  case 'dailyin':
-                                    return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyin || 0), 0));
-                                  case 'dailyout':
-                                    return number(data.reduce((sum: number, row: any) => sum + Number(row.dailyout || 0), 0));
-                                  case 'ticketout':
-                                    return number(data.reduce((sum: number, row: any) => sum + Number(row.ticketout || 0), 0));
+                                  case 'machineCount':
+                                    return number((report.value?.reading?.byMachineType || []).reduce(
+                                      (sum: number, row: any) => sum + Number(row.machineCount || 0), 0
+                                    ));
+                                  case 'in':
+                                    return number(totals.totalIn);
+                                  case 'out':
+                                    return number(totals.totalOut);
                                   case 'difference':
-                                    return money(data.reduce((sum: number, row: any) => sum + Number(row.difference || 0), 0));
+                                    return money(totals.grossProfit);
                                   case 'points':
-                                    return money(data.reduce((sum: number, row: any) => sum + Number(row.points || 0), 0));
+                                    return money(totals.points);
                                   case 'net':
-                                    return money(data.reduce((sum: number, row: any) => sum + Number(row.net || 0), 0));
+                                    return money(totals.net);
                                   default:
                                     return '';
                                 }
                               });
 }
 
-function readingSummaryMethod({ columns }: any) {
-                            const totals = report.value?.reading?.totals || {};
-
-                            return columns.map((column: any, index: number) => {
-                              if (index === 0) return 'Total';
-
-                              switch (column.property) {
-                                case 'machineCount':
-                                  return number((report.value?.reading?.byMachineType || []).reduce(
-                                    (sum: number, row: any) => sum + Number(row.machineCount || 0), 0
-                                  ));
-                                case 'in':
-                                  return number(totals.totalIn);
-                                case 'out':
-                                  return number(totals.totalOut);
-                                case 'difference':
-                                  return money(totals.grossProfit);
-                                case 'points':
-                                  return money(totals.points);
-                                case 'net':
-                                  return money(totals.net);
-                                default:
-                                  return '';
-                              }
-                            });
-}
-
 const weekSummaryTotals = computed(() => {
-                              const totals = weekSummaryRows.value.reduce((acc: any, row: any) => {
-                                acc.netProfit += Number(row.netProfit || 0);
-                                acc.grossProfit += Number(row.grossProfit || 0);
-                                acc.shortOver += Number(row.shortOver || 0);
-                                acc.customers += Number(row.customers || 0);
-                                acc.totalIn += Number(row.totalIn || 0);
-                                acc.totalOut += Number(row.totalOut || 0);
-                                acc.match += Number(row.match || 0);
-                                return acc;
-                              }, { netProfit: 0, grossProfit: 0, shortOver: 0, customers: 0, totalIn: 0, totalOut: 0, match: 0 });
-                              totals.matchPercentage = totals.totalIn ? (totals.match / totals.totalIn) * 100 : 0;
-                              totals.payoutPercentage = totals.totalIn ? (totals.totalOut / totals.totalIn) * 100 : 0;
-                              totals.holdPercentage = totals.totalIn ? (totals.grossProfit / totals.totalIn) * 100 : 0;
-                              return totals;
+                                const totals = weekSummaryRows.value.reduce((acc: any, row: any) => {
+                                  acc.netProfit += Number(row.netProfit || 0);
+                                  acc.grossProfit += Number(row.grossProfit || 0);
+                                  acc.shortOver += Number(row.shortOver || 0);
+                                  acc.customers += Number(row.customers || 0);
+                                  acc.totalIn += Number(row.totalIn || 0);
+                                  acc.totalOut += Number(row.totalOut || 0);
+                                  acc.match += Number(row.match || 0);
+                                  return acc;
+                                }, { netProfit: 0, grossProfit: 0, shortOver: 0, customers: 0, totalIn: 0, totalOut: 0, match: 0 });
+                                totals.matchPercentage = totals.totalIn ? (totals.match / totals.totalIn) * 100 : 0;
+                                totals.payoutPercentage = totals.totalIn ? (totals.totalOut / totals.totalIn) * 100 : 0;
+                                totals.holdPercentage = totals.totalIn ? (totals.grossProfit / totals.totalIn) * 100 : 0;
+                                return totals;
 });
 
 const availableDays = computed(() =>
-                              weekDays.value.filter(item => Array.isArray(item.sessions) && item.sessions.length > 0)
+                                weekDays.value.filter(item => Array.isArray(item.sessions) && item.sessions.length > 0)
 );
 
 const selectedDay = computed(() =>
-                              weekDays.value.find(item => item.date === selectedDate.value) || null
+                                weekDays.value.find(item => item.date === selectedDate.value) || null
 );
 
 const selectedSession = computed(() =>
-                              selectedDay.value?.sessions?.find((item: any) => Number(item.id) === Number(selectedSessionId.value)) || null
+                                selectedDay.value?.sessions?.find((item: any) => Number(item.id) === Number(selectedSessionId.value)) || null
 );
 
 const weekModeLabel = computed(() => {
-                              if (weekMode.value === 'last') return 'Last Week';
-                              if (weekMode.value === 'custom') return 'Custom Week';
-                              return 'Current Week';
+                                if (weekMode.value === 'last') return 'Last Week';
+                                if (weekMode.value === 'custom') return 'Custom Week';
+                                return 'Current Week';
 });
 
 const formattedWeekRange = computed(() => {
-                              if (!weekStart.value || !weekEnd.value) return '';
-                              return `${formatDateOnly(weekStart.value)} - ${formatDateOnly(weekEnd.value)}`;
+                                if (!weekStart.value || !weekEnd.value) return '';
+                                return `${formatDateOnly(weekStart.value)} - ${formatDateOnly(weekEnd.value)}`;
 });
 
 const canGoNextWeek = computed(() => {
-                              if (!weekStart.value) return false;
+                                if (!weekStart.value) return false;
 
-                              const selectedStart = fromDateKey(weekStart.value);
-                              const currentMonday = mondayOf(new Date());
+                                const selectedStart = fromDateKey(weekStart.value);
+                                const currentMonday = mondayOf(new Date());
 
-                              if (Number.isNaN(selectedStart.getTime())) {
-                                return false;
-                              }
+                                if (Number.isNaN(selectedStart.getTime())) {
+                                  return false;
+                                }
 
-                              return selectedStart.getTime() < currentMonday.getTime();
+                                return selectedStart.getTime() < currentMonday.getTime();
 });
 
 function pad(value: number) {
-                              return String(value).padStart(2, '0');
+                                return String(value).padStart(2, '0');
 }
 
 function dateKey(date: Date) {
-                              return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+                                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 function normalizeDateKey(value: any) {
-                              const text = String(value || '').trim();
+                                const text = String(value || '').trim();
 
-                              const exact = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-                              if (exact) {
-                                return `${exact[1]}-${exact[2]}-${exact[3]}`;
-                              }
+                                const exact = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                                if (exact) {
+                                  return `${exact[1]}-${exact[2]}-${exact[3]}`;
+                                }
 
-                              const parsed = new Date(text);
-                              if (Number.isNaN(parsed.getTime())) {
-                                return '';
-                              }
+                                const parsed = new Date(text);
+                                if (Number.isNaN(parsed.getTime())) {
+                                  return '';
+                                }
 
-                              return dateKey(parsed);
+                                return dateKey(parsed);
 }
 
 function fromDateKey(value: string) {
-                              const normalized = normalizeDateKey(value);
+                                const normalized = normalizeDateKey(value);
 
-                              if (!normalized) {
-                                return new Date(NaN);
-                              }
+                                if (!normalized) {
+                                  return new Date(NaN);
+                                }
 
-                              const [year, month, day] =
-                                normalized.split('-').map(Number);
+                                const [year, month, day] =
+                                  normalized.split('-').map(Number);
 
-                              return new Date(year, month - 1, day);
+                                return new Date(year, month - 1, day);
 }
 
 function mondayOf(date: Date) {
-                              const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                              const weekday = result.getDay();
-                              const delta = weekday === 0 ? -6 : 1 - weekday;
-                              result.setDate(result.getDate() + delta);
-                              return result;
+                                const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                                const weekday = result.getDay();
+                                const delta = weekday === 0 ? -6 : 1 - weekday;
+                                result.setDate(result.getDate() + delta);
+                                return result;
 }
 
 function plusDays(date: Date, days: number) {
-                              const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                              result.setDate(result.getDate() + days);
-                              return result;
+                                const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                                result.setDate(result.getDate() + days);
+                                return result;
 }
 
 function setStandardWeek(mode: 'current' | 'last') {
-                              const currentMonday = mondayOf(new Date());
-                              const start = mode === 'last' ? plusDays(currentMonday, -7) : currentMonday;
-                              weekStart.value = dateKey(start);
-                              weekEnd.value = dateKey(plusDays(start, 6));
+                                const currentMonday = mondayOf(new Date());
+                                const start = mode === 'last' ? plusDays(currentMonday, -7) : currentMonday;
+                                weekStart.value = dateKey(start);
+                                weekEnd.value = dateKey(plusDays(start, 6));
 }
 
 async function changeWeek(direction: -1 | 1) {
-                              if (!weekStart.value || weekLoading.value) {
-                                return;
-                              }
-
-                              const currentStart = fromDateKey(weekStart.value);
-
-                              if (Number.isNaN(currentStart.getTime())) {
-                                return;
-                              }
-
-                              const currentMonday = mondayOf(new Date());
-                              let targetStart = plusDays(currentStart, direction * 7);
-
-                              // Never allow week navigation beyond the current week.
-                              if (targetStart.getTime() > currentMonday.getTime()) {
-                                targetStart = currentMonday;
-                              }
-
-                              const targetEnd = plusDays(targetStart, 6);
-                              const targetStartKey = dateKey(targetStart);
-                              const targetEndKey = dateKey(targetEnd);
-                              const lastWeekStartKey = dateKey(plusDays(currentMonday, -7));
-                              const currentWeekStartKey = dateKey(currentMonday);
-
-                              weekStart.value = targetStartKey;
-                              weekEnd.value = targetEndKey;
-
-                              if (targetStartKey === currentWeekStartKey) {
-                                weekMode.value = 'current';
-                                customRange.value = [];
-                              } else if (targetStartKey === lastWeekStartKey) {
-                                weekMode.value = 'last';
-                                customRange.value = [];
-                              } else {
-                                weekMode.value = 'custom';
-                                customRange.value = [targetStartKey, targetEndKey];
-                              }
-
-                              draftWeekMode.value = weekMode.value;
-                              draftCustomRange.value = [...customRange.value];
-
-                              await loadWeek();
-}
-
-function openWeekFilter() {
-                              draftWeekMode.value = weekMode.value;
-                              draftCustomRange.value = [...customRange.value];
-
-                              if (
-                                draftWeekMode.value === 'custom' &&
-                                draftCustomRange.value.length !== 2 &&
-                                weekStart.value &&
-                                weekEnd.value
-                              ) {
-                                draftCustomRange.value = [
-                                  weekStart.value,
-                                  weekEnd.value
-                                ];
-                              }
-
-                              filterDrawerVisible.value = true;
-}
-
-function validateCustomWeek(value: string[]) {
-                              if (
-                                !Array.isArray(value) ||
-                                value.length !== 2
-                              ) {
-                                ElMessage.warning(
-                                  'Please select a Monday to Sunday date range.'
-                                );
-                                return false;
-                              }
-
-                              const start = fromDateKey(value[0]);
-                              const end = fromDateKey(value[1]);
-
-                              if (
-                                Number.isNaN(start.getTime()) ||
-                                Number.isNaN(end.getTime())
-                              ) {
-                                ElMessage.warning(
-                                  'Please select a valid custom week.'
-                                );
-                                return false;
-                              }
-
-                              const days = Math.round(
-                                (end.getTime() - start.getTime()) /
-                                  86400000
-                              );
-
-                              if (
-                                start.getDay() !== 1 ||
-                                end.getDay() !== 0 ||
-                                days !== 6
-                              ) {
-                                ElMessage.warning(
-                                  'Custom Week must start on Monday and end on Sunday.'
-                                );
-                                return false;
-                              }
-
-                              return true;
-}
-
-async function applyWeekFilter() {
-                              if (draftWeekMode.value === 'custom') {
-                                if (!validateCustomWeek(draftCustomRange.value)) {
+                                if (!weekStart.value || weekLoading.value) {
                                   return;
                                 }
 
-                                weekMode.value = 'custom';
-                                customRange.value = [
-                                  ...draftCustomRange.value
-                                ];
-                                weekStart.value =
-                                  draftCustomRange.value[0];
-                                weekEnd.value =
-                                  draftCustomRange.value[1];
-                              } else {
-                                weekMode.value =
-                                  draftWeekMode.value;
+                                const currentStart = fromDateKey(weekStart.value);
 
-                                customRange.value = [];
-                                setStandardWeek(
-                                  draftWeekMode.value
+                                if (Number.isNaN(currentStart.getTime())) {
+                                  return;
+                                }
+
+                                const currentMonday = mondayOf(new Date());
+                                let targetStart = plusDays(currentStart, direction * 7);
+
+                                // Never allow week navigation beyond the current week.
+                                if (targetStart.getTime() > currentMonday.getTime()) {
+                                  targetStart = currentMonday;
+                                }
+
+                                const targetEnd = plusDays(targetStart, 6);
+                                const targetStartKey = dateKey(targetStart);
+                                const targetEndKey = dateKey(targetEnd);
+                                const lastWeekStartKey = dateKey(plusDays(currentMonday, -7));
+                                const currentWeekStartKey = dateKey(currentMonday);
+
+                                weekStart.value = targetStartKey;
+                                weekEnd.value = targetEndKey;
+
+                                if (targetStartKey === currentWeekStartKey) {
+                                  weekMode.value = 'current';
+                                  customRange.value = [];
+                                } else if (targetStartKey === lastWeekStartKey) {
+                                  weekMode.value = 'last';
+                                  customRange.value = [];
+                                } else {
+                                  weekMode.value = 'custom';
+                                  customRange.value = [targetStartKey, targetEndKey];
+                                }
+
+                                draftWeekMode.value = weekMode.value;
+                                draftCustomRange.value = [...customRange.value];
+
+                                await loadWeek();
+}
+
+function openWeekFilter() {
+                                draftWeekMode.value = weekMode.value;
+                                draftCustomRange.value = [...customRange.value];
+
+                                if (
+                                  draftWeekMode.value === 'custom' &&
+                                  draftCustomRange.value.length !== 2 &&
+                                  weekStart.value &&
+                                  weekEnd.value
+                                ) {
+                                  draftCustomRange.value = [
+                                    weekStart.value,
+                                    weekEnd.value
+                                  ];
+                                }
+
+                                filterDrawerVisible.value = true;
+}
+
+function validateCustomWeek(value: string[]) {
+                                if (
+                                  !Array.isArray(value) ||
+                                  value.length !== 2
+                                ) {
+                                  ElMessage.warning(
+                                    'Please select a Monday to Sunday date range.'
+                                  );
+                                  return false;
+                                }
+
+                                const start = fromDateKey(value[0]);
+                                const end = fromDateKey(value[1]);
+
+                                if (
+                                  Number.isNaN(start.getTime()) ||
+                                  Number.isNaN(end.getTime())
+                                ) {
+                                  ElMessage.warning(
+                                    'Please select a valid custom week.'
+                                  );
+                                  return false;
+                                }
+
+                                const days = Math.round(
+                                  (end.getTime() - start.getTime()) /
+                                    86400000
                                 );
-                              }
 
-                              filterDrawerVisible.value = false;
+                                if (
+                                  start.getDay() !== 1 ||
+                                  end.getDay() !== 0 ||
+                                  days !== 6
+                                ) {
+                                  ElMessage.warning(
+                                    'Custom Week must start on Monday and end on Sunday.'
+                                  );
+                                  return false;
+                                }
 
-                              await loadWeek();
+                                return true;
+}
+
+async function applyWeekFilter() {
+                                if (draftWeekMode.value === 'custom') {
+                                  if (!validateCustomWeek(draftCustomRange.value)) {
+                                    return;
+                                  }
+
+                                  weekMode.value = 'custom';
+                                  customRange.value = [
+                                    ...draftCustomRange.value
+                                  ];
+                                  weekStart.value =
+                                    draftCustomRange.value[0];
+                                  weekEnd.value =
+                                    draftCustomRange.value[1];
+                                } else {
+                                  weekMode.value =
+                                    draftWeekMode.value;
+
+                                  customRange.value = [];
+                                  setStandardWeek(
+                                    draftWeekMode.value
+                                  );
+                                }
+
+                                filterDrawerVisible.value = false;
+
+                                await loadWeek();
 }
 
 async function clearWeekFilter() {
-                              weekMode.value = 'current';
-                              customRange.value = [];
-                              draftWeekMode.value = 'current';
-                              draftCustomRange.value = [];
+                                weekMode.value = 'current';
+                                customRange.value = [];
+                                draftWeekMode.value = 'current';
+                                draftCustomRange.value = [];
 
-                              setStandardWeek('current');
+                                setStandardWeek('current');
 
-                              filterDrawerVisible.value = false;
+                                filterDrawerVisible.value = false;
 
-                              await loadWeek();
+                                await loadWeek();
 }
 
 async function loadWeek() {
-                              if (!userStore.locationId || !weekStart.value || !weekEnd.value) return;
+                                if (!userStore.locationId || !weekStart.value || !weekEnd.value) return;
 
-                              weekLoading.value = true;
-                              report.value = null;
-                              summaryMode.value = false;
-                              weekSummaryRows.value = [];
-                              selectedDate.value = '';
-                              selectedSessionId.value = null;
+                                weekLoading.value = true;
+                                report.value = null;
+                                summaryMode.value = false;
+                                weekSummaryRows.value = [];
+                                selectedDate.value = '';
+                                selectedSessionId.value = null;
 
-                              try {
-                                const response = await getWeeklyReportWeek({
-                                  locationid: Number(userStore.locationId),
-                                  startdate: weekStart.value,
-                                  enddate: weekEnd.value
-                                });
+                                try {
+                                  const response = await getWeeklyReportWeek({
+                                    locationid: Number(userStore.locationId),
+                                    startdate: weekStart.value,
+                                    enddate: weekEnd.value
+                                  });
 
-                                weekDays.value = (response.data?.days || []).map((item: any) => ({
-                                  ...item,
-                                  date: normalizeDateKey(item.date)
-                                }));
+                                  weekDays.value = (response.data?.days || []).map((item: any) => ({
+                                    ...item,
+                                    date: normalizeDateKey(item.date)
+                                  }));
 
-                                const firstAvailable = weekDays.value.find(item => item.sessions?.length);
-                                if (firstAvailable) {
-                                  await selectDay(firstAvailable);
+                                  const firstAvailable = weekDays.value.find(item => item.sessions?.length);
+                                  if (firstAvailable) {
+                                    await selectDay(firstAvailable);
+                                  }
+                                } catch (error) {
+                                  console.error(error);
+                                  weekDays.value = [];
+                                } finally {
+                                  weekLoading.value = false;
                                 }
-                              } catch (error) {
-                                console.error(error);
-                                weekDays.value = [];
-                              } finally {
-                                weekLoading.value = false;
-                              }
 }
 
 function getWeeklyScrollContainer() {
-                              return document.querySelector('.app-main-scroll') as HTMLElement | null;
+                                return document.querySelector('.app-main-scroll') as HTMLElement | null;
 }
 
 function beforeWeeklyTabLeave() {
-                              const scrollContainer = getWeeklyScrollContainer();
-                              weeklyTabScrollTop = scrollContainer
-                                ? scrollContainer.scrollTop
-                                : window.scrollY;
-
-                              const tabContent = document.querySelector(
-                                '.weekly-report-page .weekly-report-tabs > .el-tabs__content'
-                              ) as HTMLElement | null;
-
-                              if (tabContent) {
-                                weeklyTabMinHeight.value = Math.max(
-                                  weeklyTabMinHeight.value,
-                                  Math.ceil(tabContent.getBoundingClientRect().height)
-                                );
-                              }
-
-                              return true;
-}
-
-watch(activeTab, async () => {
-                              await nextTick();
-
-                              requestAnimationFrame(() => {
                                 const scrollContainer = getWeeklyScrollContainer();
-
-                                if (scrollContainer) {
-                                  scrollContainer.scrollTop = weeklyTabScrollTop;
-                                } else {
-                                  window.scrollTo({
-                                    top: weeklyTabScrollTop,
-                                    behavior: 'auto'
-                                  });
-                                }
+                                weeklyTabScrollTop = scrollContainer
+                                  ? scrollContainer.scrollTop
+                                  : window.scrollY;
 
                                 const tabContent = document.querySelector(
                                   '.weekly-report-page .weekly-report-tabs > .el-tabs__content'
@@ -2338,220 +2382,249 @@ watch(activeTab, async () => {
                                 if (tabContent) {
                                   weeklyTabMinHeight.value = Math.max(
                                     weeklyTabMinHeight.value,
-                                    Math.ceil(tabContent.scrollHeight)
+                                    Math.ceil(tabContent.getBoundingClientRect().height)
                                   );
                                 }
-                              });
+
+                                return true;
+}
+
+watch(activeTab, async () => {
+                                await nextTick();
+
+                                requestAnimationFrame(() => {
+                                  const scrollContainer = getWeeklyScrollContainer();
+
+                                  if (scrollContainer) {
+                                    scrollContainer.scrollTop = weeklyTabScrollTop;
+                                  } else {
+                                    window.scrollTo({
+                                      top: weeklyTabScrollTop,
+                                      behavior: 'auto'
+                                    });
+                                  }
+
+                                  const tabContent = document.querySelector(
+                                    '.weekly-report-page .weekly-report-tabs > .el-tabs__content'
+                                  ) as HTMLElement | null;
+
+                                  if (tabContent) {
+                                    weeklyTabMinHeight.value = Math.max(
+                                      weeklyTabMinHeight.value,
+                                      Math.ceil(tabContent.scrollHeight)
+                                    );
+                                  }
+                                });
 });
 
 async function selectDay(item: any) {
-                              if (!item?.sessions?.length) return;
+                                if (!item?.sessions?.length) return;
 
-                              summaryMode.value = false;
-                              selectedDate.value = item.date;
-                              selectedSessionId.value = Number(item.sessions[0].id);
-                              activeTab.value = 'cashflow';
-                              await loadDayReport();
+                                summaryMode.value = false;
+                                selectedDate.value = item.date;
+                                selectedSessionId.value = Number(item.sessions[0].id);
+                                activeTab.value = 'cashflow';
+                                await loadDayReport();
 }
 
 async function selectWeekSummary() {
-                              if (!availableDays.value.length || weekSummaryLoading.value) return;
-                              summaryMode.value = true;
-                              selectedDate.value = '';
-                              selectedSessionId.value = null;
-                              report.value = null;
-                              await loadWeekSummary();
+                                if (!availableDays.value.length || weekSummaryLoading.value) return;
+                                summaryMode.value = true;
+                                selectedDate.value = '';
+                                selectedSessionId.value = null;
+                                report.value = null;
+                                await loadWeekSummary();
 }
 
 async function loadWeekSummary() {
-                              if (!userStore.locationId || !availableDays.value.length) return;
-                              weekSummaryLoading.value = true;
-                              weekSummaryRows.value = [];
-                              try {
-                                const rows = await Promise.all(availableDays.value.map(async (day: any) => {
-                                  const sessionReports = await Promise.all((day.sessions || []).map(async (session: any) => {
-                                    const response = await getWeeklyReportDay({
-                                      locationid: Number(userStore.locationId),
-                                      sessionid: Number(session.id)
-                                    });
-                                    return response.data || null;
+                                if (!userStore.locationId || !availableDays.value.length) return;
+                                weekSummaryLoading.value = true;
+                                weekSummaryRows.value = [];
+                                try {
+                                  const rows = await Promise.all(availableDays.value.map(async (day: any) => {
+                                    const sessionReports = await Promise.all((day.sessions || []).map(async (session: any) => {
+                                      const response = await getWeeklyReportDay({
+                                        locationid: Number(userStore.locationId),
+                                        sessionid: Number(session.id)
+                                      });
+                                      return response.data || null;
+                                    }));
+                                    const dayTotal = sessionReports.reduce((acc: any, item: any) => {
+                                      if (!item) return acc;
+                                      acc.netProfit += Number(item.cashFlow?.actualNetProfit ?? item.cashFlow?.netProfit ?? 0);
+                                      acc.grossProfit += Number(item.reading?.totals?.grossProfit || 0);
+                                      acc.shortOver += Number(item.cashFlow?.shortOver || 0);
+                                      acc.customers += Number(item.analytics?.dailyActivity?.customers || 0);
+                                      acc.totalIn += Number(item.reading?.totals?.totalIn || 0);
+                                      acc.totalOut += Number(item.reading?.totals?.totalOut || 0);
+                                      acc.match += Number(item.analytics?.dailyActivity?.matchPoints || 0);
+                                      const employees = Array.isArray(item.analytics?.reconciliation?.employees) ? item.analytics.reconciliation.employees : [];
+                                      for (const employee of employees) {
+                                        const name = String(employee?.name || '').trim();
+                                        if (name) acc.employeeNamesList.push(name);
+                                      }
+                                      return acc;
+                                    }, { date: day.date, netProfit: 0, grossProfit: 0, shortOver: 0, customers: 0, totalIn: 0, totalOut: 0, match: 0, employeeNamesList: [], zelle: 0, receiveBy: '' });
+                                    dayTotal.employeeNames = dayTotal.employeeNamesList.join(', ');
+                                    delete dayTotal.employeeNamesList;
+                                    dayTotal.matchPercentage = dayTotal.totalIn ? (dayTotal.match / dayTotal.totalIn) * 100 : 0;
+                                    dayTotal.payoutPercentage = dayTotal.totalIn ? (dayTotal.totalOut / dayTotal.totalIn) * 100 : 0;
+                                    dayTotal.holdPercentage = dayTotal.totalIn ? (dayTotal.grossProfit / dayTotal.totalIn) * 100 : 0;
+                                    return dayTotal;
                                   }));
-                                  const dayTotal = sessionReports.reduce((acc: any, item: any) => {
-                                    if (!item) return acc;
-                                    acc.netProfit += Number(item.cashFlow?.actualNetProfit ?? item.cashFlow?.netProfit ?? 0);
-                                    acc.grossProfit += Number(item.reading?.totals?.grossProfit || 0);
-                                    acc.shortOver += Number(item.cashFlow?.shortOver || 0);
-                                    acc.customers += Number(item.analytics?.dailyActivity?.customers || 0);
-                                    acc.totalIn += Number(item.reading?.totals?.totalIn || 0);
-                                    acc.totalOut += Number(item.reading?.totals?.totalOut || 0);
-                                    acc.match += Number(item.analytics?.dailyActivity?.matchPoints || 0);
-                                    const employees = Array.isArray(item.analytics?.reconciliation?.employees) ? item.analytics.reconciliation.employees : [];
-                                    for (const employee of employees) {
-                                      const name = String(employee?.name || '').trim();
-                                      if (name) acc.employeeNamesList.push(name);
-                                    }
-                                    return acc;
-                                  }, { date: day.date, netProfit: 0, grossProfit: 0, shortOver: 0, customers: 0, totalIn: 0, totalOut: 0, match: 0, employeeNamesList: [], zelle: 0, receiveBy: '' });
-                                  dayTotal.employeeNames = dayTotal.employeeNamesList.join(', ');
-                                  delete dayTotal.employeeNamesList;
-                                  dayTotal.matchPercentage = dayTotal.totalIn ? (dayTotal.match / dayTotal.totalIn) * 100 : 0;
-                                  dayTotal.payoutPercentage = dayTotal.totalIn ? (dayTotal.totalOut / dayTotal.totalIn) * 100 : 0;
-                                  dayTotal.holdPercentage = dayTotal.totalIn ? (dayTotal.grossProfit / dayTotal.totalIn) * 100 : 0;
-                                  return dayTotal;
-                                }));
-                                weekSummaryRows.value = rows;
-                              } catch (error: any) {
-                                console.error(error);
-                                ElMessage.error(error?.response?.data?.message || error?.message || 'Unable to load weekly summary.');
-                              } finally {
-                                weekSummaryLoading.value = false;
-                              }
+                                  weekSummaryRows.value = rows;
+                                } catch (error: any) {
+                                  console.error(error);
+                                  ElMessage.error(error?.response?.data?.message || error?.message || 'Unable to load weekly summary.');
+                                } finally {
+                                  weekSummaryLoading.value = false;
+                                }
 }
 
 function weeklySummaryMethod({ columns }: any) {
-                              const totals: any = weekSummaryTotals.value;
-                              const values = ['Week Total', number(totals.customers), money(totals.totalIn), money(totals.totalOut), money(totals.match), percentage(totals.matchPercentage), percentage(totals.payoutPercentage), percentage(totals.holdPercentage), money(totals.grossProfit), signedMoney(totals.netProfit), signedMoney(totals.shortOver)];
-                              return columns.map((_: any, index: number) => values[index] ?? '');
+                                const totals: any = weekSummaryTotals.value;
+                                const values = ['Week Total', number(totals.customers), money(totals.totalIn), money(totals.totalOut), money(totals.match), percentage(totals.matchPercentage), percentage(totals.payoutPercentage), percentage(totals.holdPercentage), money(totals.grossProfit), signedMoney(totals.netProfit), signedMoney(totals.shortOver)];
+                                return columns.map((_: any, index: number) => values[index] ?? '');
 }
 
 function weeklyShortOverSummaryMethod({ columns }: any) {
-                              const values = ['Week Total', signedMoney(weekSummaryTotals.value.shortOver), '', money(0), ''];
-                              return columns.map((_: any, index: number) => values[index] ?? '');
+                                const values = ['Week Total', signedMoney(weekSummaryTotals.value.shortOver), '', money(0), ''];
+                                return columns.map((_: any, index: number) => values[index] ?? '');
 }
 
 async function loadDayReport() {
-                              if (!userStore.locationId || !selectedSessionId.value) return;
+                                if (!userStore.locationId || !selectedSessionId.value) return;
 
-                              analyticsBreakdownVisible.value = false;
-                              sessionCashFlowActiveNames.value = [];
-                              dayLoading.value = true;
-                              report.value = null;
+                                analyticsBreakdownVisible.value = false;
+                                sessionCashFlowActiveNames.value = [];
+                                dayLoading.value = true;
+                                report.value = null;
 
-                              try {
-                                const response = await getWeeklyReportDay({
-                                  locationid: Number(userStore.locationId),
-                                  sessionid: Number(selectedSessionId.value)
-                                });
-                                report.value = response.data || null;
-                              } catch (error) {
-                                console.error(error);
-                              } finally {
-                                dayLoading.value = false;
-                              }
+                                try {
+                                  const response = await getWeeklyReportDay({
+                                    locationid: Number(userStore.locationId),
+                                    sessionid: Number(selectedSessionId.value)
+                                  });
+                                  report.value = response.data || null;
+                                } catch (error) {
+                                  console.error(error);
+                                } finally {
+                                  dayLoading.value = false;
+                                }
 }
 
 function money(value: any) {
-                              const amount = Number(value || 0);
-                              return amount.toLocaleString('en-US', {
-                                style: 'currency',
-                                currency: 'USD',
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              });
+                                const amount = Number(value || 0);
+                                return amount.toLocaleString('en-US', {
+                                  style: 'currency',
+                                  currency: 'USD',
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                });
 }
 
 function signedMoney(value: any) {
-                              const amount = Number(value || 0);
-                              const formatted = money(Math.abs(amount));
-                              if (amount > 0) return `+${formatted}`;
-                              if (amount < 0) return `-${formatted}`;
-                              return formatted;
+                                const amount = Number(value || 0);
+                                const formatted = money(Math.abs(amount));
+                                if (amount > 0) return `+${formatted}`;
+                                if (amount < 0) return `-${formatted}`;
+                                return formatted;
 }
 
 function percentage(value: any) {
-                              const amount = Number(value || 0);
-                              return `${amount.toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}%`;
+                                const amount = Number(value || 0);
+                                return `${amount.toLocaleString('en-US', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })}%`;
 }
 
 function number(value: any) {
-                              return Number(value || 0).toLocaleString('en-US', {
-                                maximumFractionDigits: 2
-                              });
+                                return Number(value || 0).toLocaleString('en-US', {
+                                  maximumFractionDigits: 2
+                                });
 }
 
 function shiftPercent(value: any, total: any) {
-                        const amount = Number(value || 0);
-                        const totalAmount = Number(total || 0);
+                          const amount = Number(value || 0);
+                          const totalAmount = Number(total || 0);
 
-                        if (!totalAmount) return 0;
+                          if (!totalAmount) return 0;
 
-                        return Math.round((amount / totalAmount) * 100);
+                          return Math.round((amount / totalAmount) * 100);
 }
 
 function timeLabel(value: any) {
-                        const text = String(value || '').slice(0, 5);
-                        const [hourText, minute = '00'] = text.split(':');
-                        const hour = Number(hourText);
+                          const text = String(value || '').slice(0, 5);
+                          const [hourText, minute = '00'] = text.split(':');
+                          const hour = Number(hourText);
 
-                        if (!Number.isFinite(hour)) return text || '—';
+                          if (!Number.isFinite(hour)) return text || '—';
 
-                        const suffix = hour >= 12 ? 'PM' : 'AM';
-                        const displayHour = hour % 12 || 12;
+                          const suffix = hour >= 12 ? 'PM' : 'AM';
+                          const displayHour = hour % 12 || 12;
 
-                        return `${displayHour}:${minute} ${suffix}`;
+                          return `${displayHour}:${minute} ${suffix}`;
 }
 
 function amountClass(value: any) {
-                              const amount = Number(value || 0);
-                              if (amount < 0) return 'is-negative';
-                              if (amount > 0) return 'is-positive';
-                              return '';
+                                const amount = Number(value || 0);
+                                if (amount < 0) return 'is-negative';
+                                if (amount > 0) return 'is-positive';
+                                return '';
 }
 
 function formatDateOnly(value: string) {
-                              if (!value) return '';
-                              const date = fromDateKey(value);
-                              return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}/${date.getFullYear()}`;
+                                if (!value) return '';
+                                const date = fromDateKey(value);
+                                return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}/${date.getFullYear()}`;
 }
 
 function shortDate(value: string) {
-                              if (!value) return '';
-                              const date = fromDateKey(value);
-                              return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
+                                if (!value) return '';
+                                const date = fromDateKey(value);
+                                return `${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
 }
 
 function dayName(value: string) {
-                              if (!value) return '';
-                              return fromDateKey(value).toLocaleDateString('en-US', { weekday: 'short' });
+                                if (!value) return '';
+                                return fromDateKey(value).toLocaleDateString('en-US', { weekday: 'short' });
 }
 
 function longDate(value: string) {
-                              if (!value) return '';
-                              return fromDateKey(value).toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                month: 'long',
-                                day: 'numeric',
-                                year: 'numeric'
-                              });
+                                if (!value) return '';
+                                return fromDateKey(value).toLocaleDateString('en-US', {
+                                  weekday: 'long',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                });
 }
 
 function formatDateTime(value: any) {
-                              if (!value) return '—';
-                              const date = new Date(value);
-                              if (Number.isNaN(date.getTime())) return '—';
-                              return date.toLocaleString('en-US', {
-                                month: '2-digit',
-                                day: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true
-                              });
+                                if (!value) return '—';
+                                const date = new Date(value);
+                                if (Number.isNaN(date.getTime())) return '—';
+                                return date.toLocaleString('en-US', {
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                });
 }
 
 watch(
-                              () => userStore.locationId,
-                              () => {
-                                if (userStore.locationId) loadWeek();
-                              }
+                                () => userStore.locationId,
+                                () => {
+                                  if (userStore.locationId) loadWeek();
+                                }
 );
 
 onMounted(() => {
-                              setStandardWeek('current');
-                              loadWeek();
+                                setStandardWeek('current');
+                                loadWeek();
 });
 
 

@@ -36,7 +36,7 @@
                   class="pointwatch-employee-choice"
                   :class="{ 'is-selected': !!selectedEmployeeDetails }"
                   :title="item.name"
-                  @click="selectEmployee(item)">
+                  @click="selectedEmployeeDetails ? clearEmployee() : selectEmployee(item)">
 
             <el-badge :value="employeeEntryCount(item.id)"
                       :hidden="!!selectedEmployeeDetails"
@@ -76,9 +76,9 @@
           </el-button>
         </div>
 
-        <div v-if="!selectedEmployeeDetails && !employees.length"
+        <div v-if="!selectedEmployeeDetails && !displayedEmployees.length"
              class="employee-period">
-          No employees found for this location.
+          No employees with point entries for this period.
         </div>
       </div>
     </el-card>
@@ -531,12 +531,12 @@
             <el-row :gutter="10">
               <el-col :span="12">
                 <div class="section-label">
-                  Check-In Photo
+                  Profile Photo
                 </div>
-                <el-image :src="item.checkinPhoto ? item.checkinPhoto : item.avatar"
+                <el-image :src="item.avatar"
                           fit="cover"
                           class="section-image"
-                          :preview-src-list="item.checkinPhoto? [item.checkinPhoto]: []"
+                          :preview-src-list="item.avatar ? [item.avatar] : []"
                           preview-teleported>
                   <template #error>
                     <div class="section-empty">
@@ -572,23 +572,23 @@
 
 <script setup>
 import {
-      ref,
-      watch,
-      computed
+            ref,
+            watch,
+            computed
 } from 'vue';
 
 import {
-      ElMessage
+            ElMessage
 } from 'element-plus';
 
 import {
-      getPointWatchingEmployees,
-      getPointsByEmployee,
-      getPointSessionEntries
+            getPointWatchingEmployees,
+            getPointsByEmployee,
+            getPointSessionEntries
 } from '@/api/pointwatching';
 
 import {
-      useAppStore
+            useAppStore
 } from '@/store/modules/app';
 
 // ============================================================
@@ -596,10 +596,10 @@ import {
 // ============================================================
 
 const props = defineProps({
-      locationId: {
-        type: [Number, String],
-        required: true
-      }
+            locationId: {
+              type: [Number, String],
+              required: true
+            }
 });
 
 // ============================================================
@@ -609,7 +609,7 @@ const props = defineProps({
 const appStore = useAppStore();
 
 const device = computed(
-      () => appStore.device
+            () => appStore.device
 );
 
 // ============================================================
@@ -624,18 +624,18 @@ const employeeEntryCounts = ref({});
 const employeeActiveSessions = ref({});
 
 const report = ref({
-      employee: null,
+            employee: null,
 
-      summary: {
-        daysWorked: 0,
-        totalSessions: 0,
-        pointsGiven: 0,
-        totalEntries: 0,
-        totalWorkingHours: 0,
-        activeSessions: 0
-      },
+            summary: {
+              daysWorked: 0,
+              totalSessions: 0,
+              pointsGiven: 0,
+              totalEntries: 0,
+              totalWorkingHours: 0,
+              activeSessions: 0
+            },
 
-      sessions: []
+            sessions: []
 });
 
 const sessionDrawer = ref(false);
@@ -644,98 +644,98 @@ const sessionEntries = ref([]);
 const sessionLoading = ref(false);
 
 const selectedEmployeeDetails = computed(() =>
-      selectedEmployee.value == null
-        ? null
-        : employees.value.find(
-            item =>
-              String(item.id) ===
-              String(selectedEmployee.value)
-          ) || null
+            selectedEmployee.value == null
+              ? null
+              : employees.value.find(
+                  item =>
+                    String(item.id) ===
+                    String(selectedEmployee.value)
+                ) || null
 );
 
 const displayedEmployees = computed(() =>
-      selectedEmployeeDetails.value
-        ? [selectedEmployeeDetails.value]
-        : employees.value
+            selectedEmployeeDetails.value
+              ? [selectedEmployeeDetails.value].filter(item => employeeEntryCount(item.id) > 0)
+              : employees.value.filter(item => employeeEntryCount(item.id) > 0)
 );
 
 const selectEmployee = item => {
-      if (selectedEmployeeDetails.value) {
-        return;
-      }
+            if (selectedEmployeeDetails.value) {
+              return;
+            }
 
-      selectedEmployee.value = item.id;
+            selectedEmployee.value = item.id;
 };
 
 const clearEmployee = () => {
-      selectedEmployee.value = null;
+            selectedEmployee.value = null;
 
-      report.value = {
-        employee: null,
-        summary: {
-          daysWorked: 0,
-          totalSessions: 0,
-          pointsGiven: 0,
-          totalEntries: 0,
-          totalWorkingHours: 0,
-          activeSessions: 0
-        },
-        sessions: []
-      };
+            report.value = {
+              employee: null,
+              summary: {
+                daysWorked: 0,
+                totalSessions: 0,
+                pointsGiven: 0,
+                totalEntries: 0,
+                totalWorkingHours: 0,
+                activeSessions: 0
+              },
+              sessions: []
+            };
 };
 
 const employeeEntryCount = employeeId =>
-      employeeEntryCounts.value[String(employeeId)] || 0;
+            employeeEntryCounts.value[String(employeeId)] || 0;
 
 const employeeIsClockedIn = employeeId =>
-      (employeeActiveSessions.value[String(employeeId)] || 0) > 0;
+            (employeeActiveSessions.value[String(employeeId)] || 0) > 0;
 
 const loadEmployeeEntryCounts = async () => {
-      if (
-        !props.locationId ||
-        !employees.value.length
-      ) {
-        employeeEntryCounts.value = {};
-        employeeActiveSessions.value = {};
-        return;
-      }
+            if (
+              !props.locationId ||
+              !employees.value.length
+            ) {
+              employeeEntryCounts.value = {};
+              employeeActiveSessions.value = {};
+              return;
+            }
 
-      const results = await Promise.allSettled(
-        employees.value.map(item =>
-          getPointsByEmployee(
-            item.id,
-            props.locationId,
-            days.value
-          )
-        )
-      );
-
-      const counts = {};
-      const activeSessions = {};
-
-      results.forEach((result, index) => {
-        const employeeId =
-          employees.value[index]?.id;
-
-        if (employeeId == null) {
-          return;
-        }
-
-        counts[String(employeeId)] =
-          result.status === 'fulfilled'
-            ? Number(
-                result.value?.data?.summary?.totalEntries || 0
+            const results = await Promise.allSettled(
+              employees.value.map(item =>
+                getPointsByEmployee(
+                  item.id,
+                  props.locationId,
+                  days.value
+                )
               )
-            : 0;
+            );
 
-        activeSessions[String(employeeId)] =
-          result.status === 'fulfilled'
-            ? Number(result.value?.data?.summary?.activeSessions || 0)
-            : 0;
-      });
+            const counts = {};
+            const activeSessions = {};
 
-      employeeEntryCounts.value = counts;
-      employeeActiveSessions.value = activeSessions;
+            results.forEach((result, index) => {
+              const employeeId =
+                employees.value[index]?.id;
+
+              if (employeeId == null) {
+                return;
+              }
+
+              counts[String(employeeId)] =
+                result.status === 'fulfilled'
+                  ? Number(
+                      result.value?.data?.summary?.totalEntries || 0
+                    )
+                  : 0;
+
+              activeSessions[String(employeeId)] =
+                result.status === 'fulfilled'
+                  ? Number(result.value?.data?.summary?.activeSessions || 0)
+                  : 0;
+            });
+
+            employeeEntryCounts.value = counts;
+            employeeActiveSessions.value = activeSessions;
 };
 
 // ============================================================
@@ -743,56 +743,56 @@ const loadEmployeeEntryCounts = async () => {
 // ============================================================
 
 const loadEmployees = async () => {
-      if (!props.locationId) {
-        return;
-      }
+            if (!props.locationId) {
+              return;
+            }
 
-      try {
-        const response =
-                    await getPointWatchingEmployees(
-                      props.locationId
-                    );
+            try {
+              const response =
+                          await getPointWatchingEmployees(
+                            props.locationId
+                          );
 
-        employees.value = (response.data ?? []).filter(item => {
-          const rawRole =
-            item.roleName ??
-            item.role ??
-            item.roles ??
-            '';
+              employees.value = (response.data ?? []).filter(item => {
+                const rawRole =
+                  item.roleName ??
+                  item.role ??
+                  item.roles ??
+                  '';
 
-          const values = Array.isArray(rawRole)
-            ? rawRole
-            : String(rawRole)
-                .split(',')
-                .map(value => value.trim())
-                .filter(Boolean);
+                const values = Array.isArray(rawRole)
+                  ? rawRole
+                  : String(rawRole)
+                      .split(',')
+                      .map(value => value.trim())
+                      .filter(Boolean);
 
-          return values.some(
-            value =>
-              String(value)
-                .trim()
-                .toLowerCase() === 'employee'
-          );
-        });
+                return values.some(
+                  value =>
+                    String(value)
+                      .trim()
+                      .toLowerCase() === 'employee'
+                );
+              });
 
-        if (
-          selectedEmployee.value != null &&
-          !employees.value.some(
-            item =>
-              String(item.id) ===
-              String(selectedEmployee.value)
-          )
-        ) {
-          clearEmployee();
-        }
+              if (
+                selectedEmployee.value != null &&
+                !employees.value.some(
+                  item =>
+                    String(item.id) ===
+                    String(selectedEmployee.value)
+                )
+              ) {
+                clearEmployee();
+              }
 
-        await loadEmployeeEntryCounts();
-      } catch (error) {
-        ElMessage.error(
-          error.response?.data?.message ||
-                    'Unable to load employees.'
-        );
-      }
+              await loadEmployeeEntryCounts();
+            } catch (error) {
+              ElMessage.error(
+                error.response?.data?.message ||
+                          'Unable to load employees.'
+              );
+            }
 };
 
 // ============================================================
@@ -800,33 +800,33 @@ const loadEmployees = async () => {
 // ============================================================
 
 const loadReport = async () => {
-      if (
-        !selectedEmployee.value ||
-                !props.locationId
-      ) {
-        return;
-      }
+            if (
+              !selectedEmployee.value ||
+                      !props.locationId
+            ) {
+              return;
+            }
 
-      try {
-        loading.value = true;
+            try {
+              loading.value = true;
 
-        const response =
-                    await getPointsByEmployee(
-                      selectedEmployee.value,
-                      props.locationId,
-                      days.value
-                    );
+              const response =
+                          await getPointsByEmployee(
+                            selectedEmployee.value,
+                            props.locationId,
+                            days.value
+                          );
 
-        report.value =
-                    response.data;
-      } catch (error) {
-        ElMessage.error(
-          error.response?.data?.message ||
-                    'Unable to load employee report.'
-        );
-      } finally {
-        loading.value = false;
-      }
+              report.value =
+                          response.data;
+            } catch (error) {
+              ElMessage.error(
+                error.response?.data?.message ||
+                          'Unable to load employee report.'
+              );
+            } finally {
+              loading.value = false;
+            }
 };
 
 // ============================================================
@@ -834,24 +834,24 @@ const loadReport = async () => {
 // ============================================================
 
 const openSession = async row => {
-      selectedSession.value = row;
-      sessionDrawer.value = true;
-      sessionEntries.value = [];
+            selectedSession.value = row;
+            sessionDrawer.value = true;
+            sessionEntries.value = [];
 
-      try {
-        sessionLoading.value = true;
+            try {
+              sessionLoading.value = true;
 
-        const response = await getPointSessionEntries(row.id);
+              const response = await getPointSessionEntries(row.id);
 
-        console.log('here')
-        console.log(response.data)
+              console.log('here')
+              console.log(response.data)
 
-        sessionEntries.value = response.data ?? [];
-      } catch (error) {
-        ElMessage.error(error.response?.data?.message ||'Unable to load session details.');
-      } finally {
-        sessionLoading.value = false;
-      }
+              sessionEntries.value = response.data ?? [];
+            } catch (error) {
+              ElMessage.error(error.response?.data?.message ||'Unable to load session details.');
+            } finally {
+              sessionLoading.value = false;
+            }
 };
 
 // ============================================================
@@ -859,67 +859,67 @@ const openSession = async row => {
 // ============================================================
 
 const getInitial = value => {
-      if (!value) {
-        return '?';
-      }
+            if (!value) {
+              return '?';
+            }
 
-      return value
-        .charAt(0)
-        .toUpperCase();
+            return value
+              .charAt(0)
+              .toUpperCase();
 };
 
 const formatDate = value => {
-      if (!value) {
-        return '-';
-      }
+            if (!value) {
+              return '-';
+            }
 
-      return new Date(value)
-        .toLocaleDateString(
-          'en-US',
-          {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          }
-        );
+            return new Date(value)
+              .toLocaleDateString(
+                'en-US',
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                }
+              );
 };
 
 const formatTime = value => {
-      if (!value) {
-        return '-';
-      }
+            if (!value) {
+              return '-';
+            }
 
-      return new Date(value)
-        .toLocaleTimeString(
-          'en-US',
-          {
-            hour: 'numeric',
-            minute: '2-digit'
-          }
-        );
+            return new Date(value)
+              .toLocaleTimeString(
+                'en-US',
+                {
+                  hour: 'numeric',
+                  minute: '2-digit'
+                }
+              );
 };
 
 const getRunningHours = clockIn => {
-      if (!clockIn) {
-        return '0.00';
-      }
+            if (!clockIn) {
+              return '0.00';
+            }
 
-      const start =
-                new Date(clockIn).getTime();
+            const start =
+                      new Date(clockIn).getTime();
 
-      const now =
-                Date.now();
+            const now =
+                      Date.now();
 
-      const hours =
-                (now - start) /
-                1000 /
-                60 /
-                60;
+            const hours =
+                      (now - start) /
+                      1000 /
+                      60 /
+                      60;
 
-      return Math.max(
-        0,
-        hours
-      ).toFixed(2);
+            return Math.max(
+              0,
+              hours
+            ).toFixed(2);
 };
 
 // ============================================================
@@ -927,42 +927,42 @@ const getRunningHours = clockIn => {
 // ============================================================
 
 watch(
-      () => props.locationId,
-      async value => {
-        if (!value) {
-          return;
-        }
+            () => props.locationId,
+            async value => {
+              if (!value) {
+                return;
+              }
 
-        clearEmployee();
-        await loadEmployees();
-      },
-      {
-        immediate: true
-      }
+              clearEmployee();
+              await loadEmployees();
+            },
+            {
+              immediate: true
+            }
 );
 
 watch(
-      selectedEmployee,
-      () => {
-        if (
-          selectedEmployee.value
-        ) {
-          loadReport();
-        }
-      }
+            selectedEmployee,
+            () => {
+              if (
+                selectedEmployee.value
+              ) {
+                loadReport();
+              }
+            }
 );
 
 watch(
-      days,
-      async () => {
-        await loadEmployeeEntryCounts();
+            days,
+            async () => {
+              await loadEmployeeEntryCounts();
 
-        if (
-          selectedEmployee.value
-        ) {
-          await loadReport();
-        }
-      }
+              if (
+                selectedEmployee.value
+              ) {
+                await loadReport();
+              }
+            }
 );
 </script>
 
