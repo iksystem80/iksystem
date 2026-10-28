@@ -274,7 +274,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 
 
@@ -283,6 +283,7 @@ import { useRefreshStore } from '@/store/modules/refresh';
 import { getEmployeeSessionSummary } from '@/api/employeesession';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const refreshStore = useRefreshStore();
 
@@ -412,15 +413,57 @@ function formatHours(value) {
         : `${whole}h`;
 }
 
-function openEmployee(employee) {
-      router.push({
+async function openEmployee(employee) {
+      // Preserve the current list entry in browser history. The employee page
+      // opens as a new entry, so browser/app Back restores these exact filters.
+      const filters = {
+        period: period.value,
+        reconciliation: reconciliation.value,
+        ...(selectedDates.value || {})
+      };
+      await router.replace({
+        path: route.path,
+        query: { ...route.query, ...filters }
+      });
+      await router.push({
         name: 'EmployeeSessionList',
         params: {
           employeeId:
                         employee.userId
         },
-        query: { ...selectedDates.value, period: period.value, reconciliation: reconciliation.value }
+        query: filters
       });
+}
+
+function restoreListFilters() {
+      const savedPeriod = String(route.query.period || '');
+      const savedReconciliation = String(route.query.reconciliation || '');
+      const permittedPeriods = ['all', 'today', '7', '30', 'custom'];
+      const permittedReconciliations = ['all', 'reconciled', 'unreconciled'];
+
+      if (permittedPeriods.includes(savedPeriod)) {
+        period.value = savedPeriod;
+      }
+      if (permittedReconciliations.includes(savedReconciliation)) {
+        reconciliation.value = savedReconciliation;
+      }
+
+      const start = String(route.query.startDate || '');
+      const end = String(route.query.endDate || '');
+      if (period.value === 'custom') {
+        const valid = /^\d{4}-\d{2}-\d{2}$/;
+        if (valid.test(start) && valid.test(end) && start <= end) {
+          dateRange.value = [start, end];
+        } else {
+          // Never restore a half-selected custom range.
+          period.value = 'all';
+          dateRange.value = [];
+        }
+      }
+
+      draftPeriod.value = period.value;
+      draftReconciliation.value = reconciliation.value;
+      draftDateRange.value = [...dateRange.value];
 }
 
 async function loadEmployees() {
@@ -457,7 +500,10 @@ watch(
     () => loadEmployees()
 );
 
-onMounted(loadEmployees);
+onMounted(() => {
+      restoreListFilters();
+      loadEmployees();
+});
 </script>
 
 

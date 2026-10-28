@@ -2,7 +2,7 @@
   <div class="app-container weekly-report-page">
     <div class="page-header">
       <div>
-        <h2 class="page-title">Weekly Report</h2>
+        <h2 class="page-title">Daily Report</h2>
         <p>
           {{ weekModeLabel }} · {{ formattedWeekRange }}
         </p>
@@ -26,7 +26,7 @@
         </div>
 
         <div>
-          <div class="drawer-title">Filter Weekly Report</div>
+          <div class="drawer-title">Filter Report</div>
           <div class="drawer-subtitle">
             Select the week you want to review.
           </div>
@@ -284,7 +284,7 @@
               <span class="weekly-report-eyebrow">Selected Reading Day</span>
               <h3>{{ longDate(selectedDate) }}</h3>
               <p v-if="selectedSession">
-                Reading Session #{{ selectedSession.sessionNumber ?? selectedSession.id }} ·
+                Reading Session # {{ selectedSession.sessionNumber ?? selectedSession.id }} ·
                 {{ formatDateTime(selectedSession.startedAt) }} -
                 {{ formatDateTime(selectedSession.endedAt) }}
               </p>
@@ -296,7 +296,7 @@
             <el-select v-model="selectedSessionId" @change="loadDayReport">
               <el-option v-for="session in selectedDay.sessions"
                          :key="session.id"
-                         :label="`Session #${session.sessionNumber ?? session.id}`"
+                         :label="`Session # ${session.sessionNumber ?? session.id}`"
                          :value="Number(session.id)" />
             </el-select>
           </div>
@@ -1390,6 +1390,14 @@
             </template>
           </div>
         </el-tab-pane>
+        <el-tab-pane label="Match Points" name="matchpoints">
+          <MatchPointsAudit
+            v-if="selectedSessionId && userStore.locationId"
+            :reading-session-id="Number(selectedSessionId)"
+            :location-id="Number(userStore.locationId)"
+            :session-number="selectedSession?.sessionNumber ?? selectedSessionId"
+          />
+        </el-tab-pane>
       </el-tabs>
     </template>
 
@@ -1639,6 +1647,7 @@ import { useUserStore } from '@/store/modules/user';
 import { getWeeklyReportDay, getWeeklyReportWeek, getWeeklyReportLoans } from '@/api/weeklyreport';
 import { getExpenseTypes } from '@/api/employeefinance';
 import ShiftReport from '@/views/operation/employeesession/shiftreport.vue';
+import MatchPointsAudit from '@/views/components/matchpointsaudit.vue';
 import TicketReconciliationDialog from '@/views/components/ticket_reconciliation_dialog.vue';
 import { useAppStore } from '@/store/modules/app';
 import { HandCoins as LcHandCoins } from '@lucide/vue';

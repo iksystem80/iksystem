@@ -16,6 +16,15 @@ export function getWeeklyReportDay(params) {
   })
 }
 
+// Reusable machine match audit for an actual ReadingSessions.ID.
+export function getReadingMatchAudit(params) {
+  return request({
+    url: '/reading/weeklyreport/match-audit',
+    method: 'get',
+    params
+  })
+}
+
 export function getWeeklyReportLoans(params) {
   return request({
     url: `/employeefinance/reports/reading-session/${params.sessionid}/loans`,

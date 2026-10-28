@@ -430,10 +430,10 @@ export const asyncRoutes: RouteRecordRaw[] = [
     meta: { title: 'Report', icon: 'chart', permission: 'reports' },
     children: [
       {
-        path: 'weeklyreport',
+        path: 'dailyreport',
         component: () => import('@/views/report/weeklyreport'),
-        name: 'WeeklyReport',
-        meta: { title: 'Weekly Report', icon: 'LcCalendarDays', noCache: true, permission: 'reports.weekly' }
+        name: 'DailyReport',
+        meta: { title: 'Daily Report', icon: 'LcCalendarDays', noCache: true, permission: 'reports.weekly' }
       },
       {
         path: 'loanreport',
