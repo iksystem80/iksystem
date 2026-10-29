@@ -15,6 +15,9 @@
           </p>
         </div>
       </div>
+      <el-button type="primary" plain @click="router.push('/importcustomers/index')">
+        Import Customers
+      </el-button>
     </div>
 
     <!-- ===================================================== -->
@@ -42,7 +45,7 @@
           </div>
 
           <div class="camera-wrapper">
-            <CameraApp @captured="handleCapturedImage" />
+            <CameraApp :key="cameraKey" @captured="handleCapturedImage" />
           </div>
 
           <div v-if="capturedImage" class="photo-status">
@@ -122,7 +125,7 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :xs="24" :sm="12">
+              <!--<el-col :xs="24" :sm="12">
                 <el-form-item label="Date of Birth" prop="dob">
                   <el-date-picker v-model="customerForm.dob"
                                   type="date"
@@ -131,7 +134,7 @@
                                   placeholder="Select date of birth"
                                   style="width: 100%" />
                 </el-form-item>
-              </el-col>
+              </el-col>-->
             </el-row>
 
             <!-- VERIFICATION STATUS -->
@@ -142,12 +145,12 @@
                 </div>
 
                 <div class="status-description">
-                  New customers are saved inactive until their phone number is verified.
+                  New customers are Active but Unverified. SMS verification is temporarily disabled.
                 </div>
               </div>
 
               <el-tag type="warning" effect="light">
-                Required
+                Unverified
               </el-tag>
             </div>
 
@@ -157,14 +160,21 @@
                 Cancel
               </el-button>
 
+              <el-button :loading="loading"
+                         :disabled="loading"
+                         @click="submitForm(false)">
+                Save & Add Another
+              </el-button>
+
               <el-button type="primary"
                          :loading="loading"
-                         @click="submitForm">
+                         :disabled="loading"
+                         @click="submitForm(true)">
                 <el-icon v-if="!loading">
                   <Check />
                 </el-icon>
 
-                <span>Save Customer</span>
+                <span>Save & Go to List</span>
               </el-button>
             </div>
           </el-form>
@@ -306,27 +316,29 @@ import { unformatPhone } from '@/utils/phone'
 
 const router = useRouter()
 const userStore = useUserStore()
+const smsVerificationEnabled = false // Set true to restore New Customer SMS verification.
 
 // ============================================================
 // FORM
 // ============================================================
 
 const defaultForm = {
-        firstname: '',
-        lastname: '',
-        dob: null,
-        datecreated: '',
-        locationid: userStore.locationId,
-        phone: '',
-        createdby: userStore.userId
+          firstname: '',
+          lastname: '',
+          dob: null,
+          datecreated: '',
+          locationid: userStore.locationId,
+          phone: '',
+          createdby: userStore.userId
 }
 
 const customerFormRef = ref(null)
 const loading = ref(false)
 const capturedImage = ref(null)
+const cameraKey = ref(0)
 
 const customerForm = reactive({
-        ...defaultForm
+          ...defaultForm
 })
 
 // ============================================================
@@ -345,62 +357,62 @@ const savedCustomerId = ref(null)
 const savedCustomerPhone = ref('')
 
 function setOtpRef(el, index) {
-        if (el) {
-          otpInputRefs.value[index] = el
-        }
+          if (el) {
+            otpInputRefs.value[index] = el
+          }
 }
 
 function syncVerificationCode() {
-        verificationCode.value = verificationDigits.value.join('')
+          verificationCode.value = verificationDigits.value.join('')
 }
 
 function resetVerificationCode() {
-        verificationDigits.value = ['', '', '', '', '', '']
-        verificationCode.value = ''
+          verificationDigits.value = ['', '', '', '', '', '']
+          verificationCode.value = ''
 }
 
 function focusOtp(index) {
-        const target = otpInputRefs.value[index]
-        if (target?.focus) {
-          target.focus()
-        }
+          const target = otpInputRefs.value[index]
+          if (target?.focus) {
+            target.focus()
+          }
 }
 
 function handleOtpInput(index) {
-        const raw = String(verificationDigits.value[index] || '')
-        verificationDigits.value[index] = raw.replace(/\D/g, '').slice(-1)
-        syncVerificationCode()
+          const raw = String(verificationDigits.value[index] || '')
+          verificationDigits.value[index] = raw.replace(/\D/g, '').slice(-1)
+          syncVerificationCode()
 
-        if (verificationDigits.value[index] && index < 5) {
-          focusOtp(index + 1)
-        }
+          if (verificationDigits.value[index] && index < 5) {
+            focusOtp(index + 1)
+          }
 }
 
 function handleOtpBackspace(index) {
-        if (!verificationDigits.value[index] && index > 0) {
-          verificationDigits.value[index - 1] = ''
-          syncVerificationCode()
-          focusOtp(index - 1)
-        }
+          if (!verificationDigits.value[index] && index > 0) {
+            verificationDigits.value[index - 1] = ''
+            syncVerificationCode()
+            focusOtp(index - 1)
+          }
 }
 
 function handleOtpPaste(event) {
-        const digits = String(event?.clipboardData?.getData('text') || '')
-          .replace(/\D/g, '')
-          .slice(0, 6)
-          .split('')
+          const digits = String(event?.clipboardData?.getData('text') || '')
+            .replace(/\D/g, '')
+            .slice(0, 6)
+            .split('')
 
-        if (!digits.length) {
-          return
-        }
+          if (!digits.length) {
+            return
+          }
 
-        verificationDigits.value = Array.from(
-          { length: 6 },
-          (_, index) => digits[index] || ''
-        )
+          verificationDigits.value = Array.from(
+            { length: 6 },
+            (_, index) => digits[index] || ''
+          )
 
-        syncVerificationCode()
-        focusOtp(Math.min(digits.length, 6) - 1)
+          syncVerificationCode()
+          focusOtp(Math.min(digits.length, 6) - 1)
 }
 
 // ============================================================
@@ -408,62 +420,62 @@ function handleOtpPaste(event) {
 // ============================================================
 
 const formRules = {
-        firstname: [
-          {
-            required: true,
-            message: 'First name is required',
-            trigger: 'blur'
-          },
-          {
-            min: 2,
-            max: 50,
-            message: 'Length should be 2 to 50 characters',
-            trigger: 'blur'
-          }
-        ],
-
-        lastname: [
-          {
-            required: true,
-            message: 'Last name is required',
-            trigger: 'blur'
-          },
-          {
-            min: 2,
-            max: 50,
-            message: 'Length should be 2 to 50 characters',
-            trigger: 'blur'
-          }
-        ],
-
-        phone: [
-          {
-            required: true,
-            message: 'Phone number is required',
-            trigger: 'blur'
-          },
-          {
-            validator: (rule, value, callback) => {
-              const phone = unformatPhone(value)
-
-              if (phone.length !== 10) {
-                callback(new Error('Enter a valid 10-digit phone number'))
-                return
-              }
-
-              callback()
+          firstname: [
+            {
+              required: true,
+              message: 'First name is required',
+              trigger: 'blur'
             },
-            trigger: 'blur'
-          }
-        ],
+            {
+              min: 2,
+              max: 50,
+              message: 'Length should be 2 to 50 characters',
+              trigger: 'blur'
+            }
+          ],
 
-        dob: [
-          {
-            required: true,
-            message: 'Please pick a date of birth',
-            trigger: 'change'
-          }
-        ]
+          lastname: [
+            {
+              required: true,
+              message: 'Last name is required',
+              trigger: 'blur'
+            },
+            {
+              min: 2,
+              max: 50,
+              message: 'Length should be 2 to 50 characters',
+              trigger: 'blur'
+            }
+          ],
+
+          phone: [
+            {
+              required: true,
+              message: 'Phone number is required',
+              trigger: 'blur'
+            },
+            {
+              validator: (rule, value, callback) => {
+                const phone = unformatPhone(value)
+
+                if (phone.length !== 10) {
+                  callback(new Error('Enter a valid 10-digit phone number'))
+                  return
+                }
+
+                callback()
+              },
+              trigger: 'blur'
+            }
+          ]
+
+          // dob: [
+          //   {
+          //     required: true,
+          //     message: 'Please pick a date of birth',
+          //     trigger: 'change'
+          //   }
+          // ]
 }
 
 // ============================================================
@@ -471,20 +483,20 @@ const formRules = {
 // ============================================================
 
 function formatPhoneInput(value) {
-        const digits = value
-          .replace(/\D/g, '')
-          .slice(0, 10)
+          const digits = value
+            .replace(/\D/g, '')
+            .slice(0, 10)
 
-        if (digits.length <= 3) {
-          customerForm.phone =
-            digits ? `(${digits}` : ''
-        } else if (digits.length <= 6) {
-          customerForm.phone =
-            `(${digits.slice(0, 3)}) ${digits.slice(3)}`
-        } else {
-          customerForm.phone =
-            `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-        }
+          if (digits.length <= 3) {
+            customerForm.phone =
+              digits ? `(${digits}` : ''
+          } else if (digits.length <= 6) {
+            customerForm.phone =
+              `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+          } else {
+            customerForm.phone =
+              `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+          }
 }
 
 // ============================================================
@@ -492,129 +504,134 @@ function formatPhoneInput(value) {
 // ============================================================
 
 function handleCapturedImage(image) {
-        capturedImage.value = image
+          capturedImage.value = image
 }
 
 // ============================================================
 // SAVE CUSTOMER
 // ============================================================
 
-async function submitForm() {
-        if (!customerFormRef.value) {
-          return
-        }
-
-        try {
-          const valid =
-            await customerFormRef.value.validate()
-
-          if (!valid) {
+async function submitForm(goToList = true) {
+          if (loading.value || !customerFormRef.value) {
             return
           }
 
-          if (!capturedImage.value) {
-            ElMessage.warning(
-              'Please capture a customer photo.'
-            )
-            return
-          }
+          try {
+            const valid =
+              await customerFormRef.value.validate()
 
-          loading.value = true
-
-          const cleanPhone =
-            unformatPhone(customerForm.phone)
-
-          const customerPayload = {
-            ...customerForm,
-            phone: cleanPhone,
-            locationid: userStore.locationId,
-            createdby: userStore.userId
-          }
-
-          const fileName =
-            `${customerForm.firstname}${customerForm.lastname}-${cleanPhone}.png`
-
-          const imageFile = new File(
-            [capturedImage.value],
-            fileName,
-            {
-              type:
-                capturedImage.value.type ||
-                'image/png'
+            if (!valid) {
+              return
             }
-          )
 
-          const formData = new FormData()
+            if (!capturedImage.value) {
+              ElMessage.warning(
+                'Please capture a customer photo.'
+              )
+              return
+            }
 
-          formData.append(
-            'image',
-            imageFile
-          )
+            loading.value = true
 
-          formData.append(
-            'customer',
-            JSON.stringify(customerPayload)
-          )
+            const cleanPhone =
+              unformatPhone(customerForm.phone)
 
-          const response =
-            await savecustomer(formData)
+            const customerPayload = {
+              ...customerForm,
+              phone: cleanPhone,
+              locationid: userStore.locationId,
+              createdby: userStore.userId
+            }
 
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Customer could not be saved.'
+            const fileName =
+              `${customerForm.firstname}${customerForm.lastname}-${cleanPhone}.png`
+
+            const imageFile = new File(
+              [capturedImage.value],
+              fileName,
+              {
+                type:
+                  capturedImage.value.type ||
+                  'image/png'
+              }
             )
-          }
 
-          const customerId =
-            Number(response?.data?.id)
+            const formData = new FormData()
 
-          if (!Number.isInteger(customerId) || customerId <= 0) {
-            throw new Error(
-              'Customer was saved but customer ID was not returned.'
+            formData.append(
+              'image',
+              imageFile
             )
-          }
 
-          savedCustomerId.value = customerId
-          savedCustomerPhone.value = customerForm.phone
-          resetVerificationCode()
-          verificationCodeSent.value = false
-          verificationDialogVisible.value = true
+            formData.append(
+              'customer',
+              JSON.stringify(customerPayload)
+            )
 
-          ElMessage.success(
-            'Customer saved as inactive. Phone verification is required.'
-          )
+            const response =
+              await savecustomer(formData)
 
-          await sendVerificationCode()
-        } catch (error) {
-          console.error(
-            'Save customer error:',
-            error
-          )
+            if (!response?.success) {
+              throw new Error(
+                response?.message ||
+                'Customer could not be saved.'
+              )
+            }
 
-          const responseData =
-            error?.response?.data
+            const customerId =
+              Number(response?.data?.id)
 
-          if (
-            responseData?.errorCode === 'NO_FACE'
-          ) {
-            capturedImage.value = null
+            if (!Number.isInteger(customerId) || customerId <= 0) {
+              throw new Error(
+                'Customer was saved but customer ID was not returned.'
+              )
+            }
+
+            savedCustomerId.value = customerId
+            savedCustomerPhone.value = customerForm.phone
+            resetVerificationCode()
+            verificationCodeSent.value = false
+            // Temporarily skip the OTP dialog; customer stays unverified.
+            verificationDialogVisible.value = false
+
+            ElMessage.success(
+              'Customer saved as Active (phone unverified).'
+            )
+
+            if (goToList) {
+              completeCustomerFlow()
+            } else {
+              resetForm()
+            }
+          } catch (error) {
+            console.error(
+              'Save customer error:',
+              error
+            )
+
+            const responseData =
+              error?.response?.data
+
+            if (
+              responseData?.errorCode === 'NO_FACE'
+            ) {
+              capturedImage.value = null
+
+              ElMessage.error(
+                'Face not detected. Please capture a new clear photo and try again.'
+              )
+
+              return
+            }
 
             ElMessage.error(
-              'Face not detected. Please capture a new clear photo and try again.'
+              responseData?.message ||
+              error?.message ||
+              'Unable to save customer.'
             )
-
-            return
+          } finally {
+            loading.value = false
           }
-
-          ElMessage.error(
-            responseData?.message ||
-            error?.message ||
-            'Unable to save customer.'
-          )
-        } finally {
-          loading.value = false
-        }
 }
 
 // ============================================================
@@ -622,46 +639,50 @@ async function submitForm() {
 // ============================================================
 
 async function sendVerificationCode() {
-        if (!savedCustomerId.value) {
-          return
-        }
+          // SMS verification is temporarily disabled for New Customer.
+          // Keep the implementation below for when verification is re-enabled.
+          if (!smsVerificationEnabled) return
 
-        try {
-          sendingCode.value = true
-
-          const response =
-            await sendcustomerverification({
-              customerId: savedCustomerId.value
-            })
-
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Unable to send verification code.'
-            )
+          if (!savedCustomerId.value) {
+            return
           }
 
-          verificationCodeSent.value = true
-          resetVerificationCode()
+          try {
+            sendingCode.value = true
 
-          ElMessage.success(
-            response.message ||
-            'Verification code sent.'
-          )
-        } catch (error) {
-          console.error(
-            'Send verification code error:',
-            error
-          )
+            const response =
+              await sendcustomerverification({
+                customerId: savedCustomerId.value
+              })
 
-          ElMessage.error(
-            error?.response?.data?.message ||
-            error?.message ||
-            'Unable to send verification code.'
-          )
-        } finally {
-          sendingCode.value = false
-        }
+            if (!response?.success) {
+              throw new Error(
+                response?.message ||
+                'Unable to send verification code.'
+              )
+            }
+
+            verificationCodeSent.value = true
+            resetVerificationCode()
+
+            ElMessage.success(
+              response.message ||
+              'Verification code sent.'
+            )
+          } catch (error) {
+            console.error(
+              'Send verification code error:',
+              error
+            )
+
+            ElMessage.error(
+              error?.response?.data?.message ||
+              error?.message ||
+              'Unable to send verification code.'
+            )
+          } finally {
+            sendingCode.value = false
+          }
 }
 
 // ============================================================
@@ -669,48 +690,48 @@ async function sendVerificationCode() {
 // ============================================================
 
 async function verifyCustomerPhone() {
-        if (
-          !savedCustomerId.value ||
-          verificationCode.value.trim().length !== 6
-        ) {
-          return
-        }
-
-        try {
-          verifyingCode.value = true
-
-          const response =
-            await verifycustomerverification({
-              customerId: savedCustomerId.value,
-              code: verificationCode.value.trim()
-            })
-
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Unable to verify phone number.'
-            )
+          if (
+            !savedCustomerId.value ||
+            verificationCode.value.trim().length !== 6
+          ) {
+            return
           }
 
-          ElMessage.success(
-            'Phone verified. Customer is now active.'
-          )
+          try {
+            verifyingCode.value = true
 
-          completeCustomerFlow()
-        } catch (error) {
-          console.error(
-            'Verify customer phone error:',
-            error
-          )
+            const response =
+              await verifycustomerverification({
+                customerId: savedCustomerId.value,
+                code: verificationCode.value.trim()
+              })
 
-          ElMessage.error(
-            error?.response?.data?.message ||
-            error?.message ||
-            'Invalid verification code.'
-          )
-        } finally {
-          verifyingCode.value = false
-        }
+            if (!response?.success) {
+              throw new Error(
+                response?.message ||
+                'Unable to verify phone number.'
+              )
+            }
+
+            ElMessage.success(
+              'Phone verified. Customer is now active.'
+            )
+
+            completeCustomerFlow()
+          } catch (error) {
+            console.error(
+              'Verify customer phone error:',
+              error
+            )
+
+            ElMessage.error(
+              error?.response?.data?.message ||
+              error?.message ||
+              'Invalid verification code.'
+            )
+          } finally {
+            verifyingCode.value = false
+          }
 }
 
 // ============================================================
@@ -720,44 +741,44 @@ async function verifyCustomerPhone() {
 // ============================================================
 
 async function bypassCustomerVerification() {
-        if (!savedCustomerId.value) {
-          return
-        }
-
-        try {
-          bypassingVerification.value = true
-
-          const response =
-            await bypasscustomerverification({
-              customerId: savedCustomerId.value
-            })
-
-          if (!response?.success) {
-            throw new Error(
-              response?.message ||
-              'Verification bypass was not allowed.'
-            )
+          if (!savedCustomerId.value) {
+            return
           }
 
-          ElMessage.success(
-            'Verification bypassed. Customer is now active.'
-          )
+          try {
+            bypassingVerification.value = true
 
-          completeCustomerFlow()
-        } catch (error) {
-          console.error(
-            'Bypass customer verification error:',
-            error
-          )
+            const response =
+              await bypasscustomerverification({
+                customerId: savedCustomerId.value
+              })
 
-          ElMessage.error(
-            error?.response?.data?.message ||
-            error?.message ||
-            'You are not authorized to bypass verification.'
-          )
-        } finally {
-          bypassingVerification.value = false
-        }
+            if (!response?.success) {
+              throw new Error(
+                response?.message ||
+                'Verification bypass was not allowed.'
+              )
+            }
+
+            ElMessage.success(
+              'Verification bypassed. Customer is now active.'
+            )
+
+            completeCustomerFlow()
+          } catch (error) {
+            console.error(
+              'Bypass customer verification error:',
+              error
+            )
+
+            ElMessage.error(
+              error?.response?.data?.message ||
+              error?.message ||
+              'You are not authorized to bypass verification.'
+            )
+          } finally {
+            bypassingVerification.value = false
+          }
 }
 
 // ============================================================
@@ -765,26 +786,26 @@ async function bypassCustomerVerification() {
 // ============================================================
 
 function completeCustomerFlow() {
-        verificationDialogVisible.value = false
-        resetForm()
+          verificationDialogVisible.value = false
+          resetForm()
 
-        router.push({
-          path: '/customer/index'
-        })
+          router.push({
+            path: '/customer/index'
+          })
 }
 
 function finishWithoutVerification() {
-        verificationDialogVisible.value = false
+          verificationDialogVisible.value = false
 
-        ElMessage.warning(
-          'Customer remains inactive until phone verification is completed.'
-        )
+          ElMessage.warning(
+            'Customer remains inactive until phone verification is completed.'
+          )
 
-        resetForm()
+          resetForm()
 
-        router.push({
-          path: '/customer/index'
-        })
+          router.push({
+            path: '/customer/index'
+          })
 }
 
 // ============================================================
@@ -792,39 +813,40 @@ function finishWithoutVerification() {
 // ============================================================
 
 function resetVerification() {
-        savedCustomerId.value = null
-        savedCustomerPhone.value = ''
-        resetVerificationCode()
-        verificationCodeSent.value = false
+          savedCustomerId.value = null
+          savedCustomerPhone.value = ''
+          resetVerificationCode()
+          verificationCodeSent.value = false
 }
 
 function resetForm() {
-        customerFormRef.value?.resetFields()
+          customerFormRef.value?.resetFields()
 
-        Object.assign(
-          customerForm,
-          {
-            ...defaultForm,
-            locationid: userStore.locationId,
-            createdby: userStore.userId
-          }
-        )
+          Object.assign(
+            customerForm,
+            {
+              ...defaultForm,
+              locationid: userStore.locationId,
+              createdby: userStore.userId
+            }
+          )
 
-        capturedImage.value = null
-        resetVerification()
+          capturedImage.value = null
+          cameraKey.value += 1
+          resetVerification()
 }
 
 function cancelForm() {
-        resetForm()
+          resetForm()
 
-        router.push({
-          path: '/customer/index'
-        })
+          router.push({
+            path: '/customer/index'
+          })
 }
 
 function goBack() {
-        router.push({
-          path: '/customer/index'
-        })
+          router.push({
+            path: '/customer/index'
+          })
 }
 </script>

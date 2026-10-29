@@ -412,6 +412,18 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="Current IN" min-width="100">
+            <template #default="{ row }">
+              {{ formatReadingValue(row.currentin) }}
+            </template>
+          </el-table-column>
+
+          <el-table-column label="Current OUT" min-width="100">
+            <template #default="{ row }">
+              {{ formatReadingValue(row.currentout) }}
+            </template>
+          </el-table-column>
+
           <el-table-column label="Daily IN"
                            min-width="100">
             <template #default="{ row }">
@@ -440,19 +452,6 @@
             </template>
           </el-table-column>
 
-          <el-table-column label=""
-                           width="35"
-                           align="right">
-            <template #default="{ row }">
-              <el-button link
-                         type="danger"
-                         @click="handleDelete(row)">
-                <el-icon size="20">
-                  <Delete />
-                </el-icon>
-              </el-button>
-            </template>
-          </el-table-column>
         </el-table>
 
         <!-- MOBILE -->
@@ -474,13 +473,6 @@
                 </div>
               </div>
 
-              <el-button link
-                         type="danger"
-                         @click="handleDelete(row)">
-                <el-icon>
-                  <Delete />
-                </el-icon>
-              </el-button>
             </div>
 
             <div class="mobile-reading-values">
@@ -492,6 +484,16 @@
               <div>
                 <span>Previous OUT</span>
                 <strong>{{ row.previousout ?? '-' }}</strong>
+              </div>
+
+              <div>
+                <span>Current IN</span>
+                <strong>{{ formatReadingValue(row.currentin) }}</strong>
+              </div>
+
+              <div>
+                <span>Current OUT</span>
+                <strong>{{ formatReadingValue(row.currentout) }}</strong>
               </div>
 
               <div>
@@ -530,9 +532,7 @@
             </el-icon>
           </div>
 
-          <h2>
-            Review Before Reconciliation
-          </h2>
+          <h2>Ready to Reconcile</h2>
 
           <p>
             You recorded
@@ -549,10 +549,7 @@
             }}.
           </p>
 
-          <p class="review-message">
-            Confirm all values before permanently
-            closing this session.
-          </p>
+          <p class="review-message">Review the session summary and employee coverage before closing.</p>
         </div>
 
         <el-alert title="Once this session enters reconciliation, its machine readings cannot be changed or deleted."
@@ -561,135 +558,44 @@
                   show-icon
                   class="review-alert" />
 
-        <el-descriptions title="Session Summary"
-                         :column="
-                           device === 'mobile'
-                             ? 1
-                             : 3
-                         "
-                         border
-                         class="review-summary">
-          <el-descriptions-item label="Session #">
-            {{ currentSession?.sessionNumber ?? sessionId }}
-          </el-descriptions-item>
-
-          <el-descriptions-item label="Started">
-            {{
-              formatDateTime(
-                currentSession?.startedat
-              )
-            }}
-          </el-descriptions-item>
-
-          <el-descriptions-item label="Total Readings">
-            {{ currentreadings.length }}
-          </el-descriptions-item>
-          <el-descriptions-item label="Employee Sessions">
-            {{ selectedEmployeeSessionIds.length }}
-          </el-descriptions-item>
-        </el-descriptions>
-
-        <div class="review-coverage">
-          <h3>Covered Employee Sessions</h3>
-          <div v-for="item in selectedCoverageRows" :key="item.id" class="review-coverage-row">
-            <strong>{{ item.employeeName }} · Session #{{ item.sessionNumber ?? item.id }}</strong>
-            <span class="small-text">{{ formatDateTime(item.clockIn) }} – {{ formatDateTime(item.clockOut) }}</span>
+        <section class="final-summary-section">
+          <h3>Session Summary</h3>
+          <div class="final-summary-grid">
+            <div class="final-summary-item">
+              <span>Session</span>
+              <strong>#{{ currentSession?.sessionNumber ?? sessionId }}</strong>
+            </div>
+            <div class="final-summary-item">
+              <span>Started</span>
+              <strong>{{ formatDateTime(currentSession?.startedat) }}</strong>
+            </div>
+            <div class="final-summary-item">
+              <span>Machine Readings</span>
+              <strong>{{ currentreadings.length }}</strong>
+            </div>
+            <div class="final-summary-item">
+              <span>Employee Sessions</span>
+              <strong>{{ selectedEmployeeSessionIds.length }}</strong>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div class="review-readings">
-          <h3>
-            Machine Readings
-          </h3>
-
-          <!-- DESKTOP REVIEW -->
-
-          <el-table v-if="device !== 'mobile'"
-                    :data="currentreadings"
-                    border
-                    stripe
-                    style="width: 100%">
-            <el-table-column prop="machinenumber"
-                             label="Machine #"
-                             min-width="120" />
-
-            <el-table-column prop="previousin"
-                             label="Previous IN"
-                             min-width="130">
-              <template #default="{ row }">
-                {{ row.previousin ?? '-' }}
-              </template>
-            </el-table-column>
-
-            <el-table-column prop="previousout"
-                             label="Previous OUT"
-                             min-width="130">
-              <template #default="{ row }">
-                {{ row.previousout ?? '-' }}
-              </template>
-            </el-table-column>
-
-            <el-table-column prop="currentin"
-                             label="Current IN"
-                             min-width="130" />
-
-            <el-table-column prop="currentout"
-                             label="Current OUT"
-                             min-width="130" />
-
-            <el-table-column label="Reading At"
-                             min-width="180">
-              <template #default="{ row }">
-                {{ formatDateTime(row.readingat) }}
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <!-- MOBILE REVIEW -->
-
-          <div v-else
-               class="mobile-reading-list">
-            <el-card v-for="row in currentreadings"
-                     :key="row.id"
-                     shadow="never"
-                     class="mobile-reading-card">
-              <div class="mobile-reading-top">
-                <div>
-                  <strong>
-                    Machine #{{ row.machinenumber }}
-                  </strong>
-
-                  <div class="small-text">
-                    {{ formatDateTime(row.readingat) }}
-                  </div>
-                </div>
+        <div class="review-coverage final-coverage-section">
+          <h3>Covered Employee Sessions</h3>
+          <div class="final-coverage-list">
+            <div v-for="item in selectedCoverageRows" :key="item.id" class="review-coverage-row final-coverage-row">
+              <div>
+                <strong>{{ item.employeeName }} · Session #{{ item.sessionNumber ?? item.id }}</strong>
+                <span class="final-coverage-label">Included in this reading session</span>
               </div>
-
-              <div class="mobile-reading-values">
-                <div>
-                  <span>IN</span>
-
-                  <strong>
-                    {{ row.currentin }}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>OUT</span>
-
-                  <strong>
-                    {{ row.currentout }}
-                  </strong>
-                </div>
-              </div>
-            </el-card>
+              <span class="small-text">{{ formatDateTime(item.clockIn) }} – {{ formatDateTime(item.clockOut) }}</span>
+            </div>
           </div>
         </div>
 
         <div class="review-confirm">
           <el-checkbox v-model="confirmReview">
-            I reviewed these readings and confirm
-            they are correct.
+            I reviewed the session summary and covered employee sessions.
           </el-checkbox>
         </div>
       </el-card>
@@ -803,8 +709,7 @@ import {
         getreadings,
         getpreviousreading,
         endsession,
-        deletesession,
-        deletereading
+        deletesession
 } from '@/api/reading';
 import { getReadingEmployeeCoverage, saveReadingEmployeeCoverage } from '@/api/readingcoverage';
 
@@ -1349,24 +1254,6 @@ async function getmachine() {
 
           const machine = response.data;
 
-          const exists = currentreadings.value.some(
-            reading => Number(reading.machineid) === Number(machine.id)
-          );
-
-          if (exists) {
-            machineId.value = 0;
-            currentmachine.value = machine;
-            previousReading.value = null;
-            readingForm.previousin = null;
-            readingForm.previousout = null;
-            readingForm.readingin = null;
-            readingForm.readingout = null;
-
-            machineWarning.value =
-              `Machine #${machine.machinenumber} already has a reading in this session. Delete the existing reading before retaking it.`;
-            return;
-          }
-
           const previousResponse = await getpreviousreading(
             machine.id,
             locationid.value,
@@ -1465,12 +1352,16 @@ async function saveThis() {
                           locationid.value
           };
 
+          const existingReading = currentreadings.value.some(
+            reading => Number(reading.machineid) === Number(machineId.value)
+          );
+
           await savereading(
             payload
           );
 
           ElMessage.success(
-            'Machine reading saved successfully.'
+            existingReading ? 'Machine reading updated successfully.' : 'Machine reading saved successfully.'
           );
 
           await getcurrentreadings();
@@ -1595,68 +1486,6 @@ async function deleteSelectedSession(
           );
 
           await loadActiveSession();
-        } catch (error: any) {
-          if (
-            error !== 'cancel' &&
-                      error !== 'close'
-          ) {
-            console.error(error);
-          }
-        }
-}
-
-// ============================================================
-// DELETE READING
-// ============================================================
-
-async function handleDelete(
-        row: any
-) {
-        try {
-          await ElMessageBox.confirm(
-            `Delete the reading for Machine #${row.machinenumber}?`,
-            'Delete Reading',
-            {
-              confirmButtonText:
-                              'Delete',
-
-              cancelButtonText:
-                              'Cancel',
-
-              type:
-                              'warning'
-            }
-          );
-
-          await deletereading(
-            row.id,
-            locationid.value
-          );
-
-          ElMessage.success(
-            'Reading deleted successfully.'
-          );
-
-          await getcurrentreadings();
-
-          /*
-                   * If duplicate-warning machine is
-                   * currently selected, immediately
-                   * make it available again.
-                   */
-          if (
-            readingForm.machinenumber &&
-                      Number(
-                        readingForm.machinenumber
-                      ) ===
-                      Number(
-                        row.machinenumber
-                      )
-          ) {
-            machineWarning.value = '';
-
-            await getmachine();
-          }
         } catch (error: any) {
           if (
             error !== 'cancel' &&
@@ -1911,3 +1740,95 @@ onBeforeUnmount(
         }
 );
 </script>
+
+<style scoped lang="scss">
+.final-summary-section,
+.final-coverage-section {
+  margin-top: 20px;
+}
+
+.final-summary-section h3,
+.final-coverage-section h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+}
+
+.final-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.final-summary-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 84px;
+  padding: 15px 17px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 10px;
+  background: var(--el-fill-color-extra-light);
+  gap: 8px;
+}
+
+.final-summary-item span,
+.final-coverage-label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.final-summary-item strong {
+  font-size: 16px;
+  color: var(--el-text-color-primary);
+  overflow-wrap: anywhere;
+}
+
+.final-coverage-list {
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 10px;
+}
+
+.final-coverage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.final-coverage-row:last-child {
+  border-bottom: none;
+}
+
+.final-coverage-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (max-width: 900px) {
+  .final-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .final-summary-grid {
+    gap: 10px;
+  }
+
+  .final-summary-item {
+    padding: 12px;
+  }
+
+  .final-coverage-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+</style>

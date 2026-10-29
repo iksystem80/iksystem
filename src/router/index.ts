@@ -153,6 +153,20 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/importcustomers',
+    component: Layout,
+    redirect: '/importcustomers/index',
+    meta: { hidden: true },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/customer/importcustomers/index.vue'),
+        name: 'ImportCustomers',
+        meta: { title: 'Import Customers', noCache: true, hidden: true, permission: 'customers' }
+      }
+    ]
+  },
+  {
     path: '/customercheckin',
     component: () => import('@/views/customer/checkin/tabletcheckin'),
     name: 'CustomerCheckin',

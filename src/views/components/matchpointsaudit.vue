@@ -268,4 +268,32 @@ watch(() => [props.readingSessionId, props.locationId], loadAudit, { immediate: 
       flex: 0 0 auto;
       font-size: 13px;
     }
+
+  /* Keep all audit filters reachable with a horizontal swipe on mobile. */
+  @media (max-width: 767px) {
+    .match-audit-toolbar {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .match-audit-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .match-audit-toolbar :deep(.el-radio-group) {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      width: max-content;
+      min-width: max-content;
+    }
+
+    .match-audit-toolbar :deep(.el-radio-button) {
+      flex: 0 0 auto;
+    }
+  }
 </style>

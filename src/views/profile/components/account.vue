@@ -41,11 +41,44 @@
         <div class="setting-info">
           <div class="setting-title">Customer Status</div>
           <div class="setting-description">
-            Manage the customer's account, VIP and blacklist status.
+            Manage phone verification, account, VIP and blacklist status.
           </div>
         </div>
 
-        <VerificationBadge :status="verificationStatusLabel(customer)" />
+        <VerificationBadge :status="form.verificationStatus" />
+      </div>
+
+      <el-divider />
+
+      <div class="setting-row verification-edit-row">
+        <div class="setting-info">
+          <div class="setting-title">Phone Number</div>
+          <div class="setting-description">A changed phone number will automatically become Unverified.</div>
+        </div>
+        <div class="phone-edit-actions">
+          <template v-if="editingPhone">
+            <el-input v-model="form.phone" class="verification-control" maxlength="14" placeholder="(XXX) XXX-XXXX" inputmode="tel" @input="handlePhoneInput" />
+            <el-button @click="cancelPhoneEdit">Cancel</el-button>
+          </template>
+          <template v-else>
+            <span class="phone-display-value">{{ formatPhone(form.phone) }}</span>
+            <el-button @click="startPhoneEdit">Edit Phone</el-button>
+          </template>
+        </div>
+      </div>
+
+      <el-divider />
+
+      <div class="setting-row verification-edit-row">
+        <div class="setting-info">
+          <div class="setting-title">Phone Verification</div>
+          <div class="setting-description">{{ phoneChanged ? 'Phone number changed: verification will reset to Unverified.' : 'Set the customer\'s phone verification status.' }}</div>
+        </div>
+        <el-select v-model="form.verificationStatus" class="verification-control" :disabled="phoneChanged">
+          <el-option label="Verified" value="Verified" />
+          <el-option label="Unverified" value="Unverified" />
+          <el-option label="Bypass" value="Bypass" />
+        </el-select>
       </div>
 
       <el-divider />
@@ -129,7 +162,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 
 
@@ -150,14 +183,47 @@ const props = defineProps({
 const emit = defineEmits(['updated']);
 
 const saving = ref(false);
+const editingPhone = ref(false);
+const verificationBeforePhoneEdit = ref('Unverified');
 
 const form = reactive({
     points: 0,
+    phone: '',
+    verificationStatus: 'Unverified',
     isActive: false,
     isVip: false,
     isBlacklist: false,
     privilegedMatchRule: false
 });
+
+const phoneChanged = computed(() =>
+    String(form.phone || '').replace(/\D/g, '') !==
+    String(props.customer?.phone || '').replace(/\D/g, '')
+);
+
+function formatPhone(value) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 10);
+    if (digits.length <= 3) return digits ? `(${digits}` : '';
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function startPhoneEdit() {
+    verificationBeforePhoneEdit.value = form.verificationStatus;
+    form.phone = formatPhone(form.phone);
+    editingPhone.value = true;
+}
+
+function cancelPhoneEdit() {
+    form.phone = props.customer?.phone ?? '';
+    form.verificationStatus = verificationBeforePhoneEdit.value;
+    editingPhone.value = false;
+}
+
+function handlePhoneInput(value) {
+    form.phone = formatPhone(value);
+    if (phoneChanged.value) form.verificationStatus = 'Unverified';
+}
 
 
 
@@ -169,6 +235,9 @@ watch(
       if (!customer) return;
 
       form.points = customer.points ?? 0;
+      form.phone = customer.phone ?? '';
+      editingPhone.value = false;
+      form.verificationStatus = verificationStatusLabel(customer);
       form.isActive = customer.isactive ?? false;
       form.isVip = customer.isvip ?? false;
       form.isBlacklist = customer.isblacklist ?? false;
@@ -182,7 +251,7 @@ watch(
     }
 );
 
-const verificationStatusLabel = customer => {
+function verificationStatusLabel(customer) {
     if (customer?.phoneverified === true) return 'Verified';
 
     if (
@@ -194,7 +263,7 @@ const verificationStatusLabel = customer => {
     }
 
     return 'Unverified';
-};
+}
 
 const addPoints = amount => {
     form.points = amount;
@@ -202,12 +271,19 @@ const addPoints = amount => {
 
 const saveAccount = async () => {
     try {
+      const phone = String(form.phone || '').replace(/\D/g, '');
+      if (phone.length !== 10) {
+        ElMessage.warning('Enter a valid 10-digit phone number.');
+        return;
+      }
       saving.value = true;
 
       const payload = {
         customerid: props.customer.id,
         userId: userStore.userId,
         points: form.points,
+        phone,
+        verificationstatus: form.verificationStatus.toLowerCase(),
         isactive: form.isActive,
         isvip: form.isVip,
         isblacklist: form.isBlacklist,
@@ -218,6 +294,8 @@ const saveAccount = async () => {
                   await updateCustomerAccount(payload);
 
       ElMessage.success(response.message);
+
+      editingPhone.value = false;
 
       emit('updated');
     } catch (error) {
@@ -289,6 +367,29 @@ const saveAccount = async () => {
 
   .points-input {
     width: 220px;
+  }
+
+  .verification-control {
+    width: 240px;
+    max-width: 100%;
+  }
+
+  .phone-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .phone-display-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .verification-edit-row {
+    gap: 16px;
   }
 
   /* =========================
@@ -396,6 +497,20 @@ const saveAccount = async () => {
 
     .points-input {
       width: 100%;
+    }
+
+    .verification-edit-row {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .verification-control {
+      width: 100%;
+    }
+
+    .phone-edit-actions {
+      justify-content: flex-start;
     }
 
     .save-section .el-button {

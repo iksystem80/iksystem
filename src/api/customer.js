@@ -17,6 +17,15 @@ export function savecustomer(data) {
   });
 }
 
+export function importCustomers(data) {
+  return request({
+    url: '/customer/importcustomers',
+    method: 'post',
+    data,
+    timeout: 300000
+  });
+}
+
 export function getcustomers(locationid) {
   return request({
     url: '/customer/getall',
