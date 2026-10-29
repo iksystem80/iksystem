@@ -37,3 +37,6 @@ keystore.properties
 
 # ZIP archives
 *.zip
+
+# Visual Studio temporary files
+.vs/
