@@ -306,6 +306,16 @@
                   </template>
                 </el-table-column>
 
+                <el-table-column label="Action" width="90" fixed="right" align="center">
+                  <template #default="{ row }">
+                    <el-button v-if="row.status === 'CLOSED' && row.actualCash != null"
+                               link type="primary" :disabled="closingCorrectionBusy"
+                               @click="openClosingCorrection(row)">
+                      <el-icon><Edit /></el-icon><span>Edit</span>
+                    </el-button>
+                  </template>
+                </el-table-column>
+
               </el-table>
             </div>
           </div>
@@ -534,6 +544,42 @@
       </el-tab-pane>
     </el-tabs>
 
+    <el-dialog v-model="closingCorrectionOpen"
+               title="Correct Shift Handover"
+               width="min(480px, 94vw)"
+               :close-on-click-modal="false"
+               append-to-body destroy-on-close>
+      <el-form label-position="top" @submit.prevent="saveClosingCorrection">
+        <div class="hint" style="margin-bottom:16px">
+          {{ closingCorrection.employeeName }} · Session #{{ closingCorrection.sessionNumber }}
+          <div>{{ closingCorrection.destination }}</div>
+        </div>
+        <el-form-item label="Original Actual Amount">
+          <el-input :model-value="money(closingCorrection.oldActual)" disabled />
+        </el-form-item>
+        <el-form-item label="Corrected Actual Amount">
+          <el-input v-model="closingCorrection.amount" inputmode="decimal" placeholder="0.00">
+            <template #prefix>$</template>
+          </el-input>
+        </el-form-item>
+        <div class="hint" style="margin-bottom:14px">
+          Calculated: {{ money(closingCorrection.calculated) }}
+          · New Short / Over: {{ signedMoney(closingCorrectionVariance) }}
+        </div>
+        <el-form-item label="Reason for correction (required)">
+          <el-input v-model="closingCorrection.reason" type="textarea" :rows="3"
+                    maxlength="500" show-word-limit
+                    placeholder="Explain why the original amount was incorrect" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button :disabled="closingCorrectionBusy" @click="closingCorrectionOpen = false">Cancel</el-button>
+        <el-button type="primary" :loading="closingCorrectionBusy" @click="saveClosingCorrection">
+          Save Correction
+        </el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="editCreditTypeOpen"
                title="Edit Credit Type"
                width="460px"
@@ -652,6 +698,12 @@ const transactionTypesLoading = ref(false);
 const adminLedger = ref([]);
 const currentMoneyTrail = ref([]);
 const moneyTrailLoading = ref(false);
+const closingCorrectionOpen = ref(false);
+const closingCorrectionBusy = ref(false);
+const closingCorrection = ref({ sessionId: null, sessionNumber: null, employeeName: '', destination: '',
+      oldActual: 0, calculated: 0, amount: '', reason: '' });
+const closingCorrectionVariance = computed(() =>
+      Number(closingCorrection.value.amount || 0) - Number(closingCorrection.value.calculated || 0));
 const adminFunding = ref({ touserid: null, fundingtype: 'BUSINESS_SUPPORT', amount: '', notes: '' });
 const editFundingOpen = ref(false);
 const editFunding = ref({ id: null, touserid: null, fundingtype: 'INITIAL_OPENING', amount: '', notes: '' });
@@ -824,6 +876,57 @@ async function loadCurrentMoneyTrail() {
         ElMessage.error(errorText(e));
       } finally {
         moneyTrailLoading.value = false;
+      }
+}
+
+function openClosingCorrection(row) {
+      closingCorrection.value = {
+        sessionId: row.id,
+        sessionNumber: row.sessionNumber ?? row.id,
+        employeeName: row.employeeName,
+        destination: row.destination,
+        oldActual: Number(row.actualCash),
+        calculated: Number(row.closingBalance ?? row.calculatedBalance),
+        amount: Number(row.actualCash).toFixed(2),
+        reason: ''
+      };
+      closingCorrectionOpen.value = true;
+}
+
+async function saveClosingCorrection() {
+      const entry = closingCorrection.value;
+      if (!/^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(String(entry.amount).trim()))
+        return ElMessage.warning('Enter a nonnegative amount with up to two decimals.');
+      if (Number(entry.amount) === Number(entry.oldActual))
+        return ElMessage.warning('Enter an amount different from the original.');
+      if (entry.reason.trim().length < 5)
+        return ElMessage.warning('Enter a correction reason of at least 5 characters.');
+      try {
+        await ElMessageBox.confirm(
+          `Correct Session #${entry.sessionNumber} from ${money(entry.oldActual)} to ${money(entry.amount)}? Related cash records will be updated.`,
+          'Confirm Cash Correction', { type: 'warning', confirmButtonText: 'Confirm correction' }
+        );
+      } catch { return; }
+      closingCorrectionBusy.value = true;
+      try {
+        const response = await request({
+          url: '/employeefinance/admin/correct-shift-closing',
+          method: 'post',
+          data: {
+            locationid: locationId.value,
+            sessionid: entry.sessionId,
+            expectedactualcash: Number(entry.oldActual).toFixed(2),
+            actualcash: String(entry.amount).trim(),
+            reason: entry.reason.trim()
+          }
+        });
+        ElMessage.success(response?.message || 'Shift handover corrected.');
+        closingCorrectionOpen.value = false;
+        await refreshBalances();
+      } catch (e) {
+        ElMessage.error(errorText(e));
+      } finally {
+        closingCorrectionBusy.value = false;
       }
 }
 

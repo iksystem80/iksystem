@@ -124,7 +124,10 @@
               <span class="compact-entry-bar"></span>
 
               <div class="compact-entry-person">
-                <strong>{{ entry.customerName }}</strong>
+                <div class="entry-customer-name-row">
+                  <strong>{{ entry.customerName }}</strong>
+                  <el-tag v-if="entry.isExtraMatch" type="warning" effect="light" size="small" round>Extra</el-tag>
+                </div>
                 <span>{{ formatTime(entry.dateAssign) }}</span>
               </div>
 
@@ -190,6 +193,7 @@
             <div class="audit-customer">
               <span>CUSTOMER</span>
               <h2>{{ selectedEntry.customerName }}</h2>
+              <el-tag v-if="selectedEntry.isExtraMatch" type="warning" effect="light" size="small" round>Extra</el-tag>
               <el-tag :type="reviewTagType(selectedEntry.reviewStatus)" effect="light" class="review-status-tag">
                 {{ selectedEntry.reviewStatus || 'Pending' }}
               </el-tag>
@@ -507,6 +511,13 @@ const pointPalette = ['var(--el-color-primary)','var(--green)','var(--yellow)','
 
 
 <style scoped>
+  .entry-customer-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
   @media (max-width: 767px) {
     .points-report-summary-grid {
       display: grid !important;

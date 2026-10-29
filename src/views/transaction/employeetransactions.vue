@@ -273,6 +273,12 @@
                              :label="customer.fullname || [customer.firstname, customer.lastname].filter(Boolean).join(' ') || customer.name || `Customer #${customer.id}`" />
                 </el-select>
 
+                <el-input v-model="extraMatch.machineNumber"
+                          class="cash-amount-input"
+                          inputmode="numeric"
+                          placeholder="Machine #"
+                          :disabled="extraMatchRuleBlocked || extraMatchEligibilityLoading || extraMatchSaving" />
+
                 <el-input v-model="extraMatch.points"
                           class="cash-amount-input"
                           inputmode="decimal"
@@ -609,7 +615,7 @@ const handoverDialogOpen = ref(false);
 const extraMatchDialogOpen = ref(false); const extraMatchCustomersLoading = ref(false); const extraMatchSaving = ref(false);
 const extraMatchCustomers = ref([]); const extraMatchCameraOpen = ref(false); const extraMatchCameraRef = ref(null);
 const extraMatchPhoto = ref(null); const extraMatchPreview = ref('');
-const extraMatch = ref({ customerid: null, points: '' });
+const extraMatch = ref({ customerid: null, machineNumber: '', points: '' });
 const extraMatchEligibilityLoading = ref(false);
 const extraMatchEligibility = ref(null);
 const extraMatchRuleBlocked = computed(() =>
@@ -944,7 +950,7 @@ function handleExtraMatchCaptured(image) {
 
 function resetExtraMatch() {
                         resetExtraMatchPhotoOnly();
-                        extraMatch.value = { customerid: null, points: '' };
+                        extraMatch.value = { customerid: null, machineNumber: '', points: '' };
                         extraMatchEligibility.value = null;
 }
 
@@ -954,6 +960,8 @@ function cancelExtraMatchEntry() {
 }
 async function saveExtraMatchEntry() {
                         if (!extraMatch.value.customerid) return ElMessage.warning('Select a customer.');
+                        if (!/^\d+$/.test(String(extraMatch.value.machineNumber).trim()) || Number(extraMatch.value.machineNumber) <= 0)
+                          return ElMessage.warning('Enter a valid machine number.');
 
                         const eligible = await refreshExtraMatchEligibility();
                         if (!eligible) {
@@ -969,6 +977,7 @@ async function saveExtraMatchEntry() {
                           formData.append('image', imageFile);
                           formData.append('customer', JSON.stringify({
                             customerid: extraMatch.value.customerid,
+                            machineNumber: String(extraMatch.value.machineNumber).trim(),
                             points: Number(extraMatch.value.points),
                             assignedby: userStore.userId,
                             locationid: locationId.value
@@ -1166,6 +1175,20 @@ onBeforeUnmount(() => {
   grid-template-columns: minmax(170px, 1fr) minmax(190px, 0.8fr) 175px 190px;
 }
 
+/* Extra Match: keep customer, machine, amount and photo action on one row. */
+.cash-activity-row.extra-match-inline {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) minmax(115px, 0.45fr) minmax(125px, 0.45fr) minmax(145px, 0.5fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.cash-activity-row.extra-match-inline > * {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+}
+
 .cash-activity-form .cash-activity-row > * {
   min-width: 0;
   width: 100%;
@@ -1178,12 +1201,21 @@ onBeforeUnmount(() => {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: 16px;
   }
+
+  .cash-activity-row.extra-match-inline {
+    grid-template-columns: minmax(145px, 1fr) minmax(95px, 0.55fr) minmax(105px, 0.55fr) minmax(120px, 0.6fr);
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 560px) {
   .cash-activity-form .cash-activity-row,
   .cash-activity-form .cash-activity-row.has-loan-lender {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cash-activity-row.extra-match-inline {
+    grid-template-columns: 145px 95px 105px 120px;
   }
 }
 </style>
