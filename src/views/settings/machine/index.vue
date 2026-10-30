@@ -7,9 +7,22 @@
           Manage machines, machine types, games and machine history.
         </p>
       </div>
-      <el-button v-if="canManageMachines" type="primary" @click="openGenerateDialog">
-        Generate Machines
-      </el-button>
+      <div class="machine-setup-header-actions">
+        <el-dropdown trigger="click" @command="downloadNfcTags">
+          <el-button :disabled="loadingMachines || !nfcTagMachines.length">
+            Download NFC Tags <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="csv">Download CSV</el-dropdown-item>
+              <el-dropdown-item command="json">Download JSON</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-button v-if="canManageMachines" type="primary" @click="openGenerateDialog">
+          Generate Machines
+        </el-button>
+      </div>
     </div>
     <el-tabs v-model="activeTab">
       <!-- ================================================== -->
@@ -274,28 +287,28 @@
             <el-table-column label="Actions" width="194" align="center">
               <template #default="{ row }">
                 <div class="machine-action-buttons align-right">
-                    <el-button v-if="row.ReplacedMachineId" link  type="info" @click="openArchivedReadingHistory(row)" title="Archived reading history">
-                      <LcFolderBookmark :size="18" />
-                    </el-button>
-                    <el-button link  @click="openReadingHistory(row)" title="View reading history">
-                      <LcHistory :size="18"/>
-                    </el-button>
-                    <el-button link  type="primary" title="Save initial reading"
-                               :loading="savingInitialMachineId === row.ID"
-                               :disabled="isInactiveMachine(row) || row.IsSessionReading"
-                               @click="saveInitialReading(row)">
-                      <LcSaveCheck :size="18"/>
-                    </el-button>
-                    <el-button link type="warning" title="Reset"
-                               :disabled="isInactiveMachine(row)"
-                               @click="replaceMachine(row)">
-                      <LcRefreshCcw :size="18" />
-                    </el-button>
-                    <!--<el-button link type="danger" title="Deactivate machine"
-                               :disabled="isInactiveMachine(row)"
-                               @click="deactivateInitialMachine(row)">
-                      <LcTrash :size="18"/>
-                    </el-button>-->
+                  <el-button v-if="row.ReplacedMachineId" link type="info" @click="openArchivedReadingHistory(row)" title="Archived reading history">
+                    <LcFolderBookmark :size="18" />
+                  </el-button>
+                  <el-button link @click="openReadingHistory(row)" title="View reading history">
+                    <LcHistory :size="18" />
+                  </el-button>
+                  <el-button link type="primary" title="Save initial reading"
+                             :loading="savingInitialMachineId === row.ID"
+                             :disabled="isInactiveMachine(row) || row.IsSessionReading"
+                             @click="saveInitialReading(row)">
+                    <LcSaveCheck :size="18" />
+                  </el-button>
+                  <el-button link type="warning" title="Reset"
+                             :disabled="isInactiveMachine(row)"
+                             @click="replaceMachine(row)">
+                    <LcRefreshCcw :size="18" />
+                  </el-button>
+                  <!--<el-button link type="danger" title="Deactivate machine"
+                             :disabled="isInactiveMachine(row)"
+                             @click="deactivateInitialMachine(row)">
+                    <LcTrash :size="18"/>
+                  </el-button>-->
                 </div>
               </template>
             </el-table-column>
@@ -501,10 +514,14 @@
                destroy-on-close>
       <el-table v-loading="readingHistoryLoading" :data="readingHistoryRows" border max-height="62vh" empty-text="No readings recorded">
         <el-table-column label="Date / Time" min-width="175">
-          <template #default="{ row }">{{ formatDateTime(row.readingAt) }}</template>
+          <template #default="{ row }">
+            {{ formatDateTime(row.readingAt) }}
+          </template>
         </el-table-column>
         <el-table-column label="Session" min-width="125">
-          <template #default="{ row }">{{ row.sessionId == null ? 'Initial' : `#${row.sessionNumber ?? row.sessionId}` }}</template>
+          <template #default="{ row }">
+            {{ row.sessionId == null ? 'Initial' : `#${row.sessionNumber ?? row.sessionId}` }}
+          </template>
         </el-table-column>
         <el-table-column prop="previousIn" label="Previous IN" min-width="120" />
         <el-table-column prop="previousOut" label="Previous OUT" min-width="120" />
@@ -566,717 +583,775 @@
 </template>
 
 <script setup lang="ts">
-import {
-      computed,
-      onMounted,
-      reactive,
-      ref,
-      watch
-} from 'vue';
+  import {
+    computed,
+    onMounted,
+    reactive,
+    ref,
+    watch
+  } from 'vue';
 
-import { ElMessage,ElMessageBox } from 'element-plus';
-import {
-  FolderBookmark as LcFolderBookmark, History as LcHistory, SaveCheck as LcSaveCheck, RefreshCcw as LcRefreshCcw,
-  Trash as LcTrash, Pencil as LcPencil } from '@lucide/vue'
-import { useUserStore } from '@/store/modules/user';
-import { formatDateTime } from '@/utils/date';
-import request from '@/utils/request';
+  import { ElMessage, ElMessageBox } from 'element-plus';
+  import { ArrowDown } from '@element-plus/icons-vue';
+  import {
+    FolderBookmark as LcFolderBookmark, History as LcHistory, SaveCheck as LcSaveCheck, RefreshCcw as LcRefreshCcw,
+    Trash as LcTrash, Pencil as LcPencil
+  } from '@lucide/vue'
+  import { useUserStore } from '@/store/modules/user';
+  import { formatDateTime } from '@/utils/date';
+  import request from '@/utils/request';
 
-import {
-      getMachines,
-      generateMachines,
-      updateMachine,
-      getMachineLogs,
-      getMachineStatuses,
-      getMachineTypes,
-      createMachineType,
-      updateMachineType,
-      deleteMachineType,
-      getGames,
-      createGame,
-      updateGame,
-      deleteGame
-} from '@/api/machine';
+  import {
+    getMachines,
+    generateMachines,
+    updateMachine,
+    getMachineLogs,
+    getMachineStatuses,
+    getMachineTypes,
+    createMachineType,
+    updateMachineType,
+    deleteMachineType,
+    getGames,
+    createGame,
+    updateGame,
+    deleteGame
+  } from '@/api/machine';
 
-import {
-      getInitialMachineReadings,
-      saveInitialMachineReading,
-      deactivateMachine
-} from '@/api/machineinitialreading';
+  import {
+    getInitialMachineReadings,
+    saveInitialMachineReading,
+    deactivateMachine
+  } from '@/api/machineinitialreading';
 
-const userStore = useUserStore();
+  const userStore = useUserStore();
 
-const activeTab = ref('machines');
-const machineSearch = ref('');
-const initialReadingSearch = ref('');
+  const activeTab = ref('machines');
+  const machineSearch = ref('');
+  const initialReadingSearch = ref('');
 
-const machines = ref<any[]>([]);
-const machineTypes = ref<any[]>([]);
-const statuses = ref<any[]>([]);
-const games = ref<any[]>([]);
-const history = ref<any[]>([]);
-const initialReadingRows = ref<any[]>([]);
+  const machines = ref<any[]>([]);
 
-const loadingMachines = ref(false);
-const historyLoading = ref(false);
-const saving = ref(false);
-const loadingInitialReadings = ref(false);
-const savingInitialMachineId = ref<number | null>(null);
+  // One physical NFC tag per active machine, in machine-number order.
+  const nfcTagMachines = computed(() => machines.value
+    .filter(row => !row.IsArchived && !isInactiveMachine(row))
+    .filter(row => String(row.MachineNumber ?? '').trim() !== '')
+    .sort((a, b) => Number(a.MachineNumber) - Number(b.MachineNumber)));
 
-const generateVisible = ref(false);
-const machineVisible = ref(false);
-const typeVisible = ref(false);
-const gameVisible = ref(false);
-const historyVisible = ref(false);
-const readingHistoryVisible = ref(false);
-const readingHistoryLoading = ref(false);
-const readingHistoryRows = ref<any[]>([]);
-const readingHistoryMachine = ref<string | number>('');
+  function downloadNfcTags(format: string) {
+    const locationId = Number(userStore.locationId);
+    if (!Number.isSafeInteger(locationId) || locationId <= 0 || !nfcTagMachines.value.length) {
+      ElMessage.warning('Select a location with active machines first.');
+      return;
+    }
 
-function openArchivedReadingHistory(row: any) {
-  if (!row.ReplacedMachineId) return;
-  openReadingHistory({ ID: row.ReplacedMachineId, MachineNumber: row.MachineNumber });
-}
+    const urls = nfcTagMachines.value.map(row =>
+      `https://secure.iklogy.com/nfc/${locationId}/${encodeURIComponent(String(row.MachineNumber))}`
+    );
 
-async function openReadingHistory(row: any) {
-  readingHistoryVisible.value = true;
-  readingHistoryMachine.value = row.MachineNumber;
-  readingHistoryRows.value = [];
-  readingHistoryLoading.value = true;
-  try {
-    const result: any = await request({
-      url: `/machine/reading-history/${row.ID}`,
-      method: 'get',
-      params: { locationid: userStore.locationId }
-    });
-    readingHistoryRows.value = result.data || [];
-  } catch (error) {
-    ElMessage.error('Unable to load machine reading history.');
-  } finally {
-    readingHistoryLoading.value = false;
+    // CSV keeps its existing format. JSON is a plain array of URLs,
+    // matching the user's NFC import file without an "items" wrapper.
+    const isCsv = format === 'csv';
+    const contents = isCsv
+      ? 'content\r\n' + urls.join('\r\n') + '\r\n'
+      : JSON.stringify(urls, null, 2);
+    const blob = new Blob([contents], { type: isCsv ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8' });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = `nfc-tags-location-${locationId}.${isCsv ? 'csv' : 'json'}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    ElMessage.success(`Downloaded ${urls.length} NFC tag URLs.`);
   }
-}
+  const machineTypes = ref<any[]>([]);
+  const statuses = ref<any[]>([]);
+  const games = ref<any[]>([]);
+  const history = ref<any[]>([]);
+  const initialReadingRows = ref<any[]>([]);
 
+  const loadingMachines = ref(false);
+  const historyLoading = ref(false);
+  const saving = ref(false);
+  const loadingInitialReadings = ref(false);
+  const savingInitialMachineId = ref<number | null>(null);
 
-const canManageMachines = computed(() =>
-      userStore.isOwner ||
-          userStore.isAdmin ||
-          userStore.hasPermission('machines.update')
-);
+  const generateVisible = ref(false);
+  const machineVisible = ref(false);
+  const typeVisible = ref(false);
+  const gameVisible = ref(false);
+  const historyVisible = ref(false);
+  const readingHistoryVisible = ref(false);
+  const readingHistoryLoading = ref(false);
+  const readingHistoryRows = ref<any[]>([]);
+  const readingHistoryMachine = ref<string | number>('');
 
-const canManageTypes = computed(() =>
-      userStore.isOwner ||
-          userStore.isAdmin ||
-          userStore.hasPermission('machinetypes.update')
-);
+  function openArchivedReadingHistory(row: any) {
+    if (!row.ReplacedMachineId) return;
+    openReadingHistory({ ID: row.ReplacedMachineId, MachineNumber: row.MachineNumber });
+  }
 
-const canManageGames = computed(() =>
-      userStore.isOwner ||
-          userStore.isAdmin ||
-          userStore.hasPermission('games.update')
-);
-
-const generateForm = reactive({
-      startNumber: 1,
-      endNumber: 10,
-      machineTypeId: null as number | null
-});
-
-const machineForm = reactive<any>({
-      ID: null,
-      MachineNumber: null,
-      MachineTypeId: null,
-      GameId: null,
-      StatusId: null,
-      StatusReason: ''
-});
-
-const typeForm = reactive<any>({
-      ID: null,
-      TypeName: '',
-      IsActive: true
-});
-
-const gameForm = reactive<any>({
-      ID: null,
-      GameName: '',
-      MachineTypeId: null,
-      IsActive: true
-});
-
-const activeMachineTypes = computed(() =>
-      machineTypes.value.filter(x => x.IsActive)
-);
-
-const compatibleGames = computed(() =>
-      games.value.filter(
-        x =>
-          x.IsActive &&
-              Number(x.MachineTypeId) ===
-                Number(machineForm.MachineTypeId)
-      )
-);
-
-const selectedStatusIsNotWorking = computed(() => {
-      const item = statuses.value.find(
-        x => Number(x.ID) === Number(machineForm.StatusId)
-      );
-
-      return (
-        String(item?.Description || '')
-          .trim()
-          .toLowerCase() === 'not working'
-      );
-});
-
-const filteredMachines = computed(() => {
-      const text = machineSearch.value
-        .trim()
-        .toLowerCase();
-
-      const visible = machines.value.filter(item => !item.IsArchived);
-      if (!text) return visible;
-
-      return visible.filter(item =>
-        [
-          item.MachineNumber,
-          item.MachineTypeName,
-          item.GameName,
-          item.Status,
-          item.StatusReason
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(text)
-      );
-});
-
-
-const filteredInitialReadingRows = computed(() => {
-      const text = initialReadingSearch.value.trim().toLowerCase();
-
-      const visible = initialReadingRows.value.filter(row => !row.IsArchived);
-      if (!text) return visible;
-
-      return visible.filter(row =>
-        [
-          row.MachineNumber,
-          row.Status
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(text)
-      );
-});
-
-function isInactiveMachine(row: any) {
-      return String(row?.Status || '')
-        .trim()
-        .toLowerCase() === 'inactive';
-}
-
-function normalizeInitialReadingRow(row: any) {
-      return {
-        ...row,
-        PreviousIn: row.PreviousIn == null ? 0 : Number(row.PreviousIn),
-        PreviousOut: row.PreviousOut == null ? 0 : Number(row.PreviousOut),
-        CurrentIn: row.CurrentIn == null ? 0 : Number(row.CurrentIn),
-        CurrentOut: row.CurrentOut == null ? 0 : Number(row.CurrentOut)
-      };
-}
-
-async function loadInitialReadings() {
-      if (!userStore.locationId) {
-        initialReadingRows.value = [];
-        return;
-      }
-
-      loadingInitialReadings.value = true;
-
-      try {
-        const result = await getInitialMachineReadings(
-          userStore.locationId
-        );
-
-        initialReadingRows.value =
-          (result.data || []).map(normalizeInitialReadingRow);
-      } finally {
-        loadingInitialReadings.value = false;
-      }
-}
-
-async function saveInitialReading(row: any) {
-      if (!userStore.locationId || !row?.ID) return;
-
-      const values = [
-        row.PreviousIn,
-        row.PreviousOut,
-        row.CurrentIn,
-        row.CurrentOut
-      ];
-
-      if (
-        values.some(
-          value =>
-            value === null ||
-            value === undefined ||
-            !Number.isFinite(Number(value)) ||
-            Number(value) < 0
-        )
-      ) {
-        return ElMessage.error(
-          'All four readings must be valid non-negative numbers.'
-        );
-      }
-
-      savingInitialMachineId.value = Number(row.ID);
-
-      try {
-        await saveInitialMachineReading(
-          row.ID,
-          {
-            locationid: Number(userStore.locationId),
-            previousIn: Number(row.PreviousIn),
-            previousOut: Number(row.PreviousOut),
-            currentIn: Number(row.CurrentIn),
-            currentOut: Number(row.CurrentOut)
-          }
-        );
-
-        ElMessage.success(
-          `Initial reading saved for Machine #${row.MachineNumber}.`
-        );
-
-        await loadInitialReadings();
-      } finally {
-        savingInitialMachineId.value = null;
-      }
-}
-
-async function replaceMachine(row: any) {
-      if (!row?.ID || !userStore.locationId) return;
-      const typeResult: any = await ElMessageBox.prompt(
-        `Choose BOARD or MACHINE for Machine #${row.MachineNumber}. The old machine and every reading will be archived, and a new machine ID will be created.`,
-        'Replace Machine / Board',
-        { confirmButtonText: 'Continue', inputPlaceholder: 'BOARD or MACHINE',
-          inputValidator: (value: string) => ['BOARD','MACHINE'].includes(String(value).trim().toUpperCase()) || 'Enter BOARD or MACHINE' }
-      );
-      const reasonResult: any = await ElMessageBox.prompt(
-        'Enter the reason for replacement. Existing readings and completed reports will remain unchanged.',
-        'Confirm Replacement',
-        { confirmButtonText: 'Replace', inputPlaceholder: 'Reason for replacement',
-          inputValidator: (value: string) => (String(value).trim().length > 0 && String(value).trim().length <= 1000) || 'A reason (max 1000 characters) is required' }
-      );
-      await request({
-        url: `/machine/replace/${row.ID}`,
-        method: 'post',
-        data: {
-          locationid: Number(userStore.locationId),
-          replacementType: String(typeResult.value).trim().toUpperCase(),
-          reason: String(reasonResult.value).trim()
-        }
+  async function openReadingHistory(row: any) {
+    readingHistoryVisible.value = true;
+    readingHistoryMachine.value = row.MachineNumber;
+    readingHistoryRows.value = [];
+    readingHistoryLoading.value = true;
+    try {
+      const result: any = await request({
+        url: `/machine/reading-history/${row.ID}`,
+        method: 'get',
+        params: { locationid: userStore.locationId }
       });
-      ElMessage.success(`Machine #${row.MachineNumber} replaced. Enter its new initial readings.`);
-      await Promise.all([loadMachines(), loadInitialReadings()]);
-}
+      readingHistoryRows.value = result.data || [];
+    } catch (error) {
+      ElMessage.error('Unable to load machine reading history.');
+    } finally {
+      readingHistoryLoading.value = false;
+    }
+  }
 
-async function deactivateInitialMachine(row: any) {
-      if (!row?.ID || !userStore.locationId) return;
 
-      await ElMessageBox.confirm(
-        `Delete Machine #${row.MachineNumber}? The machine will remain in the database and its StatusId will be changed to Inactive.`,
-        'Deactivate Machine',
-        {
-          type: 'warning',
-          confirmButtonText: 'Delete'
-        }
+  const canManageMachines = computed(() =>
+    userStore.isOwner ||
+    userStore.isAdmin ||
+    userStore.hasPermission('machines.update')
+  );
+
+  const canManageTypes = computed(() =>
+    userStore.isOwner ||
+    userStore.isAdmin ||
+    userStore.hasPermission('machinetypes.update')
+  );
+
+  const canManageGames = computed(() =>
+    userStore.isOwner ||
+    userStore.isAdmin ||
+    userStore.hasPermission('games.update')
+  );
+
+  const generateForm = reactive({
+    startNumber: 1,
+    endNumber: 10,
+    machineTypeId: null as number | null
+  });
+
+  const machineForm = reactive<any>({
+    ID: null,
+    MachineNumber: null,
+    MachineTypeId: null,
+    GameId: null,
+    StatusId: null,
+    StatusReason: ''
+  });
+
+  const typeForm = reactive<any>({
+    ID: null,
+    TypeName: '',
+    IsActive: true
+  });
+
+  const gameForm = reactive<any>({
+    ID: null,
+    GameName: '',
+    MachineTypeId: null,
+    IsActive: true
+  });
+
+  const activeMachineTypes = computed(() =>
+    machineTypes.value.filter(x => x.IsActive)
+  );
+
+  const compatibleGames = computed(() =>
+    games.value.filter(
+      x =>
+        x.IsActive &&
+        Number(x.MachineTypeId) ===
+        Number(machineForm.MachineTypeId)
+    )
+  );
+
+  const selectedStatusIsNotWorking = computed(() => {
+    const item = statuses.value.find(
+      x => Number(x.ID) === Number(machineForm.StatusId)
+    );
+
+    return (
+      String(item?.Description || '')
+        .trim()
+        .toLowerCase() === 'not working'
+    );
+  });
+
+  const filteredMachines = computed(() => {
+    const text = machineSearch.value
+      .trim()
+      .toLowerCase();
+
+    const visible = machines.value.filter(item => !item.IsArchived);
+    if (!text) return visible;
+
+    return visible.filter(item =>
+      [
+        item.MachineNumber,
+        item.MachineTypeName,
+        item.GameName,
+        item.Status,
+        item.StatusReason
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(text)
+    );
+  });
+
+
+  const filteredInitialReadingRows = computed(() => {
+    const text = initialReadingSearch.value.trim().toLowerCase();
+
+    const visible = initialReadingRows.value.filter(row => !row.IsArchived);
+    if (!text) return visible;
+
+    return visible.filter(row =>
+      [
+        row.MachineNumber,
+        row.Status
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(text)
+    );
+  });
+
+  function isInactiveMachine(row: any) {
+    return String(row?.Status || '')
+      .trim()
+      .toLowerCase() === 'inactive';
+  }
+
+  function normalizeInitialReadingRow(row: any) {
+    return {
+      ...row,
+      PreviousIn: row.PreviousIn == null ? 0 : Number(row.PreviousIn),
+      PreviousOut: row.PreviousOut == null ? 0 : Number(row.PreviousOut),
+      CurrentIn: row.CurrentIn == null ? 0 : Number(row.CurrentIn),
+      CurrentOut: row.CurrentOut == null ? 0 : Number(row.CurrentOut)
+    };
+  }
+
+  async function loadInitialReadings() {
+    if (!userStore.locationId) {
+      initialReadingRows.value = [];
+      return;
+    }
+
+    loadingInitialReadings.value = true;
+
+    try {
+      const result = await getInitialMachineReadings(
+        userStore.locationId
       );
 
-      await deactivateMachine(
+      initialReadingRows.value =
+        (result.data || []).map(normalizeInitialReadingRow);
+    } finally {
+      loadingInitialReadings.value = false;
+    }
+  }
+
+  async function saveInitialReading(row: any) {
+    if (!userStore.locationId || !row?.ID) return;
+
+    const values = [
+      row.PreviousIn,
+      row.PreviousOut,
+      row.CurrentIn,
+      row.CurrentOut
+    ];
+
+    if (
+      values.some(
+        value =>
+          value === null ||
+          value === undefined ||
+          !Number.isFinite(Number(value)) ||
+          Number(value) < 0
+      )
+    ) {
+      return ElMessage.error(
+        'All four readings must be valid non-negative numbers.'
+      );
+    }
+
+    savingInitialMachineId.value = Number(row.ID);
+
+    try {
+      await saveInitialMachineReading(
         row.ID,
-        Number(userStore.locationId)
+        {
+          locationid: Number(userStore.locationId),
+          previousIn: Number(row.PreviousIn),
+          previousOut: Number(row.PreviousOut),
+          currentIn: Number(row.CurrentIn),
+          currentOut: Number(row.CurrentOut)
+        }
       );
 
       ElMessage.success(
-        `Machine #${row.MachineNumber} is now inactive.`
+        `Initial reading saved for Machine #${row.MachineNumber}.`
       );
 
-      await Promise.all([
-        loadMachines(),
-        loadInitialReadings()
+      await loadInitialReadings();
+    } finally {
+      savingInitialMachineId.value = null;
+    }
+  }
+
+  async function replaceMachine(row: any) {
+    if (!row?.ID || !userStore.locationId) return;
+    const typeResult: any = await ElMessageBox.prompt(
+      `Choose BOARD or MACHINE for Machine #${row.MachineNumber}. The old machine and every reading will be archived, and a new machine ID will be created.`,
+      'Replace Machine / Board',
+      {
+        confirmButtonText: 'Continue', inputPlaceholder: 'BOARD or MACHINE',
+        inputValidator: (value: string) => ['BOARD', 'MACHINE'].includes(String(value).trim().toUpperCase()) || 'Enter BOARD or MACHINE'
+      }
+    );
+    const reasonResult: any = await ElMessageBox.prompt(
+      'Enter the reason for replacement. Existing readings and completed reports will remain unchanged.',
+      'Confirm Replacement',
+      {
+        confirmButtonText: 'Replace', inputPlaceholder: 'Reason for replacement',
+        inputValidator: (value: string) => (String(value).trim().length > 0 && String(value).trim().length <= 1000) || 'A reason (max 1000 characters) is required'
+      }
+    );
+    await request({
+      url: `/machine/replace/${row.ID}`,
+      method: 'post',
+      data: {
+        locationid: Number(userStore.locationId),
+        replacementType: String(typeResult.value).trim().toUpperCase(),
+        reason: String(reasonResult.value).trim()
+      }
+    });
+    ElMessage.success(`Machine #${row.MachineNumber} replaced. Enter its new initial readings.`);
+    await Promise.all([loadMachines(), loadInitialReadings()]);
+  }
+
+  async function deactivateInitialMachine(row: any) {
+    if (!row?.ID || !userStore.locationId) return;
+
+    await ElMessageBox.confirm(
+      `Delete Machine #${row.MachineNumber}? The machine will remain in the database and its StatusId will be changed to Inactive.`,
+      'Deactivate Machine',
+      {
+        type: 'warning',
+        confirmButtonText: 'Delete'
+      }
+    );
+
+    await deactivateMachine(
+      row.ID,
+      Number(userStore.locationId)
+    );
+
+    ElMessage.success(
+      `Machine #${row.MachineNumber} is now inactive.`
+    );
+
+    await Promise.all([
+      loadMachines(),
+      loadInitialReadings()
+    ]);
+  }
+
+  function statusTag(status: string) {
+    switch (String(status || '').toLowerCase()) {
+      case 'working':
+      case 'active':
+        return 'success';
+
+      case 'not working':
+        return 'danger';
+
+      case 'inactive':
+        return 'info';
+
+      default:
+        return 'warning';
+    }
+  }
+
+  async function loadMachines() {
+    if (!userStore.locationId) return;
+
+    loadingMachines.value = true;
+
+    try {
+      const result = await getMachines(
+        userStore.locationId
+      );
+
+      machines.value = result.data || [];
+    } finally {
+      loadingMachines.value = false;
+    }
+  }
+
+  async function loadReferenceData() {
+    try {
+      const results = await Promise.allSettled([
+        getMachineTypes(),
+        getMachineStatuses(),
+        getGames()
       ]);
-}
 
-function statusTag(status: string) {
-      switch (String(status || '').toLowerCase()) {
-        case 'working':
-        case 'active':
-          return 'success';
+      const [typesResult, statusResult, gamesResult] = results;
 
-        case 'not working':
-          return 'danger';
-
-        case 'inactive':
-          return 'info';
-
-        default:
-          return 'warning';
-      }
-}
-
-async function loadMachines() {
-      if (!userStore.locationId) return;
-
-      loadingMachines.value = true;
-
-      try {
-        const result = await getMachines(
-          userStore.locationId
-        );
-
-        machines.value = result.data || [];
-      } finally {
-        loadingMachines.value = false;
-      }
-}
-
-async function loadReferenceData() {
-      try {
-        const results = await Promise.allSettled([
-          getMachineTypes(),
-          getMachineStatuses(),
-          getGames()
-        ]);
-
-        const [typesResult, statusResult, gamesResult] = results;
-
-        // Machine Types
-        if (typesResult.status === 'fulfilled') {
-          machineTypes.value = typesResult.value?.data || [];
-        } else {
-          machineTypes.value = [];
-          console.error(
-            'Failed loading machine types:',
-            typesResult.reason
-          );
-        }
-
-        // Machine Statuses
-        if (statusResult.status === 'fulfilled') {
-          statuses.value = statusResult.value?.data || [];
-        } else {
-          statuses.value = [];
-          console.error(
-            'Failed loading machine statuses:',
-            statusResult.reason
-          );
-        }
-
-        // Games
-        if (gamesResult.status === 'fulfilled') {
-          games.value = gamesResult.value?.data || [];
-        } else {
-          games.value = [];
-          console.error(
-            'Failed loading games:',
-            gamesResult.reason
-          );
-        }
-      } catch (error) {
+      // Machine Types
+      if (typesResult.status === 'fulfilled') {
+        machineTypes.value = typesResult.value?.data || [];
+      } else {
+        machineTypes.value = [];
         console.error(
-          'Error loading machine setup reference data:',
-          error
-        );
-      }
-}
-
-function openGenerateDialog() {
-      generateForm.startNumber = 1;
-      generateForm.endNumber = 10;
-      generateForm.machineTypeId = null;
-
-      generateVisible.value = true;
-}
-
-async function submitGenerate() {
-      if (!userStore.locationId) {
-        return ElMessage.error(
-          'Please select a location first.'
+          'Failed loading machine types:',
+          typesResult.reason
         );
       }
 
-      saving.value = true;
-
-      try {
-        const result = await generateMachines({
-          locationid: Number(userStore.locationId),
-          startNumber: generateForm.startNumber,
-          endNumber: generateForm.endNumber,
-          machineTypeId: generateForm.machineTypeId
-        });
-
-        ElMessage.success(
-          result.message || 'Machines generated.'
+      // Machine Statuses
+      if (statusResult.status === 'fulfilled') {
+        statuses.value = statusResult.value?.data || [];
+      } else {
+        statuses.value = [];
+        console.error(
+          'Failed loading machine statuses:',
+          statusResult.reason
         );
-
-        generateVisible.value = false;
-
-        await loadMachines();
-      } finally {
-        saving.value = false;
       }
-}
 
-function openEditMachine(row: any) {
-      Object.assign(machineForm, {
-        ID: row.ID,
-        MachineNumber: row.MachineNumber,
-        MachineTypeId: row.MachineTypeId,
-        GameId: row.GameId,
-        StatusId: row.StatusId,
-        StatusReason: row.StatusReason || ''
+      // Games
+      if (gamesResult.status === 'fulfilled') {
+        games.value = gamesResult.value?.data || [];
+      } else {
+        games.value = [];
+        console.error(
+          'Failed loading games:',
+          gamesResult.reason
+        );
+      }
+    } catch (error) {
+      console.error(
+        'Error loading machine setup reference data:',
+        error
+      );
+    }
+  }
+
+  function openGenerateDialog() {
+    generateForm.startNumber = 1;
+    generateForm.endNumber = 10;
+    generateForm.machineTypeId = null;
+
+    generateVisible.value = true;
+  }
+
+  async function submitGenerate() {
+    if (!userStore.locationId) {
+      return ElMessage.error(
+        'Please select a location first.'
+      );
+    }
+
+    saving.value = true;
+
+    try {
+      const result = await generateMachines({
+        locationid: Number(userStore.locationId),
+        startNumber: generateForm.startNumber,
+        endNumber: generateForm.endNumber,
+        machineTypeId: generateForm.machineTypeId
       });
 
-      machineVisible.value = true;
-}
-
-function machineTypeChanged() {
-      const game = games.value.find(
-        x =>
-          Number(x.ID) === Number(machineForm.GameId)
+      ElMessage.success(
+        result.message || 'Machines generated.'
       );
 
-      if (
-        game &&
-            Number(game.MachineTypeId) !==
-              Number(machineForm.MachineTypeId)
-      ) {
-        machineForm.GameId = null;
-      }
-}
+      generateVisible.value = false;
 
-function statusChanged() {
-      if (!selectedStatusIsNotWorking.value) {
-        machineForm.StatusReason = '';
-      }
-}
-
-async function saveMachine() {
-      if (
-        selectedStatusIsNotWorking.value &&
-            !String(machineForm.StatusReason || '').trim()
-      ) {
-        return ElMessage.error(
-          'Please enter the reason why the machine is not working.'
-        );
-      }
-
-      saving.value = true;
-
-      try {
-        await updateMachine(
-          machineForm.ID,
-          {
-            machineTypeId: machineForm.MachineTypeId,
-            gameId: machineForm.GameId,
-            statusId: machineForm.StatusId,
-            statusReason: machineForm.StatusReason
-          }
-        );
-
-        ElMessage.success(
-          'Machine updated successfully.'
-        );
-
-        machineVisible.value = false;
-
-        await loadMachines();
-      } finally {
-        saving.value = false;
-      }
-}
-
-async function openHistory(row: any) {
-      historyVisible.value = true;
-      historyLoading.value = true;
-
-      try {
-        const result = await getMachineLogs(row.ID);
-        history.value = result.data || [];
-      } finally {
-        historyLoading.value = false;
-      }
-}
-
-function openTypeDialog(row?: any) {
-      Object.assign(typeForm, {
-        ID: row?.ID || null,
-        TypeName: row?.TypeName || '',
-        IsActive: row?.IsActive ?? true
-      });
-
-      typeVisible.value = true;
-}
-
-async function saveType() {
-      if (!typeForm.TypeName.trim()) {
-        return ElMessage.error(
-          'Machine type name is required.'
-        );
-      }
-
-      saving.value = true;
-
-      try {
-        if (typeForm.ID) {
-          await updateMachineType(
-            typeForm.ID,
-            {
-              typeName: typeForm.TypeName,
-              isActive: typeForm.IsActive
-            }
-          );
-        } else {
-          await createMachineType({
-            typeName: typeForm.TypeName
-          });
-        }
-
-        ElMessage.success('Machine type saved.');
-
-        typeVisible.value = false;
-
-        await loadReferenceData();
-      } finally {
-        saving.value = false;
-      }
-}
-
-async function removeType(row: any) {
-      await ElMessageBox.confirm(
-        `Delete machine type "${row.TypeName}"?`,
-        'Confirm',
-        { type: 'warning' }
-      );
-
-      await deleteMachineType(row.ID);
-
-      ElMessage.success('Machine type deleted.');
-
-      await loadReferenceData();
-}
-
-function openGameDialog(row?: any) {
-      Object.assign(gameForm, {
-        ID: row?.ID || null,
-        GameName: row?.GameName || '',
-        MachineTypeId: row?.MachineTypeId || null,
-        IsActive: row?.IsActive ?? true
-      });
-
-      gameVisible.value = true;
-}
-
-async function saveGame() {
-      if (
-        !gameForm.GameName.trim() ||
-            !gameForm.MachineTypeId
-      ) {
-        return ElMessage.error(
-          'Game name and machine type are required.'
-        );
-      }
-
-      saving.value = true;
-
-      try {
-        const payload = {
-          gameName: gameForm.GameName,
-          machineTypeId: gameForm.MachineTypeId,
-          isActive: gameForm.IsActive
-        };
-
-        if (gameForm.ID) {
-          await updateGame(
-            gameForm.ID,
-            payload
-          );
-        } else {
-          await createGame(payload);
-        }
-
-        ElMessage.success('Game saved.');
-
-        gameVisible.value = false;
-
-        await loadReferenceData();
-      } finally {
-        saving.value = false;
-      }
-}
-
-async function removeGame(row: any) {
-      await ElMessageBox.confirm(
-        `Delete game "${row.GameName}"?`,
-        'Confirm',
-        { type: 'warning' }
-      );
-
-      await deleteGame(row.ID);
-
-      ElMessage.success('Game deleted.');
-
-      await loadReferenceData();
-}
-
-watch(
-      () => userStore.locationId,
-      async newLocation => {
-        if (newLocation) {
-          await loadMachines();
-
-          if (activeTab.value === 'initial-readings') {
-            await loadInitialReadings();
-          }
-        } else {
-          machines.value = [];
-          initialReadingRows.value = [];
-        }
-      }
-);
-
-watch(activeTab, async tab => {
-      if (tab === 'initial-readings') {
-        await loadInitialReadings();
-      }
-});
-
-onMounted(async () => {
-      await loadReferenceData();
       await loadMachines();
-});
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  function openEditMachine(row: any) {
+    Object.assign(machineForm, {
+      ID: row.ID,
+      MachineNumber: row.MachineNumber,
+      MachineTypeId: row.MachineTypeId,
+      GameId: row.GameId,
+      StatusId: row.StatusId,
+      StatusReason: row.StatusReason || ''
+    });
+
+    machineVisible.value = true;
+  }
+
+  function machineTypeChanged() {
+    const game = games.value.find(
+      x =>
+        Number(x.ID) === Number(machineForm.GameId)
+    );
+
+    if (
+      game &&
+      Number(game.MachineTypeId) !==
+      Number(machineForm.MachineTypeId)
+    ) {
+      machineForm.GameId = null;
+    }
+  }
+
+  function statusChanged() {
+    if (!selectedStatusIsNotWorking.value) {
+      machineForm.StatusReason = '';
+    }
+  }
+
+  async function saveMachine() {
+    if (
+      selectedStatusIsNotWorking.value &&
+      !String(machineForm.StatusReason || '').trim()
+    ) {
+      return ElMessage.error(
+        'Please enter the reason why the machine is not working.'
+      );
+    }
+
+    saving.value = true;
+
+    try {
+      await updateMachine(
+        machineForm.ID,
+        {
+          machineTypeId: machineForm.MachineTypeId,
+          gameId: machineForm.GameId,
+          statusId: machineForm.StatusId,
+          statusReason: machineForm.StatusReason
+        }
+      );
+
+      ElMessage.success(
+        'Machine updated successfully.'
+      );
+
+      machineVisible.value = false;
+
+      await loadMachines();
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  async function openHistory(row: any) {
+    historyVisible.value = true;
+    historyLoading.value = true;
+
+    try {
+      const result = await getMachineLogs(row.ID);
+      history.value = result.data || [];
+    } finally {
+      historyLoading.value = false;
+    }
+  }
+
+  function openTypeDialog(row?: any) {
+    Object.assign(typeForm, {
+      ID: row?.ID || null,
+      TypeName: row?.TypeName || '',
+      IsActive: row?.IsActive ?? true
+    });
+
+    typeVisible.value = true;
+  }
+
+  async function saveType() {
+    if (!typeForm.TypeName.trim()) {
+      return ElMessage.error(
+        'Machine type name is required.'
+      );
+    }
+
+    saving.value = true;
+
+    try {
+      if (typeForm.ID) {
+        await updateMachineType(
+          typeForm.ID,
+          {
+            typeName: typeForm.TypeName,
+            isActive: typeForm.IsActive
+          }
+        );
+      } else {
+        await createMachineType({
+          typeName: typeForm.TypeName
+        });
+      }
+
+      ElMessage.success('Machine type saved.');
+
+      typeVisible.value = false;
+
+      await loadReferenceData();
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  async function removeType(row: any) {
+    await ElMessageBox.confirm(
+      `Delete machine type "${row.TypeName}"?`,
+      'Confirm',
+      { type: 'warning' }
+    );
+
+    await deleteMachineType(row.ID);
+
+    ElMessage.success('Machine type deleted.');
+
+    await loadReferenceData();
+  }
+
+  function openGameDialog(row?: any) {
+    Object.assign(gameForm, {
+      ID: row?.ID || null,
+      GameName: row?.GameName || '',
+      MachineTypeId: row?.MachineTypeId || null,
+      IsActive: row?.IsActive ?? true
+    });
+
+    gameVisible.value = true;
+  }
+
+  async function saveGame() {
+    if (
+      !gameForm.GameName.trim() ||
+      !gameForm.MachineTypeId
+    ) {
+      return ElMessage.error(
+        'Game name and machine type are required.'
+      );
+    }
+
+    saving.value = true;
+
+    try {
+      const payload = {
+        gameName: gameForm.GameName,
+        machineTypeId: gameForm.MachineTypeId,
+        isActive: gameForm.IsActive
+      };
+
+      if (gameForm.ID) {
+        await updateGame(
+          gameForm.ID,
+          payload
+        );
+      } else {
+        await createGame(payload);
+      }
+
+      ElMessage.success('Game saved.');
+
+      gameVisible.value = false;
+
+      await loadReferenceData();
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  async function removeGame(row: any) {
+    await ElMessageBox.confirm(
+      `Delete game "${row.GameName}"?`,
+      'Confirm',
+      { type: 'warning' }
+    );
+
+    await deleteGame(row.ID);
+
+    ElMessage.success('Game deleted.');
+
+    await loadReferenceData();
+  }
+
+  watch(
+    () => userStore.locationId,
+    async newLocation => {
+      if (newLocation) {
+        await loadMachines();
+
+        if (activeTab.value === 'initial-readings') {
+          await loadInitialReadings();
+        }
+      } else {
+        machines.value = [];
+        initialReadingRows.value = [];
+      }
+    }
+  );
+
+  watch(activeTab, async tab => {
+    if (tab === 'initial-readings') {
+      await loadInitialReadings();
+    }
+  });
+
+  onMounted(async () => {
+    await loadReferenceData();
+    await loadMachines();
+  });
 </script>
 
 
 <style scoped>
-.machine-action-buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-.machine-action-buttons.align-right {
-  justify-content: flex-end;
-}
-.machine-action-buttons .el-button + .el-button {
-  margin-left: 0;
-}
-.machine-action-buttons .action-icon-btn {
-  padding: 5px;
-  min-width: 26px;
-  height: 28px;
-  border-radius: 4px;
-  font-size: 17px;
-}
+  .machine-setup-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (max-width: 767px) {
+    .machine-setup-header-actions {
+      justify-content: flex-start;
+    }
+  }
+
+  .machine-action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+    .machine-action-buttons.align-right {
+      justify-content: flex-end;
+    }
+
+    .machine-action-buttons .el-button + .el-button {
+      margin-left: 0;
+    }
+
+    .machine-action-buttons .action-icon-btn {
+      padding: 5px;
+      min-width: 26px;
+      height: 28px;
+      border-radius: 4px;
+      font-size: 17px;
+    }
 </style>
