@@ -306,7 +306,7 @@
                   </template>
                 </el-table-column>
 
-                <el-table-column label="Action" width="90" fixed="right" align="center">
+                <el-table-column label="Action" width="90" align="center">
                   <template #default="{ row }">
                     <el-button v-if="row.status === 'CLOSED' && row.actualCash != null"
                                link type="primary" :disabled="closingCorrectionBusy"

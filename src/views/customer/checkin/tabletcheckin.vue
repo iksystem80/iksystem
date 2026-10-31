@@ -141,6 +141,29 @@
         </div>
       </section>
     </div>
+    <el-dialog v-model="consentDialogVisible" title="Promotional messages" width="min(92vw, 520px)"
+               :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
+               append-to-body class="marketing-consent-dialog">
+      <p class="marketing-disclosure">
+        I agree to receive recurring promotional SMS/MMS (including images) from
+        <strong>{{ consentLocationName }}</strong> at my provided phone number.
+        Consent is optional and not required to check in or make a purchase.
+        Message frequency varies. Message and data rates may apply.
+        Reply STOP to opt out or HELP for help.
+      </p>
+      <el-checkbox v-model="marketingChecked">Yes, I agree to receive promotional messages.</el-checkbox>
+      <p class="marketing-policy-links">
+        Please review our
+        <a href="https://iklogy.com/privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        and
+        <a href="https://iklogy.com/terms/" target="_blank" rel="noopener noreferrer">Terms of Service</a>.
+      </p>
+      <template #footer>
+        <el-button :loading="savingConsent" @click="submitConsent('declined')">No thanks</el-button>
+        <el-button type="primary" :disabled="!marketingChecked" :loading="savingConsent"
+                   @click="submitConsent('opted_in')">Agree &amp; continue</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -150,7 +173,7 @@ import { ElMessage } from 'element-plus';
 
 import { useUserStore } from '@/store/modules/user';
 import CameraApp from '@/components/mycamera';
-import { checkin } from '@/api/customer';
+import { checkin, saveMarketingConsent } from '@/api/customer';
 import { unformatPhone } from '@/utils/phone';
 
 import logo from '@/assets/logo.png';
@@ -162,6 +185,11 @@ const loading = ref(false);
 const capturedImage = ref(null);
 const matchedCustomer = ref(null);
 const showCustomer = ref(false);
+const consentDialogVisible = ref(false);
+const marketingChecked = ref(false);
+const savingConsent = ref(false);
+const pendingConsentCustomer = ref(null);
+const consentLocationName = ref('this location');
 let customerPreviewTimer = null;
 
 const checkInForm = reactive({ phone: '' });
@@ -271,7 +299,16 @@ async function submitForm() {
           }
 
           ElMessage.success('Customer checked in successfully.');
-          showMatchedCustomer(response?.data || null);
+          const customer = response?.data || {};
+          showMatchedCustomer(customer, false);
+          if (customer.isPromotionAllowed === true && customer.hasMarketingPhone && customer.marketingConsentStatus === null && customer.checkinid) {
+            pendingConsentCustomer.value = customer;
+            consentLocationName.value = customer.locationname || 'this location';
+            marketingChecked.value = false;
+            consentDialogVisible.value = true;
+          } else {
+            startCustomerPreviewTimer();
+          }
         } catch (error) {
           if (error?.fields) return;
 
@@ -301,7 +338,39 @@ async function submitForm() {
         }
 }
 
-function showMatchedCustomer(customer) {
+async function submitConsent(status) {
+        if (savingConsent.value || !pendingConsentCustomer.value) return;
+        if (status === 'opted_in' && !marketingChecked.value) return;
+        savingConsent.value = true;
+        try {
+          const response = await saveMarketingConsent({
+            customerid: pendingConsentCustomer.value.id,
+            checkinid: pendingConsentCustomer.value.checkinid,
+            locationid: userStore.locationId,
+            status
+          });
+          if (!response || response.success === false || response.code !== 20000) {
+            throw new Error(response?.message || 'Unable to save preference.');
+          }
+        } catch (error) {
+          ElMessage.warning(error?.response?.data?.message || 'Preference was not saved. No promotional consent was recorded.');
+        } finally {
+          consentDialogVisible.value = false;
+          pendingConsentCustomer.value = null;
+          marketingChecked.value = false;
+          savingConsent.value = false;
+          // Consent decision completes the flow: flip back immediately.
+          if (customerPreviewTimer) {
+            clearTimeout(customerPreviewTimer);
+            customerPreviewTimer = null;
+          }
+          showCustomer.value = false;
+          matchedCustomer.value = null;
+          resetForm();
+        }
+}
+
+function showMatchedCustomer(customer, startTimer = true) {
         if (customerPreviewTimer) {
           clearTimeout(customerPreviewTimer);
           customerPreviewTimer = null;
@@ -309,6 +378,12 @@ function showMatchedCustomer(customer) {
 
         matchedCustomer.value = customer || {};
         showCustomer.value = true;
+
+        if (startTimer) startCustomerPreviewTimer();
+}
+
+function startCustomerPreviewTimer() {
+        if (customerPreviewTimer) clearTimeout(customerPreviewTimer);
 
         customerPreviewTimer = window.setTimeout(() => {
           showCustomer.value = false;
@@ -319,6 +394,7 @@ function showMatchedCustomer(customer) {
 }
 
 onBeforeUnmount(() => {
+        consentDialogVisible.value = false;
         if (customerPreviewTimer) {
           clearTimeout(customerPreviewTimer);
           customerPreviewTimer = null;
@@ -340,6 +416,19 @@ function resetForm() {
 </script>
 
 <style lang="scss" scoped>
+  .marketing-policy-links {
+    margin: 12px 0 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #5d5d5d;
+  }
+
+  .marketing-policy-links a {
+    color: var(--el-color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
   .customer-checkin-container {
     position: relative;
     width: 100%;

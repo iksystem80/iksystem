@@ -96,6 +96,8 @@
             <el-radio-button label="all">All</el-radio-button>
             <el-radio-button label="verified">Verified</el-radio-button>
             <el-radio-button label="unverified">Unverified</el-radio-button>
+            <el-radio-button label="eligible">Eligible</el-radio-button>
+            <el-radio-button label="ineligible">Not Eligible</el-radio-button>
           </el-radio-group>
           <el-input v-model="customerSearch" placeholder="Search by customer name or phone" clearable class="customer-search" />
           <div class="customer-actions">
@@ -201,6 +203,7 @@ import {
 
 import { useUserStore } from '@/store/modules/user';
 import { getcustomers } from '@/api/customer';
+import request from '@/utils/request';
 import { getPromotionTemplates } from '@/api/promotiontemplate';
 
 import {
@@ -243,9 +246,10 @@ const activePromotionId = ref(
 
 const templates = ref<any[]>([]);
 const customers = ref<any[]>([]);
+const consentedCustomerIds = ref<Set<number>>(new Set());
 const selectedCustomers = ref<any[]>([]);
 const customerSearch = ref('');
-const verificationFilter = ref<'all' | 'verified' | 'unverified'>('all');
+const verificationFilter = ref<'all' | 'verified' | 'unverified' | 'eligible' | 'ineligible'>('all');
 
 const loadingCustomers = ref(false);
 const saving = ref(false);
@@ -283,6 +287,9 @@ const filteredCustomers = computed(() => {
     const isVerified = item.phoneverified === true;
     if (verificationFilter.value === 'verified' && !isVerified) return false;
     if (verificationFilter.value === 'unverified' && isVerified) return false;
+    const eligible = isCustomerSelectable(item);
+    if (verificationFilter.value === 'eligible' && !eligible) return false;
+    if (verificationFilter.value === 'ineligible' && eligible) return false;
     if (!term) return true;
 
     const searchable = [
@@ -334,7 +341,8 @@ function isCustomerSelectable(customer: any) {
     customer &&
     customer.isactive !== false &&
     customer.isblacklist !== true &&
-    hasPhone(customer)
+    hasPhone(customer) &&
+    consentedCustomerIds.value.has(Number(customer.id))
   );
 }
 
@@ -349,6 +357,10 @@ function customerIneligibleReason(customer: any) {
 
   if (!hasPhone(customer)) {
     return 'Customer does not have a phone number.';
+  }
+
+  if (!consentedCustomerIds.value.has(Number(customer?.id))) {
+    return 'Customer has not opted in to promotional SMS/MMS at this location.';
   }
 
   return 'Customer is not eligible.';
@@ -404,14 +416,26 @@ async function loadTemplates() {
 async function loadCustomers() {
   if (!locationId.value) {
     customers.value = [];
+    consentedCustomerIds.value = new Set();
     return;
   }
 
   try {
     loadingCustomers.value = true;
 
-    const response =
-      await getcustomers(locationId.value);
+    const [response, consentResponse] = await Promise.all([
+      getcustomers(locationId.value),
+      request({
+        url: '/promotion/consented-customers',
+        method: 'get',
+        params: { locationid: locationId.value }
+      })
+    ]);
+
+    if (consentResponse?.success === false || !Array.isArray(consentResponse?.data)) {
+      throw new Error('Unable to verify promotional consent.');
+    }
+    consentedCustomerIds.value = new Set(consentResponse.data.map(Number));
 
     customers.value =
       Array.isArray(response.data)
@@ -420,6 +444,7 @@ async function loadCustomers() {
   } catch (error) {
     console.error(error);
     customers.value = [];
+    consentedCustomerIds.value = new Set();
     ElMessage.error('Unable to load customers.');
   } finally {
     loadingCustomers.value = false;

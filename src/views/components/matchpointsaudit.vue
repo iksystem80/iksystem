@@ -12,7 +12,7 @@
       </template>
       <div class="match-audit-legend">
         <div><strong>Minimum in machine</strong><span>Match Given + Customer Money (2× match).</span></div>
-        <div><strong>Play target</strong><span>5× for $10/$20 matches; 8× for matches $30 and above.</span></div>
+        <!--<div><strong>Play target</strong><span>5× for $10/$20 matches; 8× for matches $30 and above.</span></div>-->
         <div><strong>Red names</strong><span>Customers who received more than one match on this machine from the same employee.</span></div>
       </div>
     </el-card>
@@ -31,7 +31,7 @@
             <span>Flagged ({{ flaggedCount }})</span>
           </span>
         </el-radio-button>
-        <el-radio-button label="low">
+        <!--<el-radio-button label="low">
           <span class="match-audit-filter-label">
             <el-icon><Bottom /></el-icon>
             <span>Low Play ({{ lowPlayCount }})</span>
@@ -42,7 +42,7 @@
             <el-icon><CircleCheckFilled /></el-icon>
             <span>On Target ({{ onTargetCount }})</span>
           </span>
-        </el-radio-button>
+        </el-radio-button>-->
       </el-radio-group>
     </div>
 
@@ -72,7 +72,7 @@
           </div>
         </div>
         <span v-if="machine.flagged" class="match-audit-status is-red">⚠ BELOW MINIMUM</span>
-        <span v-else-if="machine.hasReading && machine.matches.length" class="match-audit-status">{{ machine.shortTarget ? 'LOW PLAY' : 'ON TARGET' }}</span>
+        <!--<span v-else-if="machine.hasReading && machine.matches.length" class="match-audit-status">{{ machine.shortTarget ? 'LOW PLAY' : 'ON TARGET' }}</span>-->
         <span v-else-if="!machine.hasReading" class="match-audit-status is-red">NO READING</span>
       </div>
 
@@ -85,10 +85,10 @@
         <div><small>Total matches</small><strong>{{ machine.matches.length }}</strong></div>
       </div>
 
-      <div class="match-audit-target" :class="{ 'is-low': machine.shortTarget > 0 }">
+      <!--<div class="match-audit-target" :class="{ 'is-low': machine.shortTarget > 0 }">
         <div><small>Play target</small><strong>{{ money(machine.playTarget) }}</strong></div>
         <div class="match-audit-target-right"><small>{{ machine.shortTarget ? 'Short of target' : 'Over target' }}</small><strong>{{ money(machine.shortTarget || machine.overTarget) }}</strong></div>
-      </div>
+      </div>-->
 
       <div class="match-audit-detail">
         <div class="match-audit-detail-head"><span>Employee</span><span>Customer</span><span>Time</span><span>Match</span></div>
@@ -113,9 +113,9 @@
         <div><small>Minimum IN</small><strong>{{ money(totals.minimum) }}</strong></div>
         <div><small>Actual IN</small><strong>{{ money(totals.actualIn) }}</strong></div>
         <div><small>Extra / Missing</small><strong :class="totals.extra < 0 ? 'is-negative' : 'is-positive'">{{ signedMoney(totals.extra) }}</strong></div>
-        <div><small>Play target</small><strong>{{ money(totals.target) }}</strong></div>
+        <!--<div><small>Play target</small><strong>{{ money(totals.target) }}</strong></div>
         <div><small>Short of target</small><strong>{{ money(totals.shortTarget) }}</strong></div>
-        <div><small>Over target</small><strong>{{ money(totals.overTarget) }}</strong></div>
+        <div><small>Over target</small><strong>{{ money(totals.overTarget) }}</strong></div>-->
       </div>
     </div>
   </section>

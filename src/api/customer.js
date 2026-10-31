@@ -63,6 +63,15 @@ export function checkin(data) {
     data
   });
 }
+
+export function saveMarketingConsent(data) {
+  return request({
+    url: '/customer/marketing-consent',
+    method: 'post',
+    data
+  });
+}
+
 export function checkout(data) {
   return request({ url: '/customer/checkout', method: 'post', data });
 }

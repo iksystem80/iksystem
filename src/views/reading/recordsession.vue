@@ -301,7 +301,8 @@
                         </div>
 
                         <div class="previous-value date-value">
-                          {{ formatDateTime(previousReading.readingat) }}
+                          <span>{{ formatReadingDate(previousReading.readingat) }}</span>
+                          <span>{{ formatReadingTime(previousReading.readingat) }}</span>
                         </div>
                       </div>
                     </el-col>
@@ -358,23 +359,15 @@
       <!-- =================================================== -->
 
       <el-card shadow="never"
-               class="readings-card">
+               class="weekly-report-section-card"
+               :body-style="{ padding: '0' }">
         <template #header>
-          <div class="readings-header">
+          <div class="weekly-analytics-card-title" style="display: flex; align-items: center; gap: 10px;">
+            <el-icon :size="16" style="flex-shrink: 0;"><Reading /></el-icon>
             <div>
-              <strong>
-                Session Readings
-              </strong>
-
+              <strong>Session Readings</strong>
               <div class="small-text">
-                {{ currentreadings.length }}
-                machine
-                {{
-                  currentreadings.length === 1
-                    ? 'reading'
-                    : 'readings'
-                }}
-                recorded
+                {{ currentreadings.length }} machine {{ currentreadings.length === 1 ? 'reading': 'readings'}} recorded
               </div>
             </div>
           </div>
@@ -383,135 +376,74 @@
         <el-empty v-if="currentreadings.length === 0"
                   description="No readings have been recorded yet." />
 
-        <!-- DESKTOP -->
-
-        <el-table v-else-if="device !== 'mobile'"
-                  :data="currentreadings"
-                  style="width: 100%; font-size:12px;">
+        <div v-else class="weekly-report-table-wrap weekly-reading-table-wrap">
+        <el-table :data="currentreadings"
+                  class="report-table weekly-report-table app-data-table"
+                  size="small"
+                  style="width: 100%;">
           <el-table-column prop="machinenumber"
-                           label="Mach #"
-                           min-width="80" />
+                           label="Mch #"
+                           min-width="57"
+                           fixed="left">
+            <template #default="{ row }">
+              <span class="weekly-machine-number-badge">{{ row.machinenumber }}</span>
+            </template>
+          </el-table-column>
 
           <!--<el-table-column prop="readingtype"
                            label="Reading Type"
                            min-width="110" />-->
 
           <el-table-column prop="previousin"
-                           label="Prev. IN"
-                           min-width="100">
+                           label="Prev.IN"
+                           min-width="75" align="right">
             <template #default="{ row }">
-              {{ row.previousin ?? '-' }}
+              {{ formatReadingValue(row.previousin) }}
             </template>
           </el-table-column>
 
           <el-table-column prop="previousout"
-                           label="Prev. OUT"
-                           min-width="100">
+                           label="Prev.OUT"
+                           min-width="75" align="right">
             <template #default="{ row }">
-              {{ row.previousout ?? '-' }}
+              {{ formatReadingValue(row.previousout) }}
             </template>
           </el-table-column>
 
-          <el-table-column label="Current IN" min-width="100">
+          <el-table-column label="Curr.IN" min-width="75" align="right">
             <template #default="{ row }">
               {{ formatReadingValue(row.currentin) }}
             </template>
           </el-table-column>
 
-          <el-table-column label="Current OUT" min-width="100">
+          <el-table-column label="Curr.OUT" min-width="75" align="right">
             <template #default="{ row }">
               {{ formatReadingValue(row.currentout) }}
             </template>
           </el-table-column>
 
           <el-table-column label="Daily IN"
-                           min-width="100">
+                           min-width="75" align="right">
             <template #default="{ row }">
               {{ formatReadingValue(dailyIn(row)) }}
             </template>
           </el-table-column>
 
           <el-table-column label="Daily OUT"
-                           min-width="100">
+                           min-width="75" align="right">
             <template #default="{ row }">
               {{ formatReadingValue(dailyOut(row)) }}
             </template>
           </el-table-column>
 
           <el-table-column label="Diff"
-                           min-width="100">
+                           min-width="75" align="right">
             <template #default="{ row }">
               {{ formatReadingValue(readingDiff(row)) }}
             </template>
           </el-table-column>
 
-          <el-table-column label="Reading At"
-                           min-width="120">
-            <template #default="{ row }">
-              {{ formatDateTime(row.readingat) }}
-            </template>
-          </el-table-column>
-
         </el-table>
-
-        <!-- MOBILE -->
-
-        <div v-else
-             class="mobile-reading-list">
-          <el-card v-for="row in currentreadings"
-                   :key="row.id"
-                   shadow="never"
-                   class="mobile-reading-card">
-            <div class="mobile-reading-top">
-              <div>
-                <strong>
-                  Machine #{{ row.machinenumber }}
-                </strong>
-
-                <div class="small-text">
-                  {{ formatDateTime(row.readingat) }}
-                </div>
-              </div>
-
-            </div>
-
-            <div class="mobile-reading-values">
-              <div>
-                <span>Previous IN</span>
-                <strong>{{ row.previousin ?? '-' }}</strong>
-              </div>
-
-              <div>
-                <span>Previous OUT</span>
-                <strong>{{ row.previousout ?? '-' }}</strong>
-              </div>
-
-              <div>
-                <span>Current IN</span>
-                <strong>{{ formatReadingValue(row.currentin) }}</strong>
-              </div>
-
-              <div>
-                <span>Current OUT</span>
-                <strong>{{ formatReadingValue(row.currentout) }}</strong>
-              </div>
-
-              <div>
-                <span>Daily IN</span>
-                <strong>{{ formatReadingValue(dailyIn(row)) }}</strong>
-              </div>
-
-              <div>
-                <span>Daily OUT</span>
-                <strong>{{ formatReadingValue(dailyOut(row)) }}</strong>
-              </div>
-
-              <div>
-                <span>Diff</span>
-                <strong>{{ formatReadingValue(readingDiff(row)) }}</strong>
-              </div>
-            </div>
-          </el-card>
         </div>
       </el-card>
     </div>
@@ -1039,6 +971,24 @@ function formatDateTime(
             hour12: true
           }
         ).format(date);
+}
+
+function formatReadingDate(value: string | Date | null | undefined) {
+        if (!value) return '---';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '---';
+        return new Intl.DateTimeFormat('en-US', {
+          month: '2-digit', day: '2-digit', year: 'numeric'
+        }).format(date);
+}
+
+function formatReadingTime(value: string | Date | null | undefined) {
+        if (!value) return '---';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '---';
+        return new Intl.DateTimeFormat('en-US', {
+          hour: '2-digit', minute: '2-digit', hour12: true
+        }).format(date);
 }
 
 // ============================================================
@@ -1742,6 +1692,16 @@ onBeforeUnmount(
 </script>
 
 <style scoped lang="scss">
+.date-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.2;
+
+  span { white-space: nowrap; }
+}
+
 .final-summary-section,
 .final-coverage-section {
   margin-top: 20px;
