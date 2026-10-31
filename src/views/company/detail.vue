@@ -198,6 +198,9 @@
         <el-form-item label="Allow Face Check-In">
           <el-switch v-model="editAllowFaceCheckin" />
         </el-form-item>
+        <el-form-item label="Allow Promotions Consent">
+          <el-switch v-model="editIsPromotionAllowed" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="editLocationDialogVisible = false">Cancel</el-button>
@@ -219,6 +222,14 @@
 
         <el-form-item label="Location Name">
           <el-input v-model="newLocationName" />
+        </el-form-item>
+
+        <el-form-item label="Allow Face Check-In">
+          <el-switch v-model="newAllowFaceCheckin" />
+        </el-form-item>
+
+        <el-form-item label="Allow Promotions Consent">
+          <el-switch v-model="newIsPromotionAllowed" />
         </el-form-item>
 
       </el-form>
@@ -316,12 +327,15 @@ const savingLocation =
 
 const newLocationName =
     ref('');
+const newAllowFaceCheckin = ref(false);
+const newIsPromotionAllowed = ref(false);
 
 const editLocationDialogVisible = ref(false);
 const savingEditLocation = ref(false);
 const editingLocationId = ref(null);
 const editLocationName = ref('');
 const editAllowFaceCheckin = ref(false);
+const editIsPromotionAllowed = ref(false);
 
 async function loadCompany() {
   try {
@@ -411,6 +425,8 @@ async function loadUsers() {
 function openLocationDialog() {
   newLocationName.value =
         '';
+  newAllowFaceCheckin.value = false;
+  newIsPromotionAllowed.value = false;
 
   locationDialogVisible.value =
         true;
@@ -437,7 +453,9 @@ async function saveLocation() {
                 companyId,
 
       name:
-                newLocationName.value.trim()
+                newLocationName.value.trim(),
+      allowFaceCheckin: newAllowFaceCheckin.value,
+      isPromotionAllowed: newIsPromotionAllowed.value
     });
 
     ElMessage.success(
@@ -465,6 +483,7 @@ function openEditLocationDialog(row) {
   editingLocationId.value = row.id;
   editLocationName.value = row.name || '';
   editAllowFaceCheckin.value = row.allowFaceCheckin === true;
+  editIsPromotionAllowed.value = row.isPromotionAllowed === true;
   editLocationDialogVisible.value = true;
 }
 
@@ -479,7 +498,8 @@ async function saveEditLocation() {
   try {
     await updateLocation(editingLocationId.value, {
       name,
-      allowFaceCheckin: editAllowFaceCheckin.value
+      allowFaceCheckin: editAllowFaceCheckin.value,
+      isPromotionAllowed: editIsPromotionAllowed.value
     });
     ElMessage.success('Location updated successfully.');
     editLocationDialogVisible.value = false;

@@ -9,8 +9,10 @@
       </div>
       <div class="machine-setup-header-actions">
         <el-dropdown trigger="click" @command="downloadNfcTags">
-          <el-button :disabled="loadingMachines || !nfcTagMachines.length">
-            Download NFC Tags <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          <el-button :disabled="loadingMachines || !nfcTagMachines.length" aria-label="Download NFC Tags">
+            <el-icon><Download /></el-icon>
+            <span class="machine-header-action-label">Download NFC Tags</span>
+            <el-icon class="el-icon--right machine-header-dropdown-arrow"><ArrowDown /></el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -19,8 +21,9 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <el-button v-if="canManageMachines" type="primary" @click="openGenerateDialog">
-          Generate Machines
+        <el-button v-if="canManageMachines" type="primary" @click="openGenerateDialog" aria-label="Generate Machines">
+          <el-icon><Plus /></el-icon>
+          <span class="machine-header-action-label">Generate Machines</span>
         </el-button>
       </div>
     </div>
@@ -36,8 +39,8 @@
           </el-button>
         </div>
         <el-card shadow="never" class="table-card machine-setup-table-card">
-          <el-table v-loading="loadingMachines" :data="filteredMachines" border>
-            <el-table-column prop="MachineNumber" label="Machine" width="110">
+          <el-table v-loading="loadingMachines" :data="filteredMachines">
+            <el-table-column prop="MachineNumber" label="Machine" width="80">
               <template #default="{ row }">
                 <span class="machine-setup-number-badge">
                   {{ row.MachineNumber }}
@@ -45,7 +48,7 @@
 
               </template>
             </el-table-column>
-            <el-table-column prop="MachineTypeName" label="Machine Type" min-width="150">
+            <el-table-column prop="MachineTypeName" label="Machine Type" min-width="110">
               <template #default="{ row }">
                 {{ row.MachineTypeName || 'Not Assigned' }}
               </template>
@@ -53,7 +56,7 @@
 
             <el-table-column prop="GameName"
                              label="Game"
-                             min-width="160">
+                             min-width="220">
               <template #default="{ row }">
                 {{ row.GameName || 'Not Assigned' }}
               </template>
@@ -61,7 +64,7 @@
 
             <el-table-column prop="Status"
                              label="Status"
-                             width="130">
+                             width="100">
               <template #default="{ row }">
                 <el-tag :type="statusTag(row.Status)">
                   {{ row.Status || 'Unknown' }}
@@ -71,13 +74,13 @@
 
             <el-table-column prop="StatusReason"
                              label="Reason"
-                             min-width="220">
+                             min-width="200">
               <template #default="{ row }">
                 {{ row.StatusReason || '-' }}
               </template>
             </el-table-column>
 
-            <el-table-column label="Actions" width="126" fixed="right" align="center">
+            <el-table-column label="Actions" width="70" fixed="right" align="center">
               <template #default="{ row }">
                 <div class="machine-action-buttons">
                   <el-tooltip v-if="canManageMachines" content="Edit machine" placement="top">
@@ -111,7 +114,7 @@
         </div>
 
         <el-card shadow="never" class="table-card machine-setup-table-card">
-          <el-table :data="machineTypes" border>
+          <el-table :data="machineTypes">
             <el-table-column prop="TypeName"
                              label="Machine Type" />
 
@@ -160,15 +163,15 @@
         </div>
 
         <el-card shadow="never" class="table-card machine-setup-table-card">
-          <el-table :data="games" border>
+          <el-table :data="games">
             <el-table-column prop="GameName"
-                             label="Game" />
+                             label="Game" min-width="120"/>
 
             <el-table-column prop="MachineTypeName"
-                             label="Supported Machine Type" />
+                             label="Machine Type" min-width="110"/>
 
             <el-table-column label="Status"
-                             width="120">
+                             min-width="80">
               <template #default="{ row }">
                 <el-tag :type="row.IsActive ? 'success' : 'info'">
                   {{ row.IsActive ? 'Active' : 'Inactive' }}
@@ -224,7 +227,7 @@
         <el-card shadow="never" class="table-card machine-setup-table-card">
           <el-table v-loading="loadingInitialReadings"
                     :data="filteredInitialReadingRows"
-                    border>
+                    >
             <el-table-column prop="MachineNumber"
                              label="Machine"
                              width="105">
@@ -512,7 +515,7 @@
                :title="`Reading History · Machine #${readingHistoryMachine}`"
                width="min(1100px, 96%)"
                destroy-on-close>
-      <el-table v-loading="readingHistoryLoading" :data="readingHistoryRows" border max-height="62vh" empty-text="No readings recorded">
+      <el-table v-loading="readingHistoryLoading" :data="readingHistoryRows"  max-height="62vh" empty-text="No readings recorded">
         <el-table-column label="Date / Time" min-width="175">
           <template #default="{ row }">
             {{ formatDateTime(row.readingAt) }}
@@ -592,7 +595,7 @@
   } from 'vue';
 
   import { ElMessage, ElMessageBox } from 'element-plus';
-  import { ArrowDown } from '@element-plus/icons-vue';
+  import { ArrowDown, Download, Plus } from '@element-plus/icons-vue';
   import {
     FolderBookmark as LcFolderBookmark, History as LcHistory, SaveCheck as LcSaveCheck, RefreshCcw as LcRefreshCcw,
     Trash as LcTrash, Pencil as LcPencil
@@ -1325,9 +1328,30 @@
     gap: 10px;
   }
 
+  .machine-setup-header-actions :deep(.el-button) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   @media (max-width: 767px) {
     .machine-setup-header-actions {
-      justify-content: flex-start;
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
+
+    .machine-header-action-label,
+    .machine-header-dropdown-arrow {
+      display: none;
+    }
+
+    .machine-setup-header-actions :deep(.el-button) {
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      padding: 0;
+      justify-content: center;
     }
   }
 

@@ -612,7 +612,12 @@ function nfcTargetFromNativeEvent(event) {
   return null;
 }
 
+let nfcStopPromise = null;
+
 async function stopNfcScan() {
+            if (nfcStopPromise) return nfcStopPromise;
+            if (!nfcScanning.value && !nfcListener && !nfcSessionEndListener) return;
+            nfcStopPromise = (async () => {
             try {
               await CapacitorNfc.stopScanning();
             } catch {
@@ -630,6 +635,8 @@ async function stopNfcScan() {
             }
 
             nfcScanning.value = false;
+            })();
+            try { await nfcStopPromise; } finally { nfcStopPromise = null; }
 }
 
 async function scanNfc() {
@@ -667,9 +674,8 @@ async function scanNfc() {
                 async event => {
                   const target = nfcTargetFromNativeEvent(event);
 
-                  await stopNfcScan();
-
                   if (!target?.machineNumber) {
+                    await stopNfcScan();
                     ElMessage.error('The NFC tag does not contain a valid machine number.');
                     await scanNfc();
                     return;
@@ -679,13 +685,17 @@ async function scanNfc() {
                     target.locationAware &&
                     String(target.locationId) !== String(userStore.locationId || '')
                   ) {
+                    await stopNfcScan();
                     ElMessage.error('This NFC tag belongs to another location.');
                     await scanNfc();
                     return;
                   }
 
                   machineNumber.value = target.machineNumber;
+                  // Fetch machine data while the native NFC session is closing.
+                  const closingScan = stopNfcScan();
                   await findMachine();
+                  await closingScan;
 
                   if (step.value === 1) {
                     await scanNfc();
