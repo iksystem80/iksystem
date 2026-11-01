@@ -32,10 +32,10 @@
           </div>
           <div>
             <div class="count-value">
-              {{ filteredCustomers.length }}
+              {{ totalCustomers }}
             </div>
             <div class="count-label">
-              {{ filteredCustomers.length === 1 ? 'Customer' : 'Customers' }}
+              {{ totalCustomers === 1 ? 'Customer' : 'Customers' }}
             </div>
           </div>
         </div>
@@ -65,12 +65,13 @@
       <el-table v-loading="loading"
                 :data="filteredCustomers"
                 class="app-data-table is-compact"
-                style="width: 100%; height: calc(100vh - 245px)">
+                style="width: 100%; height: calc(100vh - 315px); min-height: 260px">
         <!-- Product Image -->
         <el-table-column label="" width="105">
           <template #default="{ row }">
             <el-image class="img-circle"
                       :src="row.avatar"
+                      lazy
                       :preview-src-list="[row.avatar]"
                       fit="cover"
                       preview-teleported />
@@ -173,6 +174,18 @@
 
       <el-empty v-if="!loading && filteredCustomers.length === 0"
                 description="No customers found" />
+
+      <div class="customer-pagination" v-if="totalCustomers > 0">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[25, 50, 100, 200]"
+          :total="totalCustomers"
+          layout="total, sizes, prev, pager, next, jumper"
+          background
+          @current-change="loadCustomers"
+          @size-change="handlePageSizeChange" />
+      </div>
     </el-card>
 
     <!-- ===================================================== -->
@@ -192,6 +205,7 @@
           <div class="mobile-left">
             <el-image class="mobile-avatar"
                       :src="row.avatar"
+                      lazy
                       :preview-src-list="[row.avatar]"
                       fit="cover"
                       preview-teleported />
@@ -282,6 +296,18 @@
 
       <el-empty v-if="!loading && filteredCustomers.length === 0"
                 description="No customers found" />
+    </div>
+
+    <div class="customer-pagination" v-if="useCustomerCardLayout && totalCustomers > 0">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[25, 50, 100, 200]"
+        :total="totalCustomers"
+        layout="prev, pager, next, sizes"
+        background
+        @current-change="loadCustomers"
+        @size-change="handlePageSizeChange" />
     </div>
 
 
@@ -493,7 +519,8 @@ import { UserPlus } from '@lucide/vue'
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/modules/user';
 import { useAppStore } from '@/store/modules/app';
-import { getcustomers,deletecustomer,updatestatus} from '@/api/customer';
+import { deletecustomer,updatestatus} from '@/api/customer';
+import request from '@/utils/request';
 import { sendcustomerverification,verifycustomerverification,bypasscustomerverification } from '@/api/customerverification';
 import { formatPhone } from '@/utils/phone';
 import verificationIllustration from '@/assets/phone-verification.png';
@@ -536,6 +563,11 @@ function handleTabletMediaChange(event) {
 
 const customersData = ref([]);
 const loading = ref(false);
+const currentPage = ref(1);
+const pageSize = ref(50);
+const totalCustomers = ref(0);
+let latestRequest = 0;
+let searchTimer;
 
 const drawer2 = ref(false);
 const searchText = ref('');
@@ -572,45 +604,24 @@ function verificationStatusLabel(row) {
 // FILTERED CUSTOMERS
 // ============================================================
 
-const filteredCustomers = computed(() => {
-  let data = Array.isArray(customersData.value)
-    ? customersData.value
-    : [];
+const filteredCustomers = computed(() => customersData.value);
 
-  // Status filter
-  if (radiostatus.value === '1') {
-    data = data.filter(row => Boolean(row.isactive));
-  }
+function handlePageSizeChange() {
+  currentPage.value = 1;
+  loadCustomers();
+}
 
-  if (radiostatus.value === '0') {
-    data = data.filter(row => !row.isactive);
-  }
+watch([radiostatus, verificationFilter], () => {
+  currentPage.value = 1;
+  loadCustomers();
+});
 
-  // Verification filter
-  if (verificationFilter.value !== 'all') {
-    data = data.filter(row =>
-      verificationStatusLabel(row).toLowerCase() ===
-      verificationFilter.value
-    );
-  }
-
-  // Search filter
-  const search = searchText.value
-    .trim()
-    .toLowerCase();
-
-  if (!search) {
-    return data;
-  }
-
-  return data.filter(row => {
-    const searchable = [row.firstname, row.lastname, row.phone, row.dob, row.datecreated, row.lastvisited, row.points]
-      .filter(value => value != null)
-      .join(' ')
-      .toLowerCase();
-
-    return searchable.includes(search);
-  });
+watch(searchText, () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadCustomers();
+  }, 300);
 });
 
 // ============================================================
@@ -618,30 +629,48 @@ const filteredCustomers = computed(() => {
 // ============================================================
 
 async function loadCustomers() {
+  const requestId = ++latestRequest;
   const locationid = userStore.locationId;
 
   if (!locationid) {
     customersData.value = [];
+    totalCustomers.value = 0;
     return;
   }
 
   loading.value = true;
 
   try {
-    const response = await getcustomers(locationid);
+    const response = await request({
+      url: '/customer/getall',
+      method: 'get',
+      params: {
+        locationid,
+        page: currentPage.value,
+        pageSize: pageSize.value,
+        search: searchText.value.trim(),
+        status: radiostatus.value,
+        verification: verificationFilter.value
+      }
+    });
+
+    if (requestId !== latestRequest) return;
 
     customersData.value =
       Array.isArray(response.data)
         ? response.data
         : [];
+    totalCustomers.value = Number(response.pagination?.total || 0);
   } catch (error) {
+    if (requestId !== latestRequest) return;
     console.error('Failed to load customers:', error);
 
     ElMessage.error(error?.message || 'Failed to load customers');
 
     customersData.value = [];
+    totalCustomers.value = 0;
   } finally {
-    loading.value = false;
+    if (requestId === latestRequest) loading.value = false;
   }
 }
 
@@ -956,10 +985,14 @@ function clearFilters() {
 watch(
   () => userStore.locationId,
   newLocation => {
+    currentPage.value = 1;
     if (newLocation) {
       loadCustomers();
     } else {
+      latestRequest++;
       customersData.value = [];
+      totalCustomers.value = 0;
+      loading.value = false;
     }
   }
 );
@@ -978,10 +1011,24 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  latestRequest++;
+  clearTimeout(searchTimer);
   tabletMediaQuery?.removeEventListener?.(
     'change',
     handleTabletMediaChange
   );
 });
 </script>
+
+<style scoped>
+.customer-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 4px;
+  overflow-x: auto;
+}
+@media (max-width: 768px) {
+  .customer-pagination { justify-content: center; }
+}
+</style>
 
