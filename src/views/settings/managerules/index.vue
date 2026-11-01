@@ -104,7 +104,7 @@
       </el-card>
 
       <!--<RuleToggleCard v-model="form.phoneVerificationRequired" title="Require Phone Verification" accent="#f56c6c" accent-soft="rgba(245, 108, 108, 0.10)" description="When enabled, a customer must verify their phone with an SMS code before collecting points. Turn this off for locations that do not need phone verification." />-->
-      <RuleToggleCard v-model="form.nuVueBoostEnabled" title="Marketing Promotion" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="Make the NuVue Boost marketing menu available to permitted staff at this location." />
+      <!--<RuleToggleCard v-model="form.nuVueBoostEnabled" title="Marketing Promotion" accent="#67c23a" accent-soft="rgba(103, 194, 58, 0.11)" description="Make the promotional menu available to permitted staff at this location." />-->
 
       <el-card style="display:none" shadow="never" class="rule-card rule-ticket-photo" :class="{ enabled: form.ticketPhotoRequired }">
         <div class="rule-card-header">
@@ -152,6 +152,11 @@
         </el-collapse-transition>
       </el-card>
     </div>
+
+    <p class="rules-bottom-note">
+      <span class="rules-note-icon" aria-hidden="true">!</span>
+      <span><strong>Important:</strong> Photo is mandatory for all Match Points.</span>
+    </p>
   </div>
 </template>
 
@@ -169,127 +174,157 @@ const loading = ref(false);
 const saving = ref(false);
 
 const commonTimes = [
-  '05:00', '06:00', '07:00', '08:00', '09:00',
-  '12:00', '17:00', '18:00', '19:00', '20:00', '21:00'
+    '05:00', '06:00', '07:00', '08:00', '09:00',
+    '12:00', '17:00', '18:00', '19:00', '20:00', '21:00'
 ];
 
 const ticketQuickValues = [250, 300, 400, 500, 1000];
 const vipQuickValues = [30, 40, 50, 100, 200];
 
 const defaultForm = () => ({
-  locationId: Number(userStore.locationId || 0),
-  matchRuleEnabled: false,
-  matchRuleName: 'MATCH',
-  matchCooldownHours: 3,
-  matchMaxPerDay: 2,
-  matchResetTimes: ['07:00', '19:00'],
-  matchResetDayTime: '07:00',
-  nfcTicketOutEnabled: false,
-  auditVerificationEnabled: false,
-  luckyBirdEnabled: false,
-  luckyBirdMaxCustomersPerDay: 1,
-  phoneVerificationRequired: false,
-  nuVueBoostEnabled: false,
-  ticketPhotoRequired: false,
-  ticketPhotoMinAmount: 10,
-  vipMatchEnabled: false,
-  vipMatchMinPoints: 10
+    locationId: Number(userStore.locationId || 0),
+    matchRuleEnabled: false,
+    matchRuleName: 'MATCH',
+    matchCooldownHours: 3,
+    matchMaxPerDay: 2,
+    matchResetTimes: ['07:00', '19:00'],
+    matchResetDayTime: '07:00',
+    nfcTicketOutEnabled: false,
+    auditVerificationEnabled: false,
+    luckyBirdEnabled: false,
+    luckyBirdMaxCustomersPerDay: 1,
+    phoneVerificationRequired: false,
+    nuVueBoostEnabled: false,
+    ticketPhotoRequired: false,
+    ticketPhotoMinAmount: 10,
+    vipMatchEnabled: false,
+    vipMatchMinPoints: 10
 });
 
 const form = reactive(defaultForm());
 
 function applyRules(data: any) {
-  Object.assign(
-    form,
-    defaultForm(),
-    data || {},
-    {
-      locationId: Number(userStore.locationId || 0),
-      // PostgreSQL TIME is often HH:mm:ss; Element Plus uses HH:mm.
-      matchResetDayTime: String(data?.matchResetDayTime || '07:00').slice(0, 5),
-      matchResetTimes: Array.isArray(data?.matchResetTimes)
-        ? data.matchResetTimes
-        : []
-    }
-  );
+    Object.assign(
+      form,
+      defaultForm(),
+      data || {},
+      {
+        locationId: Number(userStore.locationId || 0),
+        // PostgreSQL TIME is often HH:mm:ss; Element Plus uses HH:mm.
+        matchResetDayTime: String(data?.matchResetDayTime || '07:00').slice(0, 5),
+        matchResetTimes: Array.isArray(data?.matchResetTimes)
+          ? data.matchResetTimes
+          : []
+      }
+    );
 }
 
 async function loadRules() {
-  if (!userStore.locationId) return;
+    if (!userStore.locationId) return;
 
-  try {
-    loading.value = true;
+    try {
+      loading.value = true;
 
-    const response = await getManageRules(userStore.locationId);
-    applyRules(response?.data);
-  } catch (error: any) {
-    console.error(error);
+      const response = await getManageRules(userStore.locationId);
+      applyRules(response?.data);
+    } catch (error: any) {
+      console.error(error);
 
-    ElMessage.error(
-      error?.response?.data?.message ||
-                error?.message ||
-                'Unable to load manage rules.'
-    );
-  } finally {
-    loading.value = false;
-  }
+      ElMessage.error(
+        error?.response?.data?.message ||
+                  error?.message ||
+                  'Unable to load manage rules.'
+      );
+    } finally {
+      loading.value = false;
+    }
 }
 
 async function saveRules() {
-  if (!userStore.locationId) {
-    ElMessage.warning('Please select a location.');
-    return;
-  }
+    if (!userStore.locationId) {
+      ElMessage.warning('Please select a location.');
+      return;
+    }
 
-  if (form.matchRuleEnabled && !String(form.matchRuleName || '').trim()) {
-    ElMessage.warning('Rule Name is required.');
-    return;
-  }
+    if (form.matchRuleEnabled && !String(form.matchRuleName || '').trim()) {
+      ElMessage.warning('Rule Name is required.');
+      return;
+    }
 
-  if (form.matchRuleEnabled && form.matchResetTimes.length === 0) {
-    ElMessage.warning('Add at least one reset time.');
-    return;
-  }
+    if (form.matchRuleEnabled && form.matchResetTimes.length === 0) {
+      ElMessage.warning('Add at least one reset time.');
+      return;
+    }
 
-  if (form.luckyBirdEnabled && Number(form.luckyBirdMaxCustomersPerDay || 0) < 1) {
-    ElMessage.warning('Enter how many customers can receive Lucky Bird per day.');
-    return;
-  }
+    if (form.luckyBirdEnabled && Number(form.luckyBirdMaxCustomersPerDay || 0) < 1) {
+      ElMessage.warning('Enter how many customers can receive Lucky Bird per day.');
+      return;
+    }
 
-  try {
-    saving.value = true;
+    try {
+      saving.value = true;
 
-    // Keep locationId in the UI model; API requests use lowercase locationid.
-    const { locationId: _locationId, ...ruleValues } = form;
-    const response = await updateManageRules({
-      ...ruleValues,
-      matchResetDayTime: String(form.matchResetDayTime || '07:00').slice(0, 5),
-      locationid: Number(userStore.locationId)
-    });
+      // Keep locationId in the UI model; API requests use lowercase locationid.
+      const { locationId: _locationId, ...ruleValues } = form;
+      const response = await updateManageRules({
+        ...ruleValues,
+        matchResetDayTime: String(form.matchResetDayTime || '07:00').slice(0, 5),
+        locationid: Number(userStore.locationId)
+      });
 
-    applyRules(response?.data);
+      applyRules(response?.data);
 
-    ElMessage.success(
-      response?.message || 'Rules saved successfully.'
-    );
-  } catch (error: any) {
-    console.error('Manage Rules save response:', error?.response?.data || error);
+      ElMessage.success(
+        response?.message || 'Rules saved successfully.'
+      );
+    } catch (error: any) {
+      console.error('Manage Rules save response:', error?.response?.data || error);
 
-    ElMessage.error(
-      error?.response?.data?.message ||
-                error?.message ||
-                'Unable to save manage rules.'
-    );
-  } finally {
-    saving.value = false;
-  }
+      ElMessage.error(
+        error?.response?.data?.message ||
+                  error?.message ||
+                  'Unable to save manage rules.'
+      );
+    } finally {
+      saving.value = false;
+    }
 }
 
 watch(
-  () => userStore.locationId,
-  () => loadRules()
+    () => userStore.locationId,
+    () => loadRules()
 );
 
 onMounted(loadRules);
 </script>
+
+<style scoped>
+  .rules-bottom-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 14px 16px;
+    border: 1px solid var(--el-color-warning-light-5);
+    border-left: 4px solid var(--el-color-warning);
+    border-radius: 8px;
+    background: var(--el-color-warning-light-9);
+    color: var(--el-text-color-primary);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .rules-note-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--el-color-warning);
+    color: #fff;
+    font-weight: 800;
+  }
+</style>
 

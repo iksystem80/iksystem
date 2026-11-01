@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { ref, computed } from 'vue';
-import { login as apiLogin, getInfo as apiGetInfo } from '@/api/user';
+import { login as apiLogin, getInfo as apiGetInfo, getActiveLoginCount, logoutSession } from '@/api/user';
 import {
   getToken,
   setToken,
@@ -50,6 +50,27 @@ export const useUserStore = defineStore('user', () => {
   const username = ref('');
   const name = ref('');
   const avatar = ref('');
+  const activeLoginCount = ref(0);
+
+  async function refreshActiveLoginCount(): Promise<void> {
+    if (!token.value) {
+      activeLoginCount.value = 0;
+      return;
+    }
+    const currentToken = token.value;
+    try {
+      const response = await getActiveLoginCount();
+      if (token.value === currentToken) {
+        activeLoginCount.value = Math.max(0, Number(response?.count ?? response?.data?.count) || 0);
+      }
+    } catch (error) {
+      console.error('Unable to read active login count:', error);
+    }
+  }
+
+  function setActiveLoginCount(count: unknown): void {
+    activeLoginCount.value = Math.max(0, Number(count) || 0);
+  }
 
   const roles = ref<string[]>([]);
   const roleId = ref<number | null>(null);
@@ -216,6 +237,7 @@ export const useUserStore = defineStore('user', () => {
     // Each new login starts at the account's primary location.
     saveSelectedLocation(userId.value, '');
     token.value = response.token || '';
+    activeLoginCount.value = 0;
     userId.value = String(response.userid || '');
     saveSelectedLocation(userId.value, '');
 
@@ -514,6 +536,7 @@ export const useUserStore = defineStore('user', () => {
     username.value = '';
     name.value = '';
     avatar.value = '';
+    activeLoginCount.value = 0;
 
     roles.value = [];
     roleId.value = null;
@@ -539,6 +562,14 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function logout(): Promise<void> {
+    if (token.value) {
+      try {
+        await logoutSession();
+      } catch (error) {
+        // Keep the existing local sign-out behavior even if the API is unreachable.
+        console.error('Unable to revoke remote login session:', error);
+      }
+    }
     cleanupSocket();
 
     const permissionStore = usePermissionStore();
@@ -624,6 +655,9 @@ export const useUserStore = defineStore('user', () => {
     username,
     name,
     avatar,
+    activeLoginCount,
+    refreshActiveLoginCount,
+    setActiveLoginCount,
 
     roles,
     roleId,

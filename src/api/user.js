@@ -8,6 +8,14 @@ export function login(data) {
   });
 }
 
+export function getActiveLoginCount() {
+  return request({ url: '/user/active-login-count', method: 'get' });
+}
+
+export function logoutSession() {
+  return request({ url: '/user/logout', method: 'post' });
+}
+
 export function getInfo(token, userid, locationid) {
   const params = {
     userid

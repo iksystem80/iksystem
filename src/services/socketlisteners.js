@@ -29,6 +29,8 @@ function normalizedId(value) {
 function joinCurrentContext() {
   if (!socket.connected) return;
 
+  useUserStore().refreshActiveLoginCount();
+
   socket.emit('join-user-context', {
     // `locationId` is included for existing deployed servers.
     // New servers can standardize on lowercase `locationid`.
@@ -87,6 +89,7 @@ export function initializeSocketListeners(locationId, companyId = null) {
     socket.on('locations-refresh', NotifyLocationsRefresh);
     socket.on('session-replaced', handleSessionReplaced);
     socket.on('session-revoked', handleSessionRevoked);
+    socket.on('active-login-count', handleActiveLoginCount);
   }
 
   if (socket.connected) {
@@ -104,6 +107,7 @@ export function cleanupSocket() {
   socket.off('locations-refresh', NotifyLocationsRefresh);
   socket.off('session-replaced', handleSessionReplaced);
   socket.off('session-revoked', handleSessionRevoked);
+  socket.off('active-login-count', handleActiveLoginCount);
 
   initialized = false;
   currentLocationId = null;
@@ -113,6 +117,12 @@ export function cleanupSocket() {
 
   if (socket.connected || socket.active) {
     socket.disconnect();
+  }
+}
+
+function handleActiveLoginCount(data) {
+  if (currentLoginToken()) {
+    useUserStore().setActiveLoginCount(data?.count);
   }
 }
 

@@ -73,13 +73,18 @@
                src="https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"
                class="user-avatar-img" />
 
+          <span v-if="userStore.activeLoginCount > 1" 
+                class="navbar-login-count-badge"
+                :title="`${userStore.activeLoginCount} active logins`">
+            {{ userStore.activeLoginCount }}
+          </span>
+
           <span class="navbar-avatar-status-dot"
                 :class="userStore.isClockedIn ? 'is-clocked-in' : 'is-clocked-out'"
                 :title="userStore.isClockedIn ? 'Clocked in' : 'Clocked out'"
                 @click.stop="openClockPage" />
 
-          <el-icon class="el-icon-caret-bottom"
-                   size="small">
+            <el-icon class="el-icon-caret-bottom" size="small">
             <CaretBottom />
           </el-icon>
 
@@ -184,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -249,6 +254,10 @@ function openClockPage() {
 
 const avatarLoadFailed = ref(false);
 
+onMounted(() => {
+  userStore.refreshActiveLoginCount();
+});
+
 watch(
   avatar,
   () => {
@@ -298,6 +307,31 @@ async function selectedLocationById(command: string) {
 </script>
 
 <style scoped lang="scss">
+.avatar-wrapper {
+  position: relative;
+}
+
+.navbar-login-count-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 3;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--el-color-primary);
+  color: #fff;
+  border: 1px solid var(--el-bg-color);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+ /* pointer-events: none;*/
+}
+
 .location-pill-trigger {
   cursor: pointer;
   transition: filter 160ms ease, box-shadow 160ms ease;

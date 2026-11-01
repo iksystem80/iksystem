@@ -15,7 +15,7 @@
           </p>
         </div>
       </div>
-      <el-button type="primary" plain @click="router.push('/importcustomers/index')">
+      <el-button v-if="userStore.isOwnerOrAdmin" type="primary" plain @click="router.push('/importcustomers/index')">
         Import Customers
       </el-button>
     </div>

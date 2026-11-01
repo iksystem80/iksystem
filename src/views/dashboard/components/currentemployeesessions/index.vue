@@ -13,7 +13,8 @@
               description="No employees are currently clocked in."
               class="current-employee-empty" />-->
 
-    <el-row v-else :gutter="18" class="panel-group current-employee-grid">
+    <el-row v-else :gutter="18" class="panel-group current-employee-grid"
+            :class="{ 'current-employee-grid-multiple': employees.length > 1 }">
       <el-col v-for="employee in employees"
               :key="employee.sessionId"
               :xs="12" :sm="12" :md="12" :lg="6"
@@ -33,10 +34,10 @@
               </div>
               <div class="stat-content current-employee-info">
                 <div class="current-employee-name" :title="employee.name">{{ employee.name }}</div>
-                <!--<div class="stat-label current-employee-role">{{ employee.jobTitle || 'Employee' }}</div>-->
+                <div class="stat-label current-employee-role">{{ employee.jobTitle || 'Employee' }}</div>
               </div>
               <div class="current-employee-balance">
-                <span class="stat-label">Balance</span>
+                <span class="stat-label"><span class="current-balance-prefix">Current </span>Balance</span>
                 <strong class="current-employee-balance-value">{{ money(employee.balance) }}</strong>
               </div>
             </div>
@@ -203,3 +204,102 @@ onBeforeUnmount(() => {
     if (clockTimer) window.clearInterval(clockTimer)
 })
 </script>
+
+<style scoped>
+/* Keep the existing desktop grid and card design untouched. */
+.current-employee-role,
+.current-balance-prefix {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .current-employee-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    margin: 0 !important;
+    overflow-x: hidden;
+  }
+
+  .current-employee-grid.current-employee-grid-multiple {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .current-employee-grid-multiple::-webkit-scrollbar {
+    display: none;
+  }
+
+  .current-employee-grid > .current-employee-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+    width: 100%;
+    padding: 0 !important;
+    scroll-snap-align: start;
+  }
+
+  .current-employee-grid-multiple > .current-employee-col {
+    flex-basis: 90%;
+    max-width: 90%;
+    width: 90%;
+    margin-right: 10px;
+  }
+
+  .current-employee-grid .current-employee-card {
+    width: 100%;
+    min-height: 0;
+    padding: 12px 14px;
+  }
+
+  .current-employee-card-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .current-employee-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .current-employee-info {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .current-employee-role,
+  .current-balance-prefix {
+    display: inline;
+  }
+
+  .current-employee-role {
+    display: block;
+  }
+
+  .current-employee-balance {
+    flex: 0 0 auto;
+    text-align: right;
+  }
+
+  .current-employee-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 11px;
+    padding-top: 10px;
+    border-top: 1px solid var(--el-border-color-lighter);
+  }
+
+  .current-employee-meta > div {
+    min-width: 0;
+  }
+
+  .current-employee-meta span,
+  .current-employee-meta strong {
+    display: block;
+  }
+}
+</style>

@@ -129,7 +129,7 @@
         </el-table-column>
 
         <!-- Operations -->
-        <el-table-column label="" width="110" align="center">
+        <el-table-column v-if="userStore.isOwnerOrAdmin" label="" width="110" align="center">
           <template #default="{ row }">
             <div class="customer-row-actions">
               <el-tooltip :content="row.isactive ? 'Active' : 'Inactive'"
@@ -240,7 +240,7 @@
             </el-tooltip>
           </div>
 
-          <div class="mobile-action-buttons">
+          <div v-if="userStore.isOwnerOrAdmin" class="mobile-action-buttons">
             <el-tooltip :content="row.isactive ? 'Active' : 'Inactive'"
                         placement="top">
               <el-button v-if="row.isactive"
